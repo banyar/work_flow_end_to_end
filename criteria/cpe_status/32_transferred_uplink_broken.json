@@ -1,0 +1,59 @@
+{
+    "data": {
+        "cpe": {
+            "cid": "CRIT-32",
+            "status": "Up"
+        },
+        "ca1": {
+            "name": "CA1-YKNX07ZYNY-GB",
+            "status": "OK",
+            "last_seen": "2026-08-12T04:11:37.506Z"
+        },
+        "olt": {
+            "name": "OVF-PYRX01AYNY",
+            "mac_address": "C4-70-0B-DF-DE-E3",
+            "management_ip": "172.24.206.130",
+            "operational_status": "unmanaged",
+            "status": "Online",
+            "last_seen": "2026-08-12T04:40:52.261Z"
+        },
+        "onu": {
+            "rx_power": -27,
+            "tx_power": 0.5,
+            "bias": 5,
+            "voltage": "",
+            "temperature": "",
+            "is_swap_onu": false,
+            "is_low_dbm": true,
+            "is_epc_outage": false,
+            "24h_onu_usage_gb": "1.5",
+            "is_usage_over_gb": true,
+            "gpon_name": "0/7",
+            "hostname": "YKNC07ZYNY-GB7-P7-LCF029166",
+            "serial": "FO2F15009949",
+            "phase_state": "Working",
+            "signal": "-23.566",
+            "last_seen": "2026-08-12T04:11:25.741Z",
+            "uptime": 19131,
+            "is_onu_on_off": false,
+            "is_bip8_error": false,
+            "is_port_loss": false,
+            "profile": {
+                "id": "29",
+                "name": "INFRA3",
+                "line_profile_name": "MN_FR-SLA_25.00Mbps",
+                "is_line_profile_mismatch": false
+            }
+        },
+        "pole_name": "YKNC07ZYNY-GB7-P7",
+        "uplink": {
+            "name": "CA2-YKNC07ZYNY-GB7",
+            "status": "Broken",
+            "last_seen": "2026-08-12T04:11:37.506Z",
+            "box": {
+                "type": "Gen2",
+                "status": "OBOB-B"
+            }
+        }
+    }
+}

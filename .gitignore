@@ -1,0 +1,6 @@
+# secrets
+.env
+
+# build output
+/rt-web-ui
+*.exe

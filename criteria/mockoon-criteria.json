@@ -1,0 +1,526 @@
+{
+  "uuid": "8aed74a4-2261-5461-8e71-efa34db54141",
+  "lastMigration": 33,
+  "name": "NOC report criteria",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": [],
+  "routes": [
+    {
+      "uuid": "d9a56a76-c801-5c8b-855f-817b1f644ea4",
+      "type": "http",
+      "documentation": "Node-RED CPE status; response chosen by CPE id (see rt_web_ui/criteria/README.md)",
+      "method": "get",
+      "endpoint": "api/v1/onus/:onus_id/status",
+      "responses": [
+        {
+          "uuid": "9c6d4501-851a-5de3-8de9-327b8b560601",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"FFG019981\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "default (all good)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ec494da9-0442-5d4e-8a4b-90150d5b8ef6",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-10\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "10_remote_resolved",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-10",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1b4ba97c-5768-5b7d-901b-64e6eba138d5",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-20\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Offline\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "20_kept_olt_offline",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-20",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2a2fd4c9-1e9e-56ea-a746-9fd20a8f4349",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-21\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": true,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "21_kept_onu_on_off",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-21",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5df22023-2a04-5456-85dd-62464f990dea",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-22\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": true,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "22_kept_port_loss",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-22",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "446608e5-9727-55ac-8bda-d6aa8ecf2c6e",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-23\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": true,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "23_kept_bip8_error",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-23",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c94ee304-5fa4-5a9f-a83d-1c9433dd26d0",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-24\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": true\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "24_kept_line_profile_mismatch",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-24",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "bfdb2a94-fbeb-50f7-8366-6ccb209743fd",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-25\",\n            \"status\": \"Down\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "25_kept_cpe_down",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-25",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "d26cf5d8-bfd0-5b13-98f8-7ff76e02c2b0",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-26\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": true,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Offline\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "26_kept_epc_outage",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-26",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "85716d85-95e3-5e87-abbd-a6e44de5ce08",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-27\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"0.5\",\n            \"is_usage_over_gb\": false,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "27_kept_low_usage",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-27",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "91249be3-b5c2-5658-8e8d-93f631386fb5",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-30\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"Broken\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "30_transferred_ca1_broken",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-30",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e22cb538-3cb3-5c3c-9a1a-3eba574baf47",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-31\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"Low Signal\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "31_transferred_ca1_low_signal",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-31",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "de8421fd-4520-5dd2-812e-190abe06d168",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-32\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"Broken\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "32_transferred_uplink_broken",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-32",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0f3b2a2a-4b8d-5f9f-8f6a-8d25e356770f",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-33\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"Low Signal\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "33_transferred_uplink_low_signal",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-33",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "10eef7ad-68b7-5e73-a9ee-b5d00b8581c7",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-34\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": false,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "34_transferred_not_low_dbm",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-34",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c86b8c82-c474-513c-894e-0ec3e3093456",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-35\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": true,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "35_transferred_swap_onu",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-35",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "b2a7588f-bbea-5d59-be68-569cd98e8548",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT-36\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": \"\",\n            \"temperature\": \"\",\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": true,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": \"1.5\",\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Offline\",\n            \"signal\": \"-23.566\",\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": 19131,\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": \"29\",\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "36_transferred_onu_down",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-36",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "d9a56a76-c801-5c8b-855f-817b1f644ea4"
+    }
+  ]
+}

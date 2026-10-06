@@ -1,0 +1,6 @@
+go run ./rt_web_ui send --file ticket.json --env noc_automation/.env
+
+
+# test override
+go run ./rt_web_ui send --file rt_web_ui/rt_web_api_payload_end_to_end.json --env noc_automation/.env \
+    --set id=97 --set custom_fields.service_type="MNet Plus" --set custom_fields.opi_site_code=

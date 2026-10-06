@@ -1,0 +1,32 @@
+[
+    {
+        "id": 153,
+        "run_id": "",
+        "status": "in_progress",
+        "queue": "Network Operation Center (NOC)",
+        "queue_id": "43",
+        "creator": "hla.m.thu",
+        "type": "ticket",
+        "created": "2021-09-24 01:38:09",
+        "started": "2021-09-24 01:38:54",
+        "resolved": "1970-01-01 00:00:00",
+        "custom_fields": {
+            "bandwidth": "14",
+            "cpe_id": "SCP004023",
+            "customer_type": "Postpaid",
+            "description": "1.Issue type :\n 2. Plan/CID : \n3. Number of complaints :\n 4. Start Impact time \u0026 how often : \n5. Speed Test Result : \n6. SSID is correctly connected : \n7. Number of devices connected : \n8. Number of impacted devices : \n9. CPE LED, Cable and port Status : \n10. CPE location moved or not :",
+            "local_service_id": "2263071-001",
+            "mobile": "098775657",
+            "package": "Fiber Internet 14 Mbps",
+            "plan_start_date": "2021-04-22",
+            "program": "Standard",
+            "resolution_description": "KPI Testing",
+            "service_address": "Taungoo",
+            "service_area": "-Postpaid-Fiber Internet",
+            "tags": [
+                "Services"
+            ],
+            "ticket_no": "Sep21-TKT-153"
+        }
+    }
+]
