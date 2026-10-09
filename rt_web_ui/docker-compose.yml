@@ -21,7 +21,7 @@ services:
   # point noc_automation's NODE_RED_BASE_URL at http://localhost:3002/
   criteria-mock:
     image: mockoon/cli:9.9.0
-    container_name: noc-criteria-mock
+    container_name: node-red-criteria-mock
     command: ["--data", "/data/mock.json", "--port", "3002"]
     ports:
       - "127.0.0.1:${CRITERIA_MOCK_PORT:-3002}:3002"
