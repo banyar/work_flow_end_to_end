@@ -4,12 +4,10 @@
 // run's state and events in pipeline_runs / pipeline_run_events.
 //
 //	go run ./rt_web_ui send --file ticket.json [--env .env] [--run-id UUID] [--set key=value ...]
-//	go run ./rt_web_ui export [--env .env] [--queue 43] [--out samples/tickets.json] ...
 //	go run ./rt_web_ui serve [--env .env] [--addr 127.0.0.1:8090] [--criteria criteria/tickets]
 //	go run ./rt_web_ui check [--env .env] [--noc-env <file>] [--mock-port 3002]
 //	go run ./rt_web_ui up|down [--env .env] [--noc-env <file>] [--rtutil-dir <dir>] ...
 //
-// export reads open tickets from the RT DB into a sample JSON array (see export.go).
 // serve is a web UI that sends the report criteria samples (see serve.go).
 // check reports which systems the flow depends on are not ready (see check.go);
 // up starts the ones that are down and down stops what up started (see up.go).
@@ -36,7 +34,6 @@ import (
 )
 
 const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--run-id <uuid>] [--set key=value ...]
-       rt_web_ui export [--env <file>] [--queue <id>] [--statuses a,b] [--ids 1,2] [--limit N] [--out <file|->] [--all-fields]
        rt_web_ui serve [--env <file>] [--addr <host:port>] [--criteria <dir>]
        rt_web_ui check [--env <file>] [--noc-env <file>] [--mock-port <port>]
        rt_web_ui up|down [--env <file>] [--noc-env <file>] [--noc-dir <dir>] [--rtutil-dir <dir>] [--mock-port <port>] [--run-dir <dir>]
@@ -45,7 +42,6 @@ const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--ru
   --env     config file (default .env); noc_automation/.env works as-is
   --run-id  use this run_id instead of a new UUID
   --set     override a field, e.g. --set queue=... or --set custom_fields.service_type=MNet (repeatable)
-  --all-fields  export: include every custom field of the queue, "" when the ticket has no value
   --addr      serve: listen address (default 127.0.0.1:8090)
   --criteria  serve: folder of criteria ticket JSON files (default criteria/tickets)
   --noc-env   check: noc_automation's env file (default ../../NocAutomationCodeMerge/noc_automation/.env)
@@ -70,9 +66,6 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
-	if len(args) > 0 && args[0] == "export" {
-		return runExport(args[1:], stdout, stderr)
-	}
 	if len(args) > 0 && args[0] == "up" {
 		return runUp(args[1:], stdout, stderr)
 	}

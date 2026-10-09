@@ -1,21 +1,3 @@
-make samples                         # queue 43၊ status ၈ မျိုး
-make samples LIMIT=10
-make samples IDS=2476,2480
-make samples STATUSES=new,in_progress
-make send-sample ID=2476             # tickets.json ထဲက ticket တစ်ခုကို send နဲ့ ပို့မယ်
-make clean-samples
-
-
-cd rt_web_ui
-make samples ALL_FIELDS=1                    # default queue 43, LIMIT=1
-make samples ALL_FIELDS=1 IDS=153            # ticket တစ်ခုကို ရွေးပြီး
-make samples ALL_FIELDS=1 LIMIT=10 OUT=samples/ten.json
-
-# make မသုံးဘဲ
-go run . export --env .env --ids 153 --all-fields --out samples/tickets.json
-
-
-
 # Terminal 1: Node-RED mock ဖွင့် (CRIT-xx response တွေအတွက်)
 make criteria-mock
 
@@ -30,6 +12,3 @@ make criteria-mock-stop
 
 kill $(cat .run/rtutil.pid)
 make check            # → ! rtutil consumer   local process not found
-
-
-make send-sample ID=153 ARGS='--set custom_fields.service_type="MNet Plus" --set custom_fields.opi_site_code= --set custom_fields.township="South Okkalapa"'

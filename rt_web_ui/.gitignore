@@ -7,3 +7,6 @@
 
 # make up: built binaries, pid and log files
 /.run/
+
+# go mod vendor for the docker build
+/vendor/

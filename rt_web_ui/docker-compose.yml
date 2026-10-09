@@ -1,0 +1,30 @@
+# make docker-up (go mod vendor + docker compose up -d --build)
+#
+# rt-web-ui uses the host network so .env works unchanged (MySQL and the RT
+# External API on localhost) and the UI stays on 127.0.0.1 like make
+# criteria-ui: it updates real tickets, so it is not exposed to the LAN.
+services:
+  rt-web-ui:
+    build: .
+    image: rt-web-ui:local
+    container_name: rt-web-ui
+    network_mode: host
+    command: ["serve", "--env", "/app/.env", "--addr", "${UI_ADDR:-127.0.0.1:8090}", "--criteria", "/app/criteria/tickets"]
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./criteria:/app/criteria:ro
+    restart: unless-stopped
+    depends_on:
+      - criteria-mock
+
+  # Node-RED mock for criteria 10–36 (same as make criteria-mock);
+  # point noc_automation's NODE_RED_BASE_URL at http://localhost:3002/
+  criteria-mock:
+    image: mockoon/cli:9.9.0
+    container_name: noc-criteria-mock
+    command: ["--data", "/data/mock.json", "--port", "3002"]
+    ports:
+      - "127.0.0.1:${CRITERIA_MOCK_PORT:-3002}:3002"
+    volumes:
+      - ./criteria/mockoon-criteria.json:/data/mock.json:ro
+    restart: unless-stopped

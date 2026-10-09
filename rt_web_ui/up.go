@@ -30,7 +30,7 @@ const (
 	defaultMySQLCtr   = "rt_local_dev_mariadb_10.4-local"
 	defaultRTCtr      = "rt_local_dev_rt_5.0"
 	mockContainer     = "noc-criteria-mock"
-	mockImage         = "mockoon/cli:latest"
+	mockImage         = "mockoon/cli:9.9.0"
 	startWait         = 30 * time.Second
 	rtutilSettleDelay = 3 * time.Second
 )
@@ -277,7 +277,7 @@ func (o *upOptions) startMock() (string, error) {
 			mockContainer, strings.TrimSpace(string(state)), o.mockPort)
 	}
 	out, err := exec.CommandContext(ctx, "docker", "run", "-d", "--rm", "--name", mockContainer,
-		"-p", o.mockPort+":3002", "-v", o.mockData+":/data/mock.json:ro",
+		"-p", "127.0.0.1:"+o.mockPort+":3002", "-v", o.mockData+":/data/mock.json:ro",
 		mockImage, "--data", "/data/mock.json", "--port", "3002").CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("docker run: %s", lastLine(out))

@@ -120,7 +120,7 @@ make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automatio
 |---|---|
 | Input | `--file` (ticket JSON, `-` = stdin)။ `--set` ဖြင့် `queue=…` / `custom_fields.<key>=…` ကို override လုပ်နိုင်သည် |
 | `run_id` | `--run-id` မပေးလျှင် UUIDv4 အသစ်ထုတ်သည် (UUID format မဟုတ်လျှင် exit 3) |
-| Sample | `ticket_valid.json` (gate အားလုံး pass), `not_eligible.json` (Service Type `FR-Biz` + OPI `HMHY`)၊ RT DB မှ export (§0.4)၊ report criteria sample (§0.5) |
+| Sample | `ticket_valid.json` (gate အားလုံး pass), `not_eligible.json` (Service Type `FR-Biz` + OPI `HMHY`)၊ report criteria sample (§0.4) |
 | Config | `--env` file (default `.env`)၊ process env က file ထက် ဦးစားပေး။ Load လုပ်ပြီး config ကို stderr တွင် ပြသည် (token / DB password ကို `****` ဖြင့် ဖုံး) |
 | Exit code | `0` accepted · `1` not eligible · `2` API rejected / unreachable · `3` usage / config / DB error |
 
@@ -173,26 +173,7 @@ make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automatio
 | အခြား state (reuse / replay လုပ်ထားသော `run_id`) | `ErrRunNotClaimable` — processing မစ | **409** "run_id already in use" |
 | DB error | — | 500 "Failed to initialize remote resolve run" |
 
-### 0.4 RT DB မှ ticket sample export
-
-`rt_web_ui export` သည် RT DB (`Tickets`, `ObjectCustomFieldValues`) ကို **read-only** ဖတ်ပြီး `send` လက်ခံသော format ဖြင့် JSON array ထုတ်သည်။
-
-```bash
-cd rt_web_ui
-make samples                                  # queue 43, status re-open*/new/in_progress, LIMIT=1 → samples/tickets.json
-make samples IDS=384,385 OUT=samples/two.json
-make samples ALL_FIELDS=1                     # queue ၏ custom field အားလုံး (value မရှိလျှင် "")
-make send-sample ID=384 ARGS='--set custom_fields.service_type="MNet Plus"'   # $(OUT) ထဲမှ ticket တစ်ခု ပို့
-```
-
-| Option | အသေးစိတ် |
-|---|---|
-| (default) | Ticket တွင် **value ရှိသော** custom field များသာ ထုတ်သည် — RT တွင် မဖြည့်ထားသော field (ဥပမာ `service_type`) ပါမလာ |
-| `--all-fields` (`ALL_FIELDS=1`) | Queue တွင် သုံးနိုင်သော enabled custom field အားလုံး (global `ObjectId 0` + queue) ကို ထည့်ပြီး value မရှိလျှင် `""` (`tags` = `[]`)။ RT တွင် နာမည်တူ field (ဥပမာ `Township` ၂ ခု) ကို key တစ်ခုတည်း ထုတ်သည်။ ရှိပြီးသား value ကို မပြောင်း |
-
-Key ပြည့်စုံသော်လည်း value အလွတ်ဖြစ်နိုင်သဖြင့် gate pass ရန် `--set` ဖြင့် ဖြည့်ရမည် (ဥပမာ `service_type`)။
-
-### 0.5 Report criteria sample များ
+### 0.4 Report criteria sample များ
 
 [`rt_web_ui/criteria/`](../../rt_web_ui/criteria/README.md) တွင် pipeline report ([pipeline_report](../../pipeline_report/README.md)) ၏ card / bucket တစ်ခုချင်းစီကို ဖြစ်စေမည့် file များ ရှိသည်—
 

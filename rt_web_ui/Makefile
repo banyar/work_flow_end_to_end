@@ -4,14 +4,6 @@
 #   make send RUN_ID=<uuid>
 #   make send ARGS='--set id=97 --set custom_fields.service_type="MNet Plus"'
 #
-# Export real tickets from the RT DB (read-only) as one JSON array of payloads.
-#   make samples
-#   make samples QUEUE=43 LIMIT=10
-#   make samples IDS=384,385 OUT=samples/two.json
-#   make samples STATUSES=new,in_progress
-#   make samples ALL_FIELDS=1        # every queue custom field, "" when unset
-#   make send-sample ID=384          # send one ticket from $(OUT)
-#
 # Report criteria samples (see criteria/README.md).
 #   make criteria-mock               # Node-RED mock on :3002 (point NODE_RED_BASE_URL at it)
 #   make criteria-mock-stop          # stop the mock container
@@ -26,33 +18,20 @@
 #   make up MODE=sit                 # MODE=local|sit|qa picks rtutil's config:
 #                                    #   local .rtutil_local.json · sit .rtutil.json · qa .rtutil_qa.json
 #                                    #   (RTUTIL_CONFIG=<file> overrides; a running rtutil is restarted on change)
+#
+# Docker (criteria UI + criteria mock; needs .env, see docker-compose.yml).
+#   make docker-up                   # vendor, build and start in the background
+#   make docker-logs                 # follow the UI log
+#   make docker-send-criteria C=20_kept_olt_offline
+#   make docker-down
 FILE ?= ticket_valid.json
 ENV ?= .env
 RUN_ID ?=
 ARGS ?=
 
-QUEUE ?= 43
-STATUSES ?= re-open,re-open-1,re-open-2,re-open-3,re-open-4,new,in_progress
-OUT ?= samples/tickets.json
-LIMIT ?=
-IDS ?=
-ID ?=
-ALL_FIELDS ?=
-
 .PHONY: send
 send:
 	go run . send --file $(FILE) --env $(ENV) $(if $(RUN_ID),--run-id $(RUN_ID)) $(ARGS)
-
-.PHONY: samples
-samples:
-	go run . export --env $(ENV) --queue $(QUEUE) --statuses $(STATUSES) --out $(OUT) \
-		$(if $(LIMIT),--limit $(LIMIT)) $(if $(IDS),--ids $(IDS)) $(if $(ALL_FIELDS),--all-fields)
-
-.PHONY: send-sample
-send-sample:
-	@test -n "$(ID)" || { echo "usage: make send-sample ID=<ticket id> [OUT=$(OUT)]"; exit 3; }
-	@payload=$$(jq -ce '.[] | select(.id == $(ID))' $(OUT)) || { echo "ticket $(ID) is not in $(OUT); run make samples first"; exit 3; }; \
-	printf '%s' "$$payload" | go run . send --file - --env $(ENV) $(if $(RUN_ID),--run-id $(RUN_ID)) $(ARGS)
 
 CRITERIA_DIR ?= criteria
 CRITERIA_MOCK_PORT ?= 3002
@@ -72,9 +51,9 @@ UP_ARGS = --env $(ENV) --noc-env $(NOC_ENV) --noc-dir $(NOC_DIR) --rtutil-dir $(
 
 .PHONY: criteria-mock
 criteria-mock:
-	docker run --rm --name noc-criteria-mock -p $(CRITERIA_MOCK_PORT):3002 \
+	docker run --rm --name noc-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
-		mockoon/cli:latest --data /data/mock.json --port 3002
+		mockoon/cli:9.9.0 --data /data/mock.json --port 3002
 
 .PHONY: criteria-mock-stop
 criteria-mock-stop:
@@ -111,10 +90,35 @@ up:
 down:
 	$(call run_tool,down $(UP_ARGS))
 
-.PHONY: clean-samples
-clean-samples:
-	rm -f $(OUT)
-
 .PHONY: test
 test:
 	go test ./...
+
+# git.frontiir.net modules are private: vendor them on the host so the image
+# builds without git credentials.
+.PHONY: vendor
+vendor:
+	go mod vendor
+
+.PHONY: docker-build
+docker-build: vendor
+	docker compose build
+
+.PHONY: docker-up
+docker-up: vendor
+	@test -f $(ENV) || { echo "no $(ENV) → cp .env.example .env and fill it in"; exit 3; }
+	UI_ADDR=$(UI_ADDR) CRITERIA_MOCK_PORT=$(CRITERIA_MOCK_PORT) docker compose up -d --build
+	@echo "criteria UI on http://$(UI_ADDR) · mock on :$(CRITERIA_MOCK_PORT)"
+
+.PHONY: docker-down
+docker-down:
+	docker compose down
+
+.PHONY: docker-logs
+docker-logs:
+	docker compose logs -f rt-web-ui
+
+.PHONY: docker-send-criteria
+docker-send-criteria:
+	@test -n "$(C)" || { echo "usage: make docker-send-criteria C=<file name without .json>"; exit 3; }
+	docker compose exec rt-web-ui /app/rt-web-ui send --env /app/.env --file /app/criteria/tickets/$(C).json $(ARGS)

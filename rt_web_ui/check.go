@@ -101,7 +101,6 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 			return checkRestartNeeded(*envPath, *nocEnvPath, *reportDir, rtutilConfig, *runDir, cfg, cfgErr)
 		},
 		func(ctx context.Context) checkResult { return checkReport(ctx, *reportDir) },
-		checkJQ,
 	}
 
 	// Run in parallel, print in a fixed order.
@@ -411,17 +410,6 @@ func checkReport(ctx context.Context, dir string) checkResult {
 	default:
 		r.Level, r.Detail = levelOK, base
 	}
-	return r
-}
-
-func checkJQ(ctx context.Context) checkResult {
-	r := checkResult{Name: "jq"}
-	if _, err := exec.LookPath("jq"); err != nil {
-		r.Level, r.Detail, r.Fix = levelWarn, "not installed", "sudo apt install jq (make send-sample အတွက်သာ)"
-		return r
-	}
-	out, _ := exec.CommandContext(ctx, "jq", "--version").Output()
-	r.Level, r.Detail = levelOK, strings.TrimSpace(string(out))
 	return r
 }
 

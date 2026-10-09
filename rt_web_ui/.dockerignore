@@ -1,0 +1,8 @@
+# keep secrets and local build output out of the image
+.env
+.run/
+/rt-web-ui
+*.exe
+.git
+*.md
+!criteria/README.md
