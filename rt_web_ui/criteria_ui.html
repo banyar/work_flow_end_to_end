@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criteria Runner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Myanmar:wght@400;500;600&display=swap">
+<style>
+/* Layout: two-column console. Left = form (ticket, CPE, criteria), right = what will happen (expected card, command, output). Stacks on phones. */
+:root {
+  --bg: #f3f5f4;
+  --panel: #ffffff;
+  --fg: #17201d;
+  --muted: #5d6b66;
+  --line: #d9e0dd;
+  --accent: #0b6e5f;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2f1ee;
+  --term-bg: #10181a;
+  --term-fg: #d5e4df;
+  --term-dim: #7f948e;
+  --ok: #1d7a3a; --ok-soft: #e3f3e8;
+  --warn: #9a5b00; --warn-soft: #fbf0dc;
+  --bad: #b3261e; --bad-soft: #fbe6e4;
+  --info: #2a5db0; --info-soft: #e5edfa;
+  --font-ui: "IBM Plex Sans", "Noto Sans Myanmar", system-ui, sans-serif;
+  --font-my: "Noto Sans Myanmar", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+    --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+    --term-bg: #090e0f; --term-fg: #cfe0da; --term-dim: #6c817b;
+    --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+    --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+  --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+  --term-bg: #090e0f; --term-fg: #cfe0da; --term-dim: #6c817b;
+  --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+  --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; padding: 24px 16px 40px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h1 small { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+.sample-badge { font-size: 12px; font-family: var(--font-my); color: var(--warn); background: var(--warn-soft); padding: 4px 10px; border-radius: 99px; }
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 18px; min-width: 0; }
+.panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0; font-weight: 600; }
+.field { display: grid; gap: 6px; }
+label, .lbl { font-weight: 500; font-size: 13px; }
+.hint { font-family: var(--font-my); font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+input[type=text], select { font: inherit; font-family: var(--font-mono); font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%; }
+input[type=text]:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input.invalid { border-color: var(--bad); }
+.err { font-family: var(--font-my); font-size: 12.5px; color: var(--bad); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+button { font: inherit; font-weight: 500; border-radius: 6px; padding: 10px 18px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+/* expected-result card */
+.expect { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.expect-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.pill.ne { color: var(--bad); background: var(--bad-soft); }
+.pill.kept { color: var(--warn); background: var(--warn-soft); }
+.pill.tr { color: var(--info); background: var(--info-soft); }
+.pill.rs { color: var(--ok); background: var(--ok-soft); }
+.expect-title { font-weight: 600; }
+dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); }
+dt, dd { margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
+dt { color: var(--muted); }
+dd { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; }
+dl > :nth-last-child(-n+2) { border-bottom: 0; }
+.note { font-family: var(--font-my); font-size: 13px; line-height: 1.75; padding: 10px 14px; border-radius: 6px; }
+.note.warn { background: var(--warn-soft); color: var(--fg); border-left: 3px solid var(--warn); }
+.note.bad { background: var(--bad-soft); color: var(--fg); border-left: 3px solid var(--bad); }
+.note.info { background: var(--info-soft); color: var(--fg); border-left: 3px solid var(--info); }
+.note b { font-family: var(--font-ui); }
+.cmd { position: relative; background: var(--term-bg); color: var(--term-fg); border-radius: 6px; padding: 12px 14px; padding-right: 72px; font-family: var(--font-mono); font-size: 12.5px; overflow-x: auto; white-space: pre; }
+.cmd .copy { position: absolute; top: 8px; right: 8px; padding: 4px 10px; font-size: 12px; background: transparent; color: var(--term-fg); border-color: var(--term-dim); }
+.term { background: var(--term-bg); color: var(--term-fg); border-radius: 6px; padding: 12px 14px; font-family: var(--font-mono); font-size: 12px; min-height: 140px; max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.term .dim { color: var(--term-dim); }
+.term .g { color: #63c27d; } .term .y { color: #e0a447; } .term .r { color: #f08b83; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+td.mono { font-family: var(--font-mono); }
+.tablewrap { overflow-x: auto; }
+.empty { font-family: var(--font-my); color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { .term { scroll-behavior: smooth; } }
+</style>
+<style>
+.infobar { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.infobar b { color: var(--fg); font-weight: 500; }
+.res { display: grid; grid-template-columns: max-content minmax(0, 1fr); border: 1px solid var(--line); border-radius: var(--r); }
+.res > div { padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.res > div:nth-child(odd) { color: var(--muted); }
+.res > div:nth-child(even) { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.res > :nth-last-child(-n+2) { border-bottom: 0; }
+.pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 860px) { .pick { grid-template-columns: minmax(0, 1fr); } }
+.pcol, .pgroup { display: grid; gap: 6px; align-content: start; }
+.pcol { gap: 18px; }
+.pgroup-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-bottom: 2px; }
+.pgroup-desc { font-family: var(--font-my); font-size: 12px; color: var(--muted); line-height: 1.6; }
+.opt { position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 1px 8px; align-items: baseline; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); cursor: pointer; }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .num { grid-row: span 2; font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.opt .num.ne { color: var(--bad); } .opt .num.rs { color: var(--ok); } .opt .num.kept { color: var(--warn); } .opt .num.tr { color: var(--info); } .opt .num.other { color: var(--muted); }
+.opt .t { font-family: var(--font-my); font-weight: 500; font-size: 13.5px; line-height: 1.6; }
+.opt .s { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.opt:hover { border-color: var(--accent); }
+.opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pill.other { color: var(--muted); background: var(--bg); border: 1px solid var(--line); }
+.pill.ACCEPTED { color: var(--ok); background: var(--ok-soft); }
+.pill.NOT_ELIGIBLE { color: var(--bad); background: var(--bad-soft); }
+.pill.REJECTED, .pill.UNREACHABLE, .pill.ERROR { color: var(--bad); background: var(--bad-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Criteria Runner <small>rt_web_ui serve</small></h1>
+    <div class="infobar" id="info">Loading config…</div>
+  </header>
+
+  <section class="panel" aria-labelledby="pickTitle">
+    <div class="pgroup-head"><h2 id="pickTitle">Criteria ရွေးပါ</h2><span class="pgroup-desc">Report ထဲမှာ ဘယ် card ပေါ်စေချင်လဲ ရွေးပါ။ အရောင်က result အမျိုးအစားကို ပြသည်။</span></div>
+    <div class="pick" id="picker" role="radiogroup" aria-labelledby="pickTitle"><span class="empty">Loading…</span></div>
+  </section>
+
+  <div class="grid">
+    <form class="panel" id="form" novalidate>
+      <h2>Input</h2>
+
+      <div class="field">
+        <label for="ticket">Ticket ID</label>
+        <input type="text" id="ticket" inputmode="numeric" autocomplete="off" placeholder="ဥပမာ 153">
+        <div class="hint">RT ထဲမှာ တကယ်ရှိတဲ့ <b>test ticket</b> ဖြစ်ရမည်။ rtutil က ဒီ ticket ကို တကယ် update လုပ်မည်။</div>
+        <div class="err" id="ticketErr" hidden></div>
+      </div>
+
+      <div class="field">
+        <label for="cpe">CPE ID <span class="hint">(optional)</span></label>
+        <input type="text" id="cpe" autocomplete="off">
+        <div class="hint" id="cpeHint"></div>
+        <div class="err" id="cpeErr" hidden></div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="primary" id="runBtn">Run</button>
+        <button type="button" id="resetBtn">Reset</button>
+      </div>
+    </form>
+
+    <div class="panel">
+      <h2>ဘာဖြစ်မလဲ</h2>
+
+      <div class="expect">
+        <div class="expect-head">
+          <span class="pill" id="xPill"></span>
+          <span class="expect-title" id="xTitle"></span>
+        </div>
+        <dl>
+          <dt>File</dt><dd id="xFile"></dd>
+          <dt>Workflow step</dt><dd id="xStep"></dd>
+          <dt>Target queue</dt><dd id="xQueue"></dd>
+          <dt>ပြင်ထားသော field</dt><dd id="xField"></dd>
+        </dl>
+      </div>
+
+      <div id="notes" style="display:grid;gap:10px"></div>
+
+      <div class="field">
+        <span class="lbl">CLI နဲ့ တူညီသော command</span>
+        <div class="cmd" id="cmd"><button type="button" class="copy" id="copyBtn">Copy</button><span id="cmdText"></span></div>
+      </div>
+
+      <div class="field">
+        <span class="lbl">Result</span>
+        <div class="term" id="term" aria-live="polite"><span class="dim">Run ကို နှိပ်ပါ…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Run history <span class="hint">(ဒီ browser tab အတွင်းသာ)</span></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>အချိန်</th><th>Ticket</th><th>Criteria</th><th>CPE ID</th><th>Run ID</th><th>Outcome</th><th>State</th></tr></thead>
+        <tbody id="hist"><tr><td colspan="7" class="empty">Run မလုပ်ရသေးပါ။</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// Expected results mirror criteria/README.md; files not listed here still run.
+const G = { ne: "Not eligible", kept: "Kept in NOC", tr: "Transferred", rs: "Remote resolved", other: "Other" };
+const DESC = {
+  ne: "rt_web_ui gate မှာတင် ရပ်မည်။ RT ticket မပြောင်းပါ။",
+  rs: "အားလုံးကောင်း → Customer Support သို့ Resolved",
+  kept: "ပြဿနာရှိ → NOC မှာ ဆက်ထားမည်",
+  tr: "ပြဿနာရှိ → Passive-Infra / LANOps သို့ လွှဲမည်",
+  other: "README ထဲ မပါသော file",
+};
+const COLS = [["ne", "rs"], ["kept"], ["tr", "other"]];
+const META = Object.fromEntries([
+  ["01_not_eligible_queue","ne","Queue က NOC မဟုတ်","gate · not_in_noc_queue","—",'queue: "Customer Support"'],
+  ["02_not_eligible_cpe_missing","ne","CPE ID မပါ","gate · cpe_or_local_service_id_missing","—",'custom_fields.cpe_id: ""'],
+  ["03_not_eligible_opi","ne","OPI customer","gate · opi_customer_excluded","—",'custom_fields.opi_site_code: "HMHY"'],
+  ["04_not_eligible_service_type","ne","Service type လက်မခံ","gate · service_type_not_eligible","—",'custom_fields.service_type: "Other"'],
+  ["05_not_eligible_ticket_status","ne","Ticket status လက်မခံ (Resolved)","gate · ticket_status_not_allowed","—",'status: "Resolved"'],
+  ["10_remote_resolved","rs","Network နှင့် CPE အားလုံး ကောင်း","category_type_workflow · final_action","Customer Support (Resolved)","ပြောင်းစရာ မလို (all good)"],
+  ["20_kept_olt_offline","kept","OLT Offline","network_good_workflow · olt_status","Network Operation Center (NOC)",'olt.status: "Offline"'],
+  ["21_kept_onu_on_off","kept","ONU အတက်အကျ များ (> 20 ကြိမ်)","network_good_workflow · is_onu_onoff","Network Operation Center (NOC)","onu.is_onu_on_off: true"],
+  ["22_kept_port_loss","kept","Port loss များ (> 20)","network_good_workflow · is_port_loss","Network Operation Center (NOC)","onu.is_port_loss: true"],
+  ["23_kept_bip8_error","kept","BIP8 error များ (> 20)","network_good_workflow · is_bip8_error","Network Operation Center (NOC)","onu.is_bip8_error: true"],
+  ["24_kept_line_profile_mismatch","kept","Line profile (plan) မကိုက်","network_good_workflow · is_line_profile_mismatch","Network Operation Center (NOC)","onu.profile.is_line_profile_mismatch: true"],
+  ["25_kept_cpe_down","kept","CPE Down (ONU ကောင်း)","network_good_workflow · cpe_down","Network Operation Center (NOC)",'cpe.status: "Down"'],
+  ["26_kept_epc_outage","kept","ONU Offline + EPC outage","network_good_workflow · epc_outage","Network Operation Center (NOC)",'onu.phase_state: "Offline" · onu.is_epc_outage: true'],
+  ["27_kept_low_usage","kept","24 နာရီ usage < 1 GB","category_type_workflow · abnormal_usage","Network Operation Center (NOC)",'onu.24h_onu_usage_gb: "0.5"'],
+  ["30_transferred_ca1_broken","tr","CA1 ပြတ် (Broken)","network_good_workflow · ca1_status","Passive-Infra",'ca1.status: "Broken"'],
+  ["31_transferred_ca1_low_signal","tr","CA1 signal နိမ့်","network_good_workflow · ca1_status","Passive-Infra",'ca1.status: "Low Signal"'],
+  ["32_transferred_uplink_broken","tr","Uplink ပြတ် (Broken)","network_good_workflow · uplink_status","Passive-Infra",'uplink.status: "Broken"'],
+  ["33_transferred_uplink_low_signal","tr","Uplink signal နိမ့်","network_good_workflow · uplink_status","Passive-Infra",'uplink.status: "Low Signal"'],
+  ["34_transferred_not_low_dbm","tr","ONU signal ကောင်း (is_low_dbm = false)","network_good_workflow · is_low_dbm","LANOps","onu.is_low_dbm: false"],
+  ["35_transferred_swap_onu","tr","ONU လဲရန် (swap ONU)","network_good_workflow · swap_onu","LANOps","onu.is_swap_onu: true"],
+  ["36_transferred_onu_down","tr","ONU Offline (EPC outage မဟုတ်)","network_good_workflow · onu_down","LANOps",'onu.phase_state: "Offline" · onu.is_epc_outage: false'],
+].map(([file, g, title, step, queue, field]) => [file, { file, g, title, step, queue, field, num: file.slice(0, 2) }]));
+
+const $ = id => document.getElementById(id);
+let selected = "";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+let C = [];
+let envPath = ".env";
+let fileCpe = {};
+
+const cur = () => C.find(c => c.file === selected) || C[0];
+const cpeVal = () => $("cpe").value.trim();
+const defaultCpe = c => c.file in fileCpe ? fileCpe[c.file] : (c.g === "rs" || c.g === "kept" || c.g === "tr" ? "CRIT-" + c.num : "");
+
+async function loadInfo() {
+  try {
+    const r = await fetch("api/info");
+    const info = await r.json();
+    if (!r.ok) throw new Error(info.error || r.status);
+    envPath = info.env;
+    fileCpe = info.cpe_ids || {};
+    $("info").innerHTML = `<span>env <b>${esc(info.env)}</b></span><span>API <b>${esc(info.api_url)}</b></span><span>DB <b>${esc(info.db)}</b></span>`;
+    C = info.criteria.map(f => META[f] || { file: f, g: "other", title: f, step: "—", queue: "—", field: "—", num: f.slice(0, 2) });
+  } catch (e) {
+    $("info").innerHTML = `<span class="err">Server ကို ချိတ်မရပါ: ${esc(e.message)}</span>`;
+    C = Object.values(META);
+  }
+  buildPicker();
+  selected = C.some(c => c.file === "20_kept_olt_offline") ? "20_kept_olt_offline" : (C[0] || {}).file;
+  try { const last = localStorage.getItem("criteria-runner:last"); if (last) { const v = JSON.parse(last); if (C.some(c => c.file === v.criteria)) selected = v.criteria; $("ticket").value = v.ticket || ""; } } catch {}
+  select(selected);
+}
+
+// One column per result family; each option shows the plain-language case and what the file changes.
+function buildPicker() {
+  const sub = c => c.g === "tr" ? `→ ${c.queue} · ${c.field}` : c.field;
+  $("picker").innerHTML = COLS.map(col => {
+    const groups = col.filter(g => C.some(c => c.g === g)).map(g => `
+      <div class="pgroup">
+        <div class="pgroup-head"><span class="pill ${g}">${G[g]}</span><span class="pgroup-desc">${DESC[g]}</span></div>
+        ${C.filter(c => c.g === g).map(c => `
+          <label class="opt" title="${esc(c.file)}">
+            <input type="radio" name="crit" value="${esc(c.file)}">
+            <span class="num ${g}">${esc(c.num)}</span>
+            <span class="t">${esc(c.title)}</span>
+            <span class="s">${esc(sub(c))}</span>
+          </label>`).join("")}
+      </div>`).join("");
+    return groups ? `<div class="pcol">${groups}</div>` : "";
+  }).join("");
+}
+
+function select(file) {
+  selected = file;
+  const r = document.querySelector(`input[name=crit][value="${CSS.escape(file || "")}"]`);
+  if (r) r.checked = true;
+  render();
+}
+
+// Errors stay hidden until the first Run, so a fresh page does not open full of red.
+let showErrors = false;
+
+function validate() {
+  const t = $("ticket").value.trim(), cpe = $("cpe").value.trim();
+  const errs = {};
+  if (!/^[1-9]\d*$/.test(t)) errs.ticket = "Ticket ID သည် 0 ထက်ကြီးသော ကိန်းဂဏန်း ဖြစ်ရမည်။";
+  if (cpe && !/^[A-Za-z0-9._-]+$/.test(cpe)) errs.cpe = "CPE ID တွင် စာလုံး၊ ဂဏန်း၊ . _ - သာ ပါရမည်။";
+  for (const [k, inp] of [["ticket", "ticket"], ["cpe", "cpe"]]) {
+    if (!showErrors) { $(k + "Err").hidden = true; $(inp).classList.remove("invalid"); continue; }
+    $(k + "Err").hidden = !errs[k]; $(k + "Err").textContent = errs[k] || ""; $(inp).classList.toggle("invalid", !!errs[k]);
+  }
+  return Object.keys(errs).length === 0 ? null : errs;
+}
+
+function command() {
+  const c = cur(), t = $("ticket").value.trim(), cpe = $("cpe").value.trim();
+  const sets = [`--set id=${t || "<ticket>"}`];
+  if (cpe) sets.push(`--set custom_fields.cpe_id=${cpe}`);
+  let s = `make send-criteria C=${c.file} \\\n  ARGS='${sets.join(" ")}'`;
+  if (envPath !== ".env") s += ` \\\n  ENV=${envPath}`;
+  return s;
+}
+
+function render() {
+  const c = cur(); if (!c) return;
+  const def = defaultCpe(c);
+  const custom = cpeVal() !== "" && cpeVal() !== def;
+  $("cpe").placeholder = def ? "ဗလာ = " + def : "ဗလာ = file ထဲကအတိုင်း (\"\")";
+  $("cpeHint").innerHTML = def
+    ? `ဗလာထားရင် criteria ၏ CPE ID <b>${esc(def)}</b> ကို သုံးမည်။ CPE အစစ်ကို တကယ့် Node-RED နဲ့ စမ်းမှသာ ထည့်ပါ။`
+    : `ဗလာထားရင် criteria file အတိုင်း CPE ID မပါဘဲ ပို့မည်။`;
+  $("xPill").textContent = G[c.g]; $("xPill").className = "pill " + c.g;
+  $("xTitle").textContent = c.title;
+  $("xFile").textContent = `criteria/tickets/${c.file}.json`;
+  $("xStep").textContent = c.step; $("xQueue").textContent = c.queue; $("xField").textContent = c.field;
+
+  const n = [];
+  if (custom && (c.g === "rs" || c.g === "kept" || c.g === "tr")) n.push(["bad", `<b>Criteria result မဖြစ်တော့ပါ။</b> Mock သုံးရင် CPE ID က <b>${esc(def)}</b> rule နဲ့ မကိုက်လို့ default "all good" ပြန်ရပြီး <b>Remote resolved</b> ဖြစ်သွားမည်။ တကယ့် Node-RED သုံးရင် ဒီ CPE ၏ တကယ့် status အတိုင်း ဖြစ်မည်။`]);
+  if (custom && c.num === "02") n.push(["bad", `<b>02 က cpe_id ဗလာ ဖြစ်ခြင်းကိုယ်တိုင်ပါ။</b> CPE ID ထည့်လိုက်ရင် gate ကို ဖြတ်ပြီး eligible ဖြစ်သွားမည်။`]);
+  if (custom && c.g === "ne" && c.num !== "02") n.push(["info", `Not eligible criteria ဖြစ်လို့ gate မှာတင် ရပ်မည်။ CPE ID ပြောင်းလည်း result မပြောင်းပါ။`]);
+  if (!custom && c.g !== "ne") n.push(["info", `Mock (<b>make criteria-mock</b>, :3002) ကို run ထားပြီး noc_automation ၏ <b>NODE_RED_BASE_URL</b> ကို mock ဆီ ညွှန်ထားရမည်။`]);
+  if (c.g !== "ne") n.push(["warn", `Ticket <b>${esc($("ticket").value.trim() || "?")}</b> ကို RT ထဲမှာ တကယ် update လုပ်မည်${c.queue !== "—" ? " (" + esc(c.queue) + ")" : ""}။ Customer ticket အစစ် မသုံးပါနှင့်။`]);
+  $("notes").innerHTML = n.map(([k, h]) => `<div class="note ${k}">${h}</div>`).join("");
+
+  $("cmdText").textContent = command();
+  validate();
+}
+
+let running = false;
+async function run(e) {
+  e.preventDefault();
+  if (running) return;
+  showErrors = true;
+  const errs = validate();
+  if (errs) {
+    const first = errs.ticket ? "ticket" : "cpe";
+    $("term").innerHTML = `<span class="y">Run မလုပ်ရသေးပါ — ${esc(Object.values(errs).join(" "))}</span>`;
+    $(first).scrollIntoView({ block: "center" });
+    $(first).focus();
+    return;
+  }
+  running = true; $("runBtn").disabled = true; $("runBtn").textContent = "Running…";
+  const c = cur();
+  const req = { ticket_id: $("ticket").value.trim(), criteria: c.file, cpe_id: cpeVal() };
+  try { localStorage.setItem("criteria-runner:last", JSON.stringify({ criteria: c.file, ticket: req.ticket_id })); } catch {}
+  const term = $("term");
+  term.innerHTML = `<span class="dim">POST /api/run ${esc(JSON.stringify(req))}</span>\n`;
+  let out;
+  try {
+    const r = await fetch("api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req) });
+    out = await r.json();
+  } catch (err) {
+    out = { error: "Server ကို ချိတ်မရပါ: " + err.message };
+  }
+  const outcome = out.error ? "ERROR" : out.outcome;
+  const color = outcome === "ACCEPTED" ? "g" : outcome === "NOT_ELIGIBLE" ? "y" : "r";
+  if (out.error) term.innerHTML += `<span class="r">error: ${esc(out.error)}</span>\n`;
+  if (out.outcome) term.innerHTML += `<span class="${color}">${esc(out.message)} — ticket ${esc(out.ticket_id)}, run_id ${esc(out.run_id)}, state ${esc(out.state)}</span>\n`;
+  term.innerHTML += `\n<span class="dim">${esc(JSON.stringify(out, null, 2))}</span>`;
+  term.scrollTop = 0;
+
+  const tb = $("hist"); if (tb.querySelector(".empty")) tb.innerHTML = "";
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td class="mono">${new Date().toLocaleTimeString()}</td><td class="mono">${esc(req.ticket_id)}</td><td class="mono">${esc(c.file)}</td><td class="mono">${esc(out.cpe_id || req.cpe_id || "—")}</td><td class="mono" title="${esc(out.run_id)}">${esc((out.run_id || "—").slice(0, 8))}</td><td><span class="pill ${esc(outcome)}">${esc(outcome)}</span></td><td class="mono">${esc(out.state || "—")}</td>`;
+  tb.prepend(tr);
+  running = false; $("runBtn").disabled = false; $("runBtn").textContent = "Run";
+}
+
+$("form").addEventListener("submit", run);
+$("form").addEventListener("input", render);
+$("form").addEventListener("change", render);
+$("picker").addEventListener("change", e => { if (e.target.name === "crit") select(e.target.value); });
+$("resetBtn").addEventListener("click", () => {
+  $("ticket").value = ""; $("cpe").value = "";
+  select((C[0] || {}).file);
+});
+$("copyBtn").addEventListener("click", () => {
+  const b = $("copyBtn");
+  navigator.clipboard.writeText(command()).then(() => { b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1200); })
+    .catch(() => { const r = document.createRange(); r.selectNodeContents($("cmdText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+});
+loadInfo();
+</script>
+</body>
+</html>

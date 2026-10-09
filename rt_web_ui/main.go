@@ -5,8 +5,14 @@
 //
 //	go run ./rt_web_ui send --file ticket.json [--env .env] [--run-id UUID] [--set key=value ...]
 //	go run ./rt_web_ui export [--env .env] [--queue 43] [--out samples/tickets.json] ...
+//	go run ./rt_web_ui serve [--env .env] [--addr 127.0.0.1:8090] [--criteria criteria/tickets]
+//	go run ./rt_web_ui check [--env .env] [--noc-env <file>] [--mock-port 3002]
+//	go run ./rt_web_ui up|down [--env .env] [--noc-env <file>] [--rtutil-dir <dir>] ...
 //
 // export reads open tickets from the RT DB into a sample JSON array (see export.go).
+// serve is a web UI that sends the report criteria samples (see serve.go).
+// check reports which systems the flow depends on are not ready (see check.go);
+// up starts the ones that are down and down stops what up started (see up.go).
 //
 // Exit codes: 0 accepted, 1 not eligible, 2 rejected or unreachable,
 // 3 usage / configuration / database error.
@@ -31,12 +37,26 @@ import (
 
 const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--run-id <uuid>] [--set key=value ...]
        rt_web_ui export [--env <file>] [--queue <id>] [--statuses a,b] [--ids 1,2] [--limit N] [--out <file|->] [--all-fields]
+       rt_web_ui serve [--env <file>] [--addr <host:port>] [--criteria <dir>]
+       rt_web_ui check [--env <file>] [--noc-env <file>] [--mock-port <port>]
+       rt_web_ui up|down [--env <file>] [--noc-env <file>] [--noc-dir <dir>] [--rtutil-dir <dir>] [--mock-port <port>] [--run-dir <dir>]
 
   --file    ticket JSON as the RT Web UI sends it ("-" = stdin)
   --env     config file (default .env); noc_automation/.env works as-is
   --run-id  use this run_id instead of a new UUID
   --set     override a field, e.g. --set queue=... or --set custom_fields.service_type=MNet (repeatable)
-  --all-fields  export: include every custom field of the queue, "" when the ticket has no value`
+  --all-fields  export: include every custom field of the queue, "" when the ticket has no value
+  --addr      serve: listen address (default 127.0.0.1:8090)
+  --criteria  serve: folder of criteria ticket JSON files (default criteria/tickets)
+  --noc-env   check: noc_automation's env file (default ../../NocAutomationCodeMerge/noc_automation/.env)
+  --mock-port check: criteria mock port (default 3002)
+  --noc-dir   up: noc_automation folder (default: folder of --noc-env)
+  --rtutil-dir up: rtutil folder (default: ../remote-resolved-queue-transfer next to --noc-dir)
+  --run-dir   up/down: binaries, pid and log files (default .run)
+  --ui-addr   check/up: criteria UI address (default 127.0.0.1:8090)
+  --report-dir check/up: pipeline_report folder (default ../../pipeline_report)
+  --mode      check/up: local|sit|qa — rtutil config .rtutil_local.json|.rtutil.json|.rtutil_qa.json (default local)
+  --rtutil-config check/up: rtutil config file, overrides --mode`
 
 var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
@@ -52,6 +72,18 @@ func main() {
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) > 0 && args[0] == "export" {
 		return runExport(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "up" {
+		return runUp(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "down" {
+		return runDown(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "check" {
+		return runCheck(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "serve" {
+		return runServe(args[1:], stdout, stderr)
 	}
 	if len(args) == 0 || args[0] != "send" {
 		fmt.Fprintln(stderr, usage)

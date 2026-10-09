@@ -11,7 +11,7 @@ Pipeline report ([pipeline_report](../../pipeline_report/README.md)) ၏ card / 
 ## ဘယ်လို ဆုံးဖြတ်သလဲ
 
 1. **rt_web_ui gate များ** — ticket JSON ကိုသာ ကြည့်သည်။ Fail ဖြစ်ပါက `NOT_ELIGIBLE` (Not eligible card)။
-2. **noc_automation workflow** ([remote_resolve_workflow_engine.json](../../noc_automation/remote_resolve_workflow_engine.json)) — Node-RED CPE status ကို `network_good_workflow` → `category_type_workflow` → `final_action` အစီအစဉ်ဖြင့် စစ်ပြီး **ပထမဆုံး ကိုက်သော step** ၏ queue ကို ယူသည်။ ထို့ကြောင့် criteria တစ်ခုချင်းစီတွင် field **တစ်ခု (သို့ နှစ်ခု)** သာ ပြောင်းထားပြီး ကျန် field များသည် "all good" အတိုင်း ဖြစ်သည်။
+2. **noc_automation workflow** ([remote_resolve_workflow_engine.json](../../../NocAutomationCodeMerge/noc_automation/remote_resolve_workflow_engine.json)) — Node-RED CPE status ကို `network_good_workflow` → `category_type_workflow` → `final_action` အစီအစဉ်ဖြင့် စစ်ပြီး **ပထမဆုံး ကိုက်သော step** ၏ queue ကို ယူသည်။ ထို့ကြောင့် criteria တစ်ခုချင်းစီတွင် field **တစ်ခု (သို့ နှစ်ခု)** သာ ပြောင်းထားပြီး ကျန် field များသည် "all good" အတိုင်း ဖြစ်သည်။
 3. Ticket ၏ category custom field များ (`program`, `ticket_problem`, `tags`, `root_cause`, `plan_start_date`) သည် noc_automation ၏ `REMOTE_RESOLVE_CUSTOM_FIELDS` တွင် မပါသဖြင့် ယခု workflow က မမြင်ပါ — ထို field များဖြင့် criteria မဖန်တီးထားပါ။
 
 ## Criteria list
@@ -71,6 +71,13 @@ Workflow engine (noc_automation) ကို ဤ file များဖြင့် 
 ```bash
 cd rt_web_ui
 
+# 0. System များ ready ဖြစ်/မဖြစ် စစ် (read-only; ✘ ရှိရင် exit 1)
+make check                                         # NOC_ENV=<noc_automation .env> ဖြင့် noc env ကို ညွှန်
+#    ✘ = send မလုပ်နိုင် (MySQL၊ RT External API ...)  ! = feature တချို့သာ မရ (mock၊ Kafka၊ rtutil ...)
+
+#    ✘ ရှိရင် down နေတာကို အလိုအလျောက် start: make up (ပြီးရင် make down)
+#    (MySQL/RT container, criteria mock, noc_automation, rtutil · log/pid: .run/)
+
 # 1. Criteria mock ကို port 3002 တွင် run (terminal တစ်ခု သီးသန့်; docker image mockoon/cli)
 make criteria-mock
 #    သို့ Mockoon desktop တွင် criteria/mockoon-criteria.json ကို "Open environment" ဖြင့် ဖွင့်
@@ -83,6 +90,11 @@ make criteria-mock
 make send-criteria C=20_kept_olt_offline
 make send-criteria C=01_not_eligible_queue
 make send-criteria C=30_transferred_ca1_broken ARGS='--set id=385'   # ticket id ပြောင်း
+
+# 3 (UI ဖြင့်). Browser မှ ticket id / criteria / CPE id ရွေး၍ ပို့
+make criteria-ui                     # http://127.0.0.1:8090 (UI_ADDR=... ဖြင့် ပြောင်း)
 ```
+
+UI (`go run . serve`) သည် `make send-criteria C=<criteria> ARGS='--set id=<ticket> [--set custom_fields.cpe_id=<cpe>]'` နှင့် အတူတူ ပို့သည်။ CPE id ကို ကိုယ်တိုင် ထည့်ပါက mock ၏ `CRIT-xx` rule နှင့် မကိုက်တော့သဖြင့် `10`–`36` criteria result မဖြစ်တော့ပါ (UI တွင် သတိပေးချက် ပြသည်)။ Ticket ကို တကယ် update လုပ်သဖြင့် server ကို default အနေဖြင့် localhost တွင်သာ ဖွင့်ထားသည်။
 
 > **သတိ:** Success criteria များသည် rtutil မှတစ်ဆင့် **RT ticket ကို တကယ် update** လုပ်သည် (queue ပြောင်း၊ comment ထည့်၊ CPE ID custom field ကို `CRIT-xx` ဟု ရေး)။ Local / test RT ticket ဖြင့်သာ ပို့ပါ (default `id` 384)။

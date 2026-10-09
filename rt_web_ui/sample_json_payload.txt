@@ -1,0 +1,60 @@
+{
+    "data": {
+        "cpe": {
+            "cid": "FFG086100",
+            "status": "Down"
+        },
+        "ca1": {
+            "name": "CA1-020D10ZLAY-FB",
+            "status": "OK",
+            "last_seen": "2026-10-05T11:05:30.670+06:30"
+        },
+        "olt": {
+            "name": "OVF-ARAX64ZLAY",
+            "mac_address": "6c:68:a4:7e:35:14",
+            "status": "Online",
+            "last_seen": "2026-10-05T11:09:42.428+06:30"
+        },
+        "onu": {
+            "rx_power": -21.1,
+            "tx_power": 2.4,
+            "bias": 15.2,
+            "voltage": 3.3,
+            "temperature": 51,
+            "is_swap_onu": true,  // True, False , null
+            "is_low_dbm": false,
+            "is_epc_outage": false, // "True", "False" , null
+            "24h_onu_usage_gb": 1,  // float, 0 
+            "is_usage_over_gb": false, // "True", "False" , null
+            "gpon_name": "0/6",
+            "hostname": "020M17ZLAY-FB7-P5-FFG086100",
+            "serial": "FG1D16006603",
+            "phase_state": "Working",
+            "signal": -21.1,
+            "last_seen": "2026-10-05T10:40:55.389813978+06:30",
+            "uptime": "14h3m28s",
+            "is_onu_on_off": false,
+            "is_bip8_error": false,
+            "is_port_loss": false,
+            "profile": {
+                "id": 18,
+                "name": "INFRA3",
+                "line_profile_name": "MN_FR-SLA_15.00Mbps",
+                "is_line_profile_mismatch": false
+            }
+        },
+        "pole_name": "020M17ZLAY-FB7-P5",
+        "uplink": {
+            "name": "CA2-020M17ZLAY-FB7",
+            "status": "OK",
+            "last_seen": "2026-10-05T11:05:30.697+06:30",
+            "box": {
+                "type": "Gen2",
+                "status": "OBOB"
+            }
+        }
+    },
+    "errors": [
+      { "field": "olt.name", "message": "olt status lookup unavailable" },
+    ]
+}

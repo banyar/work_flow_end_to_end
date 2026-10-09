@@ -3,7 +3,7 @@ module git.frontiir.net/sa-dev/rt-web-ui
 go 1.24.0
 
 require (
-	git.frontiir.net/sa-dev/rtdatacore v1.1.13
+	git.frontiir.net/sa-dev/rtdatacore v1.1.9
 	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.0

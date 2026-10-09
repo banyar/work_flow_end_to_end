@@ -113,7 +113,7 @@ go run ./rt_web_ui send --file ticket.json --env noc_automation/.env [--run-id <
 cd rt_web_ui && make send                         # FILE=ticket_valid.json, ENV=.env (rt_web_ui/.env)
 make send FILE=not_eligible.json                  # gate fail sample
 make send ARGS='--set custom_fields.service_type="MNet Plus" --set custom_fields.opi_site_code='   # --set ကို အကြိမ်ကြိမ် သုံးနိုင်
-make send ENV=../noc_automation/.env              # noc_automation ၏ .env ကို တိုက်ရိုက် သုံး
+make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automation ၏ .env ကို တိုက်ရိုက် သုံး
 ```
 
 | Item | အသေးစိတ် |

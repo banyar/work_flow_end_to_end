@@ -22,7 +22,7 @@ const (
 // Config is read from an env file; a variable already set in the process
 // environment wins over the file. The MYSQL_DB_* / DOMAIN_PORT /
 // DEFAULT_TOKEN names match noc_automation's .env, so that file can be used
-// directly (--env ../noc_automation/.env).
+// directly (--env ../../NocAutomationCodeMerge/noc_automation/.env).
 type Config struct {
 	APIURL                string
 	APIToken              string

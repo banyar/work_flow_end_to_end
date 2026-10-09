@@ -4,3 +4,6 @@
 # build output
 /rt-web-ui
 *.exe
+
+# make up: built binaries, pid and log files
+/.run/
