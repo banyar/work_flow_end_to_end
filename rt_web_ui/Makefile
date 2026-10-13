@@ -51,13 +51,13 @@ UP_ARGS = --env $(ENV) --noc-env $(NOC_ENV) --noc-dir $(NOC_DIR) --rtutil-dir $(
 
 .PHONY: criteria-mock
 criteria-mock:
-	docker run --rm --name noc-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
+	docker run --rm --name node-red-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
 		mockoon/cli:9.9.0 --data /data/mock.json --port 3002
 
 .PHONY: criteria-mock-stop
 criteria-mock-stop:
-	-docker stop noc-criteria-mock
+	-docker stop node-red-criteria-mock
 
 .PHONY: send-criteria
 send-criteria:

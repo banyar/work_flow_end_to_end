@@ -19,7 +19,8 @@ import (
 )
 
 // up starts the systems `check` finds down that can be started locally:
-// the MySQL and RT docker containers (docker start), the criteria mock
+// the MySQL and RT docker containers (docker start; RT's web server is
+// started inside its container with docker exec), the criteria mock
 // (docker run -d), noc_automation, the rtutil consumer, the criteria UI and
 // pipeline_report (built from source into the run folder and started in the
 // background). Everything
@@ -29,10 +30,11 @@ const (
 	defaultRunDir     = ".run"
 	defaultMySQLCtr   = "rt_local_dev_mariadb_10.4-local"
 	defaultRTCtr      = "rt_local_dev_rt_5.0"
-	mockContainer     = "noc-criteria-mock"
+	mockContainer     = "node-red-criteria-mock"
 	mockImage         = "mockoon/cli:9.9.0"
 	startWait         = 30 * time.Second
 	rtutilSettleDelay = 3 * time.Second
+	rtServerLog       = "/tmp/rt-server.log" // inside the RT container
 )
 
 type upOptions struct {
@@ -133,7 +135,7 @@ func runUp(args []string, stdout, stderr io.Writer) int {
 		{"MySQL", func(c context.Context) checkResult { return checkMySQL(c, cfg, cfgErr) },
 			func() (string, error) { return o.startContainer(o.mysqlContainer) }},
 		{"RT REST2", func(c context.Context) checkResult { return checkRTREST(c, noc, nocErr, o.nocEnvPath) },
-			func() (string, error) { return o.startContainer(o.rtContainer) }},
+			func() (string, error) { return o.startRT(noc) }},
 		{"Node-RED mock", func(c context.Context) checkResult { return checkMock(c, o.mockPort) },
 			o.startMock},
 		{"noc_automation", func(c context.Context) checkResult { return checkAPI(c, cfg, cfgErr) },
@@ -258,12 +260,96 @@ func (o *upOptions) startContainer(name string) (string, error) {
 		return "", fmt.Errorf("docker container %s not found → docker container ကို ကိုယ်တိုင် စစ်ပါ", name)
 	}
 	if s := strings.TrimSpace(string(state)); s == "running" {
+		if hint := detachedHint(ctx, name); hint != "" {
+			return "", errors.New(hint)
+		}
 		return "", fmt.Errorf("container %s is running but not answering → docker logs %s", name, name)
 	}
-	if out, err := exec.CommandContext(ctx, "docker", "start", name).CombinedOutput(); err != nil {
+	// docker start can leave the container running without its network when
+	// a host port is busy, and still report the error.
+	out, err := exec.CommandContext(ctx, "docker", "start", name).CombinedOutput()
+	if hint := detachedHint(ctx, name); hint != "" {
+		return "", errors.New(hint)
+	}
+	if err != nil {
 		return "", fmt.Errorf("docker start %s: %s", name, strings.TrimSpace(string(out)))
 	}
 	return "started (docker start " + name + ")", nil
+}
+
+// detachedHint explains how to recover a running container that has no
+// network or none of its published ports, which happens when a host port was
+// busy when it started; docker restart does not fix that, a recreate does.
+func detachedHint(ctx context.Context, name string) string {
+	out, err := exec.CommandContext(ctx, "docker", "inspect", "-f",
+		`{{.State.Status}}|{{.HostConfig.NetworkMode}}|{{len .NetworkSettings.Networks}}|{{len .NetworkSettings.Ports}}|`+
+			`{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostPort}} {{end}}{{end}}|`+
+			`{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{index .Config.Labels "com.docker.compose.service"}}`,
+		name).Output()
+	if err != nil {
+		return ""
+	}
+	f := strings.Split(strings.TrimSpace(string(out)), "|")
+	if len(f) != 7 || f[0] != "running" {
+		return ""
+	}
+	hostPorts := strings.Fields(f[4])
+	noNetwork := f[2] == "0" && f[1] != "none"
+	noPorts := len(hostPorts) > 0 && f[3] == "0"
+	if !noNetwork && !noPorts {
+		return ""
+	}
+	fix := "docker container ကို recreate လုပ်ပါ"
+	if f[5] != "" && f[6] != "" {
+		fix = fmt.Sprintf("cd %s && docker compose up -d --force-recreate --no-deps --no-build %s", f[5], f[6])
+	}
+	busy := ""
+	if len(hostPorts) > 0 {
+		busy = fmt.Sprintf(" (host port %s was busy when it started? → ss -ltnp | grep :%s)",
+			strings.Join(hostPorts, ", "), hostPorts[0])
+	}
+	return fmt.Sprintf("container %s is running without its network/ports%s → %s", name, busy, fix)
+}
+
+// startRT starts the RT container if needed and then RT's web server inside
+// it: the container's entrypoint is tail -f /dev/null, so docker start alone
+// leaves port 8084 answering EOF.
+func (o *upOptions) startRT(noc map[string]string) (string, error) {
+	name := o.rtContainer
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	state, err := exec.CommandContext(ctx, "docker", "inspect", "-f", "{{.State.Status}}", name).Output()
+	if err != nil {
+		return "", fmt.Errorf("docker container %s not found → docker container ကို ကိုယ်တိုင် စစ်ပါ", name)
+	}
+	var done []string
+	if strings.TrimSpace(string(state)) != "running" {
+		if _, err := o.startContainer(name); err != nil {
+			return "", err
+		}
+		done = append(done, "docker start")
+	} else if hint := detachedHint(ctx, name); hint != "" {
+		return "", errors.New(hint)
+	}
+
+	top, err := exec.CommandContext(ctx, "docker", "top", name, "-o", "pid,args").Output()
+	if err != nil {
+		return "", fmt.Errorf("docker top %s: %v", name, err)
+	}
+	if strings.Contains(string(top), "rt-server") {
+		return "", fmt.Errorf("rt-server is running in %s but not answering → docker exec %s tail %s", name, name, rtServerLog)
+	}
+	cmd := `exec /opt/rt5/sbin/rt-server --port "${RT_WEB_PORT:-8084}" >` + rtServerLog + ` 2>&1`
+	if out, err := exec.CommandContext(ctx, "docker", "exec", "-d", name, "sh", "-c", cmd).CombinedOutput(); err != nil {
+		return "", fmt.Errorf("docker exec %s rt-server: %s", name, lastLine(out))
+	}
+	done = append(done, "rt-server")
+
+	waited, err := waitFor(func(c context.Context) bool { return checkRTREST(c, noc, nil, "").Level == levelOK })
+	if err != nil {
+		return "", fmt.Errorf("rt-server started but RT REST2 did not answer within %s → docker exec %s tail %s", startWait, name, rtServerLog)
+	}
+	return fmt.Sprintf("started (%s in %s) · answering after %s · log %s", strings.Join(done, " + "), name, waited, rtServerLog), nil
 }
 
 func (o *upOptions) startMock() (string, error) {

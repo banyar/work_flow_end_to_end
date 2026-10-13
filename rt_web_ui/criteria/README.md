@@ -55,6 +55,14 @@ Run သည် rtutil က RT ticket ကို update လုပ်ပြီးမ�
 
 Workflow engine (noc_automation) ကို ဤ file များဖြင့် တိုက်ရိုက် run ၍ `target_queue` / status ကို စစ်ပြီး — ၁၆ ခုလုံး အထက်ပါ table အတိုင်း ထွက်သည်။
 
+### Manual check (Node-RED CPE status ပြင်)
+
+| File (`cpe_id`) | Report | Criteria | `current_state` | Node-RED response |
+|---|---|---|---|---|
+| [`40_cpe_not_found.json`](tickets/40_cpe_not_found.json) (`CRIT-40`) | Manual check · Failed | Node-RED တွင် CPE မရှိ | `CPE_NOT_FOUND` (retry မလုပ်) | HTTP **404** ([`cpe_status/40_cpe_not_found.json`](cpe_status/40_cpe_not_found.json)) |
+
+noc_automation သည် Node-RED မှ 404 ရလျှင်သာ `CPE_NOT_FOUND` သို့ ချက်ချင်း ရွှေ့သည် (404 မဟုတ်သော error / timeout ဆိုလျှင် retry လုပ်ပြီး ကုန်ဆုံးမှ `FAILED_PERMANENT`)။ Mock ကို ပြင်ပြီးလျှင် `docker restart node-red-criteria-mock` လုပ်ပါ (hot-reload မလုပ်)။
+
 ### ဤ folder တွင် မပါသော criteria (JSON ဖြင့် မဖြစ်စေနိုင်)
 
 | Report | ဖြစ်စေပုံ |

@@ -510,6 +510,33 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "596cd0c5-4daf-5ed6-bf49-a28c2de7736c",
+          "body": "{\n    \"message\": \"CPE CRIT-40 not found\"\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "40_cpe_not_found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "onus_id",
+              "value": "CRIT-40",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,
