@@ -16,9 +16,9 @@ CREATE TABLE `pipeline_run_events` (
     COMMENT 'State before the event; "" for the first transition of a run opened by rt_web_ui',
   `to_state` varchar(40) DEFAULT NULL
     COMMENT 'State after the event; equal to from_state when the event does not change the state',
-  `event` varchar(80) DEFAULT NULL
+  `event` varchar(45) DEFAULT NULL
     COMMENT 'What happened (e.g. payload_submitted, api_received, node_red_fetch_started, cpe_not_found, retry_attempt_failed)',
-  `component` varchar(64) DEFAULT NULL
+  `component` varchar(30) DEFAULT NULL
     COMMENT 'Writer: rt_web_ui, remote_resolve_service, retry_worker, publish_timeout_sweeper or rtutil_consumer',
   `detail` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
     COMMENT 'Event data as JSON (e.g. {"http_status":200}, {"error":"...","attempt":2,"max_attempts":3}); NULL when none'

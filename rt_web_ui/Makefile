@@ -6,6 +6,7 @@
 #
 # Report criteria samples (see criteria/README.md).
 #   make criteria-mock               # Node-RED mock on :3002 (point NODE_RED_BASE_URL at it)
+#   make criteria-mock-up            # same mock in the background (no-op when already running)
 #   make criteria-mock-stop          # stop the mock container
 #   make send-criteria C=20_kept_olt_offline
 #   make criteria-ui                 # web UI on http://127.0.0.1:8090 (ticket id + criteria + cpe id)
@@ -54,6 +55,20 @@ criteria-mock:
 	docker run --rm --name node-red-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
 		mockoon/cli:9.9.0 --data /data/mock.json --port 3002
+
+.PHONY: criteria-mock-up
+criteria-mock-up:
+	@if [ "$$(docker inspect -f '{{.State.Running}}' node-red-criteria-mock 2>/dev/null)" = "true" ]; then \
+		echo "node-red-criteria-mock already running on 127.0.0.1:$(CRITERIA_MOCK_PORT)"; exit 0; fi; \
+	docker rm -f node-red-criteria-mock >/dev/null 2>&1 || true; \
+	docker run -d --rm --name node-red-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
+		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
+		mockoon/cli:9.9.0 --data /data/mock.json --port 3002 >/dev/null || exit 1; \
+	for i in $$(seq 1 30); do \
+		if [ "$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:$(CRITERIA_MOCK_PORT)/api/v1/onus/CRIT-20/status)" = "200" ]; then \
+			echo "node-red-criteria-mock started on 127.0.0.1:$(CRITERIA_MOCK_PORT) (answering after $$i s)"; exit 0; fi; \
+		sleep 1; done; \
+	echo "node-red-criteria-mock started but CRIT-20 did not answer within 30s -> docker logs node-red-criteria-mock"; exit 1
 
 .PHONY: criteria-mock-stop
 criteria-mock-stop:

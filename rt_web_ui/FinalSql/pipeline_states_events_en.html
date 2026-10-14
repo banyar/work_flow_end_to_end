@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline State Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;600;700&display=swap">
+<style>
+/* Layout: a single reading column for prose, full-width tables below; one
+   owner colour per writing service, one outcome colour per terminal kind. */
+:root {
+  --bg: #f6f8f8;
+  --surface: #ffffff;
+  --fg: #1b2526;
+  --muted: #5b6b6d;
+  --line: #d8e0e1;
+  --accent: #0f6f6a;
+  --code-bg: #eef3f3;
+  --own-web: #2a5fb0;   --own-web-bg: #e6eefa;
+  --own-noc: #9a5b00;   --own-noc-bg: #fbf0dc;
+  --own-rtu: #6a3fa8;   --own-rtu-bg: #f0e9fa;
+  --ok: #1f7a46;        --ok-bg: #e2f3e8;
+  --bad: #b3261e;       --bad-bg: #fbe6e4;
+  --skip: #5b6b6d;      --skip-bg: #ebeff0;
+  --wait: #2a5fb0;      --wait-bg: #e6eefa;
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111718; --surface: #172022; --fg: #dfe8e8; --muted: #93a5a7; --line: #2a3739;
+    --accent: #4fc2b9; --code-bg: #1d2a2c;
+    --own-web: #8fb4f0; --own-web-bg: #1c2a40;
+    --own-noc: #f0bd6a; --own-noc-bg: #33270f;
+    --own-rtu: #c4a6f0; --own-rtu-bg: #2a1f3d;
+    --ok: #7fd3a0; --ok-bg: #16301f;
+    --bad: #f2928a; --bad-bg: #3a1a18;
+    --skip: #a7b6b8; --skip-bg: #232e30;
+    --wait: #8fb4f0; --wait-bg: #1c2a40;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111718; --surface: #172022; --fg: #dfe8e8; --muted: #93a5a7; --line: #2a3739;
+  --accent: #4fc2b9; --code-bg: #1d2a2c;
+  --own-web: #8fb4f0; --own-web-bg: #1c2a40;
+  --own-noc: #f0bd6a; --own-noc-bg: #33270f;
+  --own-rtu: #c4a6f0; --own-rtu-bg: #2a1f3d;
+  --ok: #7fd3a0; --ok-bg: #16301f;
+  --bad: #f2928a; --bad-bg: #3a1a18;
+  --skip: #a7b6b8; --skip-bg: #232e30;
+  --wait: #8fb4f0; --wait-bg: #1c2a40;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-inline: 16px; padding-block: 0 64px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 40px; }
+.prose { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 2rem; font-weight: 700; }
+h2 { font-size: 1.35rem; font-weight: 600; padding-top: 8px; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.stack { display: grid; gap: 14px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+
+header.top { padding-block: 40px 8px; border-bottom: 1px solid var(--line); display: grid; gap: 12px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 72ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
+.facts b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; }
+nav.toc a { text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { text-decoration: underline; }
+
+.tables3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.tcard { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tcard h3 code { background: none; padding: 0; font-size: 1rem; }
+.tcard p { color: var(--muted); font-size: 0.92rem; }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; min-width: 760px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.85rem; color: var(--muted); }
+
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 820px; font-size: 0.9rem; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-display); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--code-bg); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.k code { background: none; padding: 0; font-weight: 600; font-size: 0.88rem; }
+tr.group td { background: var(--bg); font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; color: var(--fg); padding-block: 8px; }
+td.n { font-variant-numeric: tabular-nums; color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem; }
+
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 0.74rem; font-weight: 500; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.own-web { color: var(--own-web); background: var(--own-web-bg); }
+.own-noc { color: var(--own-noc); background: var(--own-noc-bg); }
+.own-rtu { color: var(--own-rtu); background: var(--own-rtu-bg); }
+.out-ok { color: var(--ok); background: var(--ok-bg); }
+.out-bad { color: var(--bad); background: var(--bad-bg); }
+.out-skip { color: var(--skip); background: var(--skip-bg); }
+.out-wait { color: var(--wait); background: transparent; border: 1px solid var(--wait); }
+.flag { font-size: 0.8rem; color: var(--muted); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls input[type="search"] {
+  font: inherit; font-size: 0.9rem; padding: 7px 12px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface); color: var(--fg); min-width: 0; width: min(320px, 100%);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer;
+}
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.count { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.notes { display: grid; gap: 12px; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; max-width: 80ch; }
+.note.warn { border-left-color: var(--own-noc); }
+pre.sql { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.55; }
+.sqlblock { display: grid; gap: 6px; }
+.sqlblock p { color: var(--muted); font-size: 0.9rem; }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Remote-resolve pipeline · RT database</div>
+    <h1>Pipeline State Reference</h1>
+    <p class="lede">Every <b>state</b> a remote-resolve pipeline run can pass through, and every <b>event</b> written to <code>pipeline_run_events</code>, collected straight from the code (rt_web_ui, noc_automation, rtutil, rtdatacore). Use it when reading the database tables or finding where a run is stuck.</p>
+    <div class="facts"><span>States <b>20</b></span><span>Terminal <b>10</b></span><span>Events <b>34</b></span><span>Components <b>7</b></span><span>Checked <b>2026-10-13</b></span></div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#tables">Tables</a><a href="#flow">State flow</a><a href="#states">States</a><a href="#events">Events</a><a href="#retry">retry_jobs</a>
+    </nav>
+  </header>
+
+  <section id="tables" class="stack">
+    <h2>How the three tables relate</h2>
+    <div class="tables3">
+      <div class="tcard">
+        <h3><code>pipeline_runs</code></h3>
+        <p>One row per run. <code>current_state</code> says <b>where the run is now</b>, <code>last_state_reason</code> why, and <code>completed_at</code> when it reached a terminal state.</p>
+      </div>
+      <div class="tcard">
+        <h3><code>pipeline_run_events</code></h3>
+        <p>Append-only history. One row per state change (<code>from_state</code> → <code>to_state</code>) and per step that does not change the state (<code>from_state = to_state</code>): <b>how the run got there</b>.</p>
+      </div>
+      <div class="tcard">
+        <h3><code>retry_jobs</code></h3>
+        <p>A job the Retry Worker runs later when the Node-RED fetch or the Kafka publish fails. The job being retried is linked from <code>pipeline_runs.active_retry_job_id</code>.</p>
+      </div>
+    </div>
+    <p class="prose">All three tables are joined on <code>run_id</code> (a UUID, <code>CHAR(36)</code>). There is no foreign key; the applications keep the reference consistent.</p>
+  </section>
+
+  <section id="flow" class="stack">
+    <h2>State flow</h2>
+    <p class="prose">The normal path runs left to right; a failure stops the run in a terminal state. <code>PUBLISHED</code> is <b>not</b> terminal: the decision has reached Kafka and rtutil still has to pick it up, so <code>completed_at</code> stays empty.</p>
+    <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  OPEN["(blank)<br/>rt_web_ui opened"] -->|gate failed| NE[NOT_ELIGIBLE]
+  OPEN -->|payload_submitted| SUB[SUBMITTED_TO_API]
+  SUB -->|api_unreachable| AU[API_UNREACHABLE]
+  SUB -->|api_rejected| AR[API_REJECTED]
+  SUB -->|api_received| REC[RECEIVED]
+  REC -->|node_red_fetch_started| FET[FETCHING_CPE_STATUS]
+  FET -->|cpe_not_found| CNF[CPE_NOT_FOUND]
+  FET -->|cpe_fetch_retry_scheduled| CRS[CPE_FETCH_RETRY_SCHEDULED]
+  FET -->|workflow_evaluated| WE[WORKFLOW_EVALUATED]
+  FET -->|retry disabled| FP[FAILED_PERMANENT]
+  CRS -->|workflow_evaluated| WE
+  CRS -->|cpe_not_found_on_retry| CNF
+  CRS -->|retry_attempts_exhausted| FP
+  WE -->|kafka_published| PUB[PUBLISHED]
+  WE -->|kafka_publish_retry_scheduled| KRS[KAFKA_PUBLISH_RETRY_SCHEDULED]
+  WE -->|retry disabled| FP
+  KRS -->|kafka_published| PUB
+  KRS -->|retry_attempts_exhausted| FP
+  PUB -->|kafka_consumed| CON[CONSUMED]
+  PUB -->|publish_consume_timeout| FP
+  CON -->|consume_validation_failed| CVF[CONSUME_VALIDATION_FAILED]
+  CON -->|rt_ticket_fetch_failed| RUF[RT_UPDATE_FAILED]
+  CON -->|bcs_update_started| BCS[BCS_UPDATING]
+  CON -->|rt_update_started| RTU[RT_UPDATING]
+  BCS -->|rt_update_started| RTU
+  RTU -->|rt_update_failed| RUF
+  RTU -->|rt_updated| DONE[COMPLETED]
+  classDef ok fill:#e2f3e8,stroke:#1f7a46,color:#14321f
+  classDef bad fill:#fbe6e4,stroke:#b3261e,color:#3d0f0b
+  classDef skip fill:#ebeff0,stroke:#5b6b6d,color:#1b2526
+  classDef step fill:#ffffff,stroke:#5b6b6d,color:#1b2526
+  class DONE ok
+  class NE,AU,AR,CNF,FP,CVF,RUF bad
+  class OPEN,SUB,REC,FET,CRS,WE,KRS,PUB,CON,BCS,RTU step
+</pre>
+    </div>
+    <div class="legend"><span><span class="pill out-ok">COMPLETED</span> success</span><span><span class="pill out-bad">terminal fail</span> manual check / not eligible</span><span>white = run still in progress</span></div>
+  </section>
+
+  <section id="states" class="stack">
+    <h2>All states</h2>
+    <p class="prose"><b>Owner</b> is the service that writes the state. <b>Report</b> is the pipeline_report card / bucket it is counted in (<code>in_progress</code> while not terminal).</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>State</th><th>Owner</th><th>Terminal</th><th>Report (card · bucket)</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="5">rt_web_ui — takes the ticket from the RT Web UI and sends it to the API</td></tr>
+          <tr><td class="k"><code>""</code> (blank)</td><td><span class="pill own-web">rt_web_ui</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>rt_web_ui has just opened the run row, before the gates run. It moves on straight away</td></tr>
+          <tr><td class="k"><code>NOT_ELIGIBLE</code></td><td><span class="pill own-web">rt_web_ui</span></td><td>✔</td><td><span class="pill out-skip">not_eligible</span></td><td>A gate failed (not the NOC queue, status not allowed, CPE / Local Service ID missing, OPI customer, Service Type not eligible): "No Process". The event names the gate</td></tr>
+          <tr><td class="k"><code>SUBMITTED_TO_API</code></td><td><span class="pill own-web">rt_web_ui</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>All gates passed; the payload is being sent to the RT External API</td></tr>
+          <tr><td class="k"><code>API_UNREACHABLE</code></td><td><span class="pill own-web">rt_web_ui</span></td><td>✔</td><td><span class="pill out-bad">manual_check · api_error</span></td><td>The API could not be reached or timed out</td></tr>
+          <tr><td class="k"><code>API_REJECTED</code></td><td><span class="pill own-web">rt_web_ui</span></td><td>✔</td><td><span class="pill out-bad">manual_check · validation_failed (400) / api_error</span></td><td>The API answered something other than 200 (400 validation, 409 run_id already used, 5xx). The HTTP code is in the event's <code>detail.http_status</code></td></tr>
+          <tr><td class="k"><code>ALREADY_PROCESSED</code></td><td><span class="pill own-web">rt_web_ui</span></td><td>✔</td><td><span class="pill out-skip">not_eligible</span></td><td><b>No writer yet.</b> Reserved for the 24-hour duplicate ticket check</td></tr>
+
+          <tr class="group"><td colspan="5">noc_automation — Node-RED CPE status, workflow decision, Kafka publish, retries</td></tr>
+          <tr><td class="k"><code>RECEIVED</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>The API accepted the run (took over the run rt_web_ui opened)</td></tr>
+          <tr><td class="k"><code>FETCHING_CPE_STATUS</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>Fetching the CPE status from Node-RED</td></tr>
+          <tr><td class="k"><code>CPE_FETCH_RETRY_SCHEDULED</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress (retrying)</span></td><td>Node-RED failed; a <code>NODE_RED_FETCH</code> job in <code>retry_jobs</code> is waiting to retry</td></tr>
+          <tr><td class="k"><code>CPE_NOT_FOUND</code></td><td><span class="pill own-noc">noc_automation</span></td><td>✔</td><td><span class="pill out-bad">manual_check · failed</span></td><td>Node-RED answered HTTP 404 (no such CPE). Not retried</td></tr>
+          <tr><td class="k"><code>WORKFLOW_EVALUATED</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>The workflow decided (<code>target_queue</code>, <code>is_remote_resolved</code>, <code>final_message</code> written)</td></tr>
+          <tr><td class="k"><code>KAFKA_PUBLISH_RETRY_SCHEDULED</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress (retrying)</span></td><td>The Kafka publish failed; a <code>KAFKA_PUBLISH</code> job is waiting to retry</td></tr>
+          <tr><td class="k"><code>PUBLISHED</code></td><td><span class="pill own-noc">noc_automation</span></td><td class="flag">— (continues)</td><td><span class="pill out-wait">in_progress (stuck if long)</span></td><td>The decision is on Kafka, waiting for rtutil to consume it. After 5 minutes the sweeper moves it to <code>FAILED_PERMANENT</code></td></tr>
+          <tr><td class="k"><code>FAILED_PERMANENT</code></td><td><span class="pill own-noc">noc_automation</span></td><td>✔</td><td><span class="pill out-bad">manual_check · failed</span></td><td>Retries used up, retries disabled, not consumed by rtutil (timeout), or unknown job type. The event says which</td></tr>
+
+          <tr class="group"><td colspan="5">rtutil (remote-resolved-queue-transfer) — Kafka consume, BCS, RT ticket update</td></tr>
+          <tr><td class="k"><code>CONSUMED</code></td><td><span class="pill own-rtu">rtutil</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>The Kafka message was read and the run claimed</td></tr>
+          <tr><td class="k"><code>CONSUME_VALIDATION_FAILED</code></td><td><span class="pill own-rtu">rtutil</span></td><td>✔</td><td><span class="pill out-bad">manual_check · validation_failed</span></td><td>The message failed validation (wrong queue, root cause, ...)</td></tr>
+          <tr><td class="k"><code>BCS_UPDATING</code></td><td><span class="pill own-rtu">rtutil</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>Calling CPEMS/BCS (remote-resolved tickets only). A BCS failure does not stop the run: it is recorded as <code>is_bcs_success = 0</code> and the run goes on</td></tr>
+          <tr><td class="k"><code>RT_UPDATING</code></td><td><span class="pill own-rtu">rtutil</span></td><td class="flag">—</td><td><span class="pill out-wait">in_progress</span></td><td>Updating the ticket through RT REST2</td></tr>
+          <tr><td class="k"><code>SKIPPED</code></td><td><span class="pill own-rtu">rtutil</span></td><td>✔</td><td><span class="pill out-skip">skipped</span></td><td>The ticket is already Pending / Resolved / Closed; nothing to change</td></tr>
+          <tr><td class="k"><code>RT_UPDATE_FAILED</code></td><td><span class="pill own-rtu">rtutil</span></td><td>✔</td><td><span class="pill out-bad">manual_check · failed</span></td><td>Reading or updating the RT ticket failed, or RT answered something other than 200</td></tr>
+          <tr><td class="k"><code>COMPLETED</code></td><td><span class="pill own-rtu">rtutil</span></td><td>✔</td><td><span class="pill out-ok">success</span></td><td>The RT ticket update succeeded. Tell remote resolved / transferred / kept in NOC apart with <code>is_remote_resolved</code> and <code>target_queue</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="events" class="stack">
+    <h2>All events (<code>pipeline_run_events.event</code>)</h2>
+    <p class="prose">A <b>To state</b> of — means the event does not change the state (<code>from_state = to_state</code>). <b>Detail</b> lists the keys in the <code>detail</code> JSON column.</p>
+    <div class="controls">
+      <label class="mono" for="q">Search</label>
+      <input id="q" type="search" placeholder="event, state or any text" autocomplete="off">
+      <div class="chips" role="group" aria-label="Filter by component" id="chips">
+        <button class="chip" type="button" data-c="" aria-pressed="true">all</button>
+        <button class="chip" type="button" data-c="rt_web_ui" aria-pressed="false">rt_web_ui</button>
+        <button class="chip" type="button" data-c="remote_resolve_service" aria-pressed="false">remote_resolve_service</button>
+        <button class="chip" type="button" data-c="retry_worker" aria-pressed="false">retry_worker</button>
+        <button class="chip" type="button" data-c="publish_timeout_sweeper" aria-pressed="false">publish_timeout_sweeper</button>
+        <button class="chip" type="button" data-c="rtutil_consumer" aria-pressed="false">rtutil_consumer</button>
+        <button class="chip" type="button" data-c="bcs_webhook" aria-pressed="false">bcs_webhook</button>
+        <button class="chip" type="button" data-c="bcs_result_sweeper" aria-pressed="false">bcs_result_sweeper</button>
+      </div>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <div class="scroll">
+      <table id="events-table">
+        <thead><tr><th>#</th><th>Event</th><th>Component</th><th>To state</th><th>When</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr data-c="rt_web_ui"><td class="n">1</td><td class="k"><code>not_in_noc_queue</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>NOT_ELIGIBLE</code></td><td>Gate: the ticket queue is not the NOC queue</td><td><code>gate</code>=noc_queue</td></tr>
+          <tr data-c="rt_web_ui"><td class="n">2</td><td class="k"><code>ticket_status_not_allowed</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>NOT_ELIGIBLE</code></td><td>Gate: the ticket status is not in the allowed list</td><td><code>gate</code>=ticket_status</td></tr>
+          <tr data-c="rt_web_ui"><td class="n">3</td><td class="k"><code>cpe_or_local_service_id_missing</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>NOT_ELIGIBLE</code></td><td>Gate: CPE ID or Local Service ID is empty</td><td><code>gate</code>=cpe_and_local_service_id</td></tr>
+          <tr data-c="rt_web_ui"><td class="n">4</td><td class="k"><code>opi_customer_excluded</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>NOT_ELIGIBLE</code></td><td>Gate: OPI customer (opi_site_code is set)</td><td><code>gate</code>=opi</td></tr>
+          <tr data-c="rt_web_ui"><td class="n">5</td><td class="k"><code>service_type_not_eligible</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>NOT_ELIGIBLE</code></td><td>Gate: the Service Type is not in the eligible list</td><td><code>gate</code>=service_type</td></tr>
+          <tr data-c="rt_web_ui"><td class="n">6</td><td class="k"><code>payload_submitted</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>SUBMITTED_TO_API</code></td><td>All gates passed, just before the POST to the API</td><td><code>url</code>, <code>bytes</code></td></tr>
+          <tr data-c="rt_web_ui"><td class="n">7</td><td class="k"><code>api_unreachable</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>API_UNREACHABLE</code> / —</td><td>The API could not be reached. If the API already took the run over, only the event is written</td><td><code>error</code></td></tr>
+          <tr data-c="rt_web_ui"><td class="n">8</td><td class="k"><code>api_accepted</code></td><td><span class="pill own-web">rt_web_ui</span></td><td>—</td><td>The API answered HTTP 200 (the state is left alone because the API may already have moved the run on)</td><td><code>http_status</code>, <code>message</code></td></tr>
+          <tr data-c="rt_web_ui"><td class="n">9</td><td class="k"><code>api_rejected</code></td><td><span class="pill own-web">rt_web_ui</span></td><td><code>API_REJECTED</code> / —</td><td>The API answered something other than 200 (400, 409, 5xx)</td><td><code>http_status</code>, <code>message</code></td></tr>
+
+          <tr data-c="remote_resolve_service"><td class="n">10</td><td class="k"><code>api_received</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>RECEIVED</code></td><td>The API takes over the run rt_web_ui opened (only from <code>SUBMITTED_TO_API</code>, otherwise 409). For an unknown run_id it creates a <code>RECEIVED</code> row and writes no event</td><td>—</td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">11</td><td class="k"><code>node_red_fetch_started</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>FETCHING_CPE_STATUS</code></td><td>Background processing starts, before calling Node-RED</td><td>—</td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">12</td><td class="k"><code>cpe_not_found</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>CPE_NOT_FOUND</code></td><td>Node-RED 404</td><td>—</td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">13</td><td class="k"><code>cpe_fetch_retry_scheduled</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>CPE_FETCH_RETRY_SCHEDULED</code></td><td>Node-RED error other than 404 with retries enabled: a retry job is created</td><td><code>error</code>, <code>max_attempts</code></td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">14</td><td class="k"><code>cpe_fetch_failed_retry_disabled</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>FAILED_PERMANENT</code></td><td>Node-RED error with retries disabled</td><td>—</td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">15</td><td class="k"><code>workflow_evaluated</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>WORKFLOW_EVALUATED</code></td><td>The workflow decided (target_queue, final_message, onu_serial, olt_hostname, ca1, uplink written)</td><td><code>node_red_response</code>, <code>workflow_decision</code></td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">16</td><td class="k"><code>kafka_publish_retry_scheduled</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>KAFKA_PUBLISH_RETRY_SCHEDULED</code></td><td>The Kafka publish failed with retries enabled</td><td><code>error</code>, <code>max_attempts</code></td></tr>
+          <tr data-c="remote_resolve_service"><td class="n">17</td><td class="k"><code>kafka_publish_failed_retry_disabled</code></td><td><span class="pill own-noc">remote_resolve_service</span></td><td><code>FAILED_PERMANENT</code></td><td>The Kafka publish failed with retries disabled</td><td>—</td></tr>
+          <tr data-c="remote_resolve_service retry_worker"><td class="n">18</td><td class="k"><code>kafka_published</code></td><td><span class="pill own-noc">remote_resolve_service</span> <span class="pill own-noc">retry_worker</span></td><td><code>PUBLISHED</code></td><td>The Kafka publish succeeded (normal path or from a retry)</td><td>—</td></tr>
+
+          <tr data-c="retry_worker"><td class="n">19</td><td class="k"><code>retry_claimed</code></td><td><span class="pill own-noc">retry_worker</span></td><td><code>…_RETRY_SCHEDULED</code> (same)</td><td>The worker claimed the retry job (self-transition)</td><td>—</td></tr>
+          <tr data-c="retry_worker"><td class="n">20</td><td class="k"><code>retry_attempt_failed</code></td><td><span class="pill own-noc">retry_worker</span></td><td><code>…_RETRY_SCHEDULED</code> (same)</td><td>A retry failed with attempts left: rescheduled</td><td>—</td></tr>
+          <tr data-c="retry_worker"><td class="n">21</td><td class="k"><code>retry_attempts_exhausted</code></td><td><span class="pill own-noc">retry_worker</span></td><td><code>FAILED_PERMANENT</code></td><td>No attempts left</td><td><code>error</code>, <code>attempt</code>, <code>max_attempts</code></td></tr>
+          <tr data-c="retry_worker"><td class="n">22</td><td class="k"><code>cpe_not_found_on_retry</code></td><td><span class="pill own-noc">retry_worker</span></td><td><code>CPE_NOT_FOUND</code></td><td>Node-RED answered 404 on a retry</td><td><code>error</code>, <code>attempt</code>, <code>max_attempts</code></td></tr>
+          <tr data-c="retry_worker"><td class="n">23</td><td class="k"><code>unknown_job_type</code></td><td><span class="pill own-noc">retry_worker</span></td><td><code>FAILED_PERMANENT</code></td><td>Unknown job type</td><td>—</td></tr>
+          <tr data-c="retry_worker"><td class="n">—</td><td class="k"><code>workflow_evaluated</code>, <code>kafka_publish_retry_scheduled</code></td><td><span class="pill own-noc">retry_worker</span></td><td>(as #15, #16)</td><td>After a successful CPE retry: workflow evaluated again / publish failed</td><td>(as #15, #16)</td></tr>
+
+          <tr data-c="publish_timeout_sweeper"><td class="n">24</td><td class="k"><code>publish_consume_timeout</code></td><td><span class="pill own-noc">publish_timeout_sweeper</span></td><td><code>FAILED_PERMANENT</code></td><td>In <code>PUBLISHED</code> longer than <code>PUBLISHED_TIMEOUT_MINUTES</code> (default 5): rtutil never consumed it</td><td><code>published_at</code>, <code>timeout_minutes</code></td></tr>
+
+          <tr data-c="rtutil_consumer"><td class="n">25</td><td class="k"><code>kafka_consumed</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>CONSUMED</code></td><td>The Kafka message was read and the run claimed (skipped when the run is already terminal)</td><td><code>topic</code>, <code>partition</code>, <code>offset</code></td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">26</td><td class="k"><code>consume_validation_failed</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>CONSUME_VALIDATION_FAILED</code></td><td>The message failed validation</td><td>—</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">27</td><td class="k"><code>rt_ticket_fetch_failed</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>RT_UPDATE_FAILED</code></td><td>The RT ticket could not be read</td><td>—</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">28</td><td class="k"><code>bcs_update_started</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>BCS_UPDATING</code></td><td>Remote-resolved ticket, before calling CPEMS/BCS</td><td>—</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">29</td><td class="k"><code>bcs_job_queued</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td>—</td><td>BCS accepted the job (<code>ref_bcs_process_id</code> written)</td><td>BCS 202 response body</td></tr>
+          <tr data-c="rtutil_consumer bcs_webhook bcs_result_sweeper"><td class="n">30</td><td class="k"><code>bcs_update_failed</code></td><td><span class="pill own-rtu">rtutil_consumer</span> <span class="pill own-noc">bcs_webhook</span> <span class="pill own-noc">bcs_result_sweeper</span></td><td><code>BCS_UPDATING</code> (same) / —</td><td>BCS failed: the rtutil call failed, the webhook said FAILED, or the sweeper's poll failed / timed out. <code>is_bcs_success = 0</code></td><td>webhook / poll body</td></tr>
+          <tr data-c="bcs_webhook bcs_result_sweeper"><td class="n">31</td><td class="k"><code>bcs_update_succeeded</code></td><td><span class="pill own-noc">bcs_webhook</span> <span class="pill own-noc">bcs_result_sweeper</span></td><td>—</td><td>BCS succeeded (webhook SUCCESS or sweeper poll <code>done</code>). <code>is_bcs_success = 1</code>, channels written</td><td>webhook / poll body</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">32</td><td class="k"><code>rt_update_started</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>RT_UPDATING</code></td><td>Before the RT REST2 update</td><td>—</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">33</td><td class="k"><code>rt_update_failed</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>RT_UPDATE_FAILED</code></td><td>The RT update errored or did not answer 200</td><td>—</td></tr>
+          <tr data-c="rtutil_consumer"><td class="n">34</td><td class="k"><code>rt_updated</code></td><td><span class="pill own-rtu">rtutil_consumer</span></td><td><code>COMPLETED</code></td><td>The RT update answered 200 (ticket_status updated)</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="retry" class="stack">
+    <h2><code>retry_jobs</code> values</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Column</th><th>Value</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><code>status</code></td><td><code>PENDING</code></td><td>Waiting for <code>next_retry_at</code></td></tr>
+          <tr><td class="k"><code>status</code></td><td><code>RETRYING</code></td><td>Claimed by a worker (<code>locked_by</code>, <code>locked_at</code>). A lock older than 5 minutes can be taken over by another worker</td></tr>
+          <tr><td class="k"><code>status</code></td><td><code>RESOLVED</code></td><td>The retry succeeded (<code>resolved_at</code>)</td></tr>
+          <tr><td class="k"><code>status</code></td><td><code>FAILED_PERMANENT</code></td><td>No attempts left (<code>attempt_count = max_attempts</code>) or an error a retry cannot fix</td></tr>
+          <tr><td class="k"><code>job_type</code></td><td><code>NODE_RED_FETCH</code></td><td>Repeats the Node-RED CPE status fetch (the whole pipeline replays from there)</td></tr>
+          <tr><td class="k"><code>job_type</code></td><td><code>KAFKA_PUBLISH</code></td><td>Publishes the already-evaluated payload to Kafka again</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose">Backoff: <code>RETRY_WORKER_BACKOFF_SCHEDULE</code> (default <code>1m,3m,5m</code>); the number of entries is <code>max_attempts</code> (default 3).</p>
+  </section>
+
+  <footer>Source: rtdatacore <code>entities/pipeline_run.go</code> (states); rt_web_ui <code>gates.go</code> / <code>tracker.go</code>; noc_automation <code>services/</code>, <code>retry_worker/</code>, <code>publish_sweeper/</code>, <code>bcs_sweeper/</code>, <code>helpers/</code>; rtutil <code>internal/services/</code>; pipeline_report <code>report.go</code>. Schema: <code>rt_web_ui/FinalSql/*.sql</code>.</footer>
+</div>
+
+<script>
+(function () {
+  var q = document.getElementById('q');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('#chips .chip'));
+  var rows = Array.prototype.slice.call(document.querySelectorAll('#events-table tbody tr'));
+  var count = document.getElementById('count');
+  var comp = '';
+  function apply() {
+    var term = q.value.trim().toLowerCase();
+    var shown = 0;
+    rows.forEach(function (r) {
+      var okComp = !comp || (' ' + r.getAttribute('data-c') + ' ').indexOf(' ' + comp + ' ') >= 0;
+      var okText = !term || r.textContent.toLowerCase().indexOf(term) >= 0;
+      r.hidden = !(okComp && okText);
+      if (!r.hidden) shown++;
+    });
+    count.textContent = shown + ' / ' + rows.length + ' rows';
+  }
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      comp = c.getAttribute('data-c');
+      chips.forEach(function (o) { o.setAttribute('aria-pressed', o === c ? 'true' : 'false'); });
+      apply();
+    });
+  });
+  q.addEventListener('input', apply);
+  apply();
+})();
+</script>
+
+<!-- Local copy: the claude.ai viewer draws the Mermaid diagram itself; here it
+     loads from a CDN, so the diagram (and the web fonts) need internet. -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  (function () {
+    if (typeof mermaid === 'undefined') return;
+    var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict', theme: dark ? 'dark' : 'neutral',
+                         flowchart: { useMaxWidth: false } });
+  })();
+</script>
+</body>
+</html>

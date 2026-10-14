@@ -49,7 +49,6 @@ CREATE TABLE `retry_jobs` (
   -- so locks, the whole table.
   KEY `idx_retry_jobs_claim` (`status`, `next_retry_at`),
   CONSTRAINT `chk_retry_jobs_status`   CHECK (`status` IN ('PENDING','RETRYING','RESOLVED','FAILED_PERMANENT')),
-  CONSTRAINT `chk_retry_jobs_job_type` CHECK (`job_type` IN ('NODE_RED_FETCH','KAFKA_PUBLISH')),
   CONSTRAINT `chk_retry_jobs_attempts` CHECK (`attempt_count` <= `max_attempts`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Failed pipeline stages waiting to be retried by the Retry Worker';

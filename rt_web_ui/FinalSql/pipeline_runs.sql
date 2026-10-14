@@ -19,9 +19,9 @@ CREATE TABLE `pipeline_runs` (
   -- Ticket, from the RT request (written when the run is opened)
   `ticket_id` bigint(20) unsigned DEFAULT NULL
     COMMENT 'RT ticket ID',
-  `ticket_no` varchar(64) DEFAULT NULL
-    COMMENT 'RT ticket number custom field (e.g. Jun22-TKT-384)',
-  `service_area` varchar(128) DEFAULT NULL
+  `ticket_no` varchar(30) DEFAULT NULL
+    COMMENT 'RT ticket number custom field (e.g. Jun22-TKT-2065375)',
+  `service_area` varchar(50) DEFAULT NULL
     COMMENT 'Service area custom field of the ticket',
   `township` VARCHAR(45) DEFAULT NULL
     COMMENT 'Township custom field of the ticket',
@@ -29,9 +29,9 @@ CREATE TABLE `pipeline_runs` (
     COMMENT 'When the RT ticket was created',
   `tags` varchar(512) DEFAULT NULL
     COMMENT 'Ticket tags, comma-separated; no writer yet (the tags are in rt_request_snapshot)',
-  `ticket_problem` varchar(255) DEFAULT NULL
+  `ticket_problem` varchar(45) DEFAULT NULL
     COMMENT 'Ticket Problem custom field of the ticket',
-  `ticket_status` varchar(64) DEFAULT NULL
+  `ticket_status` varchar(20) DEFAULT NULL
     COMMENT 'RT ticket status as received; overwritten by rtutil at COMPLETED with the status its RT update set',
 
   -- CPE and network, from Node-RED (written by noc_automation)
@@ -43,7 +43,7 @@ CREATE TABLE `pipeline_runs` (
     COMMENT 'Peppermint BCS async job_id (UUID), set by rtutil when the BCS job is queued; '''' until then',
   `onu_serial` varchar(30) DEFAULT NULL
     COMMENT 'ONU serial number from the Node-RED CPE status',
-  `olt_hostname` varchar(65) DEFAULT NULL
+  `olt_hostname` varchar(30) DEFAULT NULL
     COMMENT 'OLT hostname from the Node-RED CPE status (e.g. OVF-ATAF02ZHRY)',
   `ca1` varchar(30) DEFAULT NULL
     COMMENT 'CA1 device name from the Node-RED CPE status',
@@ -67,13 +67,13 @@ CREATE TABLE `pipeline_runs` (
     COMMENT 'Status or error message returned by CPEMS/BCS',
   `final_message` text DEFAULT NULL
     COMMENT 'Comment the workflow decided to add to the RT ticket',
-  `before_queue` varchar(128) DEFAULT NULL
+  `before_queue` varchar(45) DEFAULT NULL
     COMMENT 'Ticket queue as received, before the workflow decision',
-  `target_queue` varchar(128) DEFAULT NULL
+  `target_queue` varchar(45) DEFAULT NULL
     COMMENT 'Queue the workflow moves the ticket to (same as before_queue when kept in NOC)',
-  `before_bcs_channel` smallint(5) unsigned DEFAULT NULL
+  `before_bcs_channel` tinyint(5) unsigned DEFAULT NULL
     COMMENT 'CPE WiFi channel before the BCS change (e.g. 1, 6, 11); no writer yet',
-  `target_bcs_channel` smallint(5) unsigned DEFAULT NULL
+  `target_bcs_channel` tinyint(5) unsigned DEFAULT NULL
     COMMENT 'CPE WiFi channel set by BCS (e.g. 1, 6, 11); no writer yet',
   `rt_request_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
     COMMENT 'The ticket JSON as received from the RT Web UI, for audit and replay'
@@ -92,16 +92,11 @@ CREATE TABLE `pipeline_runs` (
   UNIQUE KEY `idx_pipeline_runs_run_id` (`run_id`),
   -- Lookups by ticket or CPE (reports, "has this ticket been processed").
   KEY `idx_pipeline_runs_ticket_id` (`ticket_id`),
-  KEY `idx_pipeline_runs_ticket_no` (`ticket_no`),
   KEY `idx_pipeline_runs_cpe_id` (`cpe_id`),
-  -- BCS webhook / result sweeper look the run up by its BCS job_id.
-  KEY `idx_pipeline_runs_ref_bcs_process_id` (`ref_bcs_process_id`),
   -- Report filters.
   KEY `idx_pipeline_runs_township` (`township`),
   KEY `idx_pipeline_runs_ticket_status` (`ticket_status`),
   -- Runs in a state since a time (stuck-run sweeper, per-state report counts).
-  KEY `idx_pipeline_runs_state_created` (`current_state`,`created_at`),
-  -- Runs of a day (pipeline_report's date window).
-  KEY `idx_pipeline_runs_created_at` (`created_at`)
+  KEY `idx_pipeline_runs_state_created` (`current_state`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci
   COMMENT='Current state and business result of each remote-resolve pipeline run';

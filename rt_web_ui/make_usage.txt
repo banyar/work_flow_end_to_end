@@ -8,7 +8,24 @@ make send-criteria C=20_kept_olt_offline    # OLT Offline → "Kept in NOC"
 
 make check NOC_ENV=../../NocAutomationCodeMerge/noc_automation/.env
 
+tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/pipeline_report.log
+
+cd /home/banyar-sithu/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui
+
+
+# Live ကြည့်
+tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/noc_automation.log
+
+# Run တစ်ခုချင်းစီရဲ့ log ကို run_id နဲ့ ရှာ
+grep -n '<run_id>' ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/noc_automation.log
+
+# Error တွေပဲ ကြည့်
+grep -n '"severity": "ERROR"' ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/noc_automation.log
+
+
 make criteria-mock-stop 
+make criteria-mock-up    
+make criteria-mock
 
 kill $(cat .run/rtutil.pid)
 make check            # → ! rtutil consumer   local process not found
