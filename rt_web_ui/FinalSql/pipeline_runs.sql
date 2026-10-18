@@ -1,5 +1,5 @@
 CREATE TABLE `pipeline_runs` (
-  `id` int(10) unsigned NOT NULL COMMENT 'Internal auto-increment primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal auto-increment primary key',
   `run_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'UUID of the pipeline run, shared by pipeline_run_events, retry_jobs and the Kafka message',
   `ticket_id` bigint(20) unsigned DEFAULT NULL COMMENT 'RT ticket ID',
   `ticket_no` varchar(30) DEFAULT NULL COMMENT 'RT ticket number custom field (e.g. Jun22-TKT-2065375)',
@@ -38,4 +38,4 @@ CREATE TABLE `pipeline_runs` (
   KEY `idx_pipeline_runs_township` (`township`),
   KEY `idx_pipeline_runs_ticket_status` (`ticket_status`),
   KEY `idx_pipeline_runs_state_created` (`current_state`,`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='Current state and business result of each remote-resolve pipeline run'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Current state and business result of each remote-resolve pipeline run'

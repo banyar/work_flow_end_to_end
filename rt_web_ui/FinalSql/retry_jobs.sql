@@ -1,5 +1,5 @@
 CREATE TABLE `retry_jobs` (
-  `id` int(10) unsigned NOT NULL COMMENT 'Internal auto-increment primary key; referenced by pipeline_runs.active_retry_job_id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal auto-increment primary key; referenced by pipeline_runs.active_retry_job_id',
   `run_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'UUID of the pipeline run this job retries (pipeline_runs.run_id; logical reference, no foreign key)',
   `job_type` varchar(32) NOT NULL COMMENT 'Stage to retry: NODE_RED_FETCH (CPE status fetch) or KAFKA_PUBLISH (publish the evaluated payload)',
   `ticket_id` bigint(20) unsigned NOT NULL COMMENT 'Related RT ticket ID (same as pipeline_runs.ticket_id)',
