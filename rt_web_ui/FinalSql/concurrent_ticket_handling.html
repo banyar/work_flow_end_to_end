@@ -57,6 +57,7 @@
   <p class="meta">2026-10-18 · Remote-resolve pipeline · Design (implementation မလုပ်ရသေး)</p>
 
   <p class="lead">Ticket တစ်စောင်တည်းကို tab များများ၊ user နှစ်ယောက်၊ API တိုက်ရိုက်ခေါ်တာ ဘယ်လိုပဲ ပြိုင်တူ ပို့ပို့ <b>database ရဲ့ unique index က တစ်ခုပဲ လက်ခံပြီး ကျန်တာကို ပယ်ပါမယ်</b>။ DB အတွင်းမှာ InnoDB row lock နဲ့ လုပ်တာဖြစ်လို့ application ဘက်မှာ lock code ရေးစရာ မလိုပါ။</p>
+  <p><b>အကြံပြုချက်အနှစ်ချုပ်:</b> နည်းငါးမျိုး နှိုင်းယှဉ်ပြီး <a href="#recommend">Section 12</a> မှာ <b>DB unique index + lazy takeover</b> ကို အကြံပြုထားပြီး <a href="#plan">Section 13</a> မှာ အသေးစိတ် plan ရှိပါတယ်။</p>
 
   <h2>1. လက်ရှိ ဖြစ်ပုံ</h2>
   <p>လက်ရှိ code က ပြိုင်တူ request ကို မတားပါ။ နှိပ်တိုင်း <code>run_id</code> (UUID) အသစ် ထုတ်ပြီး <code>ticket_id</code> ကို ဘယ်နေရာမှ မစစ်တဲ့အတွက် ငါးခါနှိပ်ရင် run ငါးခု သီးခြားစီ ဖြစ်ပါတယ်။</p>
@@ -407,6 +408,373 @@ curl / script ─┘                 ├─ RT Web UI node 4 ─┤        │
     <li>Re-open ကို ခြွင်းချက်ပေးမလား၊ window ဘယ်လောက်ထားမလဲ <b>business ဘက်က ဆုံးဖြတ်ရပါမယ်</b>။</li>
     <li>Redis ကို သုံးချင်ရင် DB query ကို မြန်အောင် <b>cache</b> အဖြစ်ပဲ သုံးပါ (key မရှိရင် DB ကို ပြန်ကြည့်)။ ဆုံးဖြတ်ချက်ကို Redis ပေါ် မမှီခိုစေပါနဲ့။</li>
   </ul>
+
+  <h2>10. Idempotency key: run_id ကို ticket ကနေ တွက်ထုတ်ခြင်း</h2>
+  <p><b>Idempotency key</b> ဆိုတာ <b>"input တူရင် ID တူ ထွက်တာ"</b> ပါ။ run_id ကို random မထုတ်ဘဲ ticket ရဲ့ အခြေအနေကနေ တွက်ထုတ်ရင် ပြိုင်တူ ပို့တဲ့ request တွေက run_id တူ ရပြီး DB ရဲ့ <b>ရှိပြီးသား</b> <code>run_id</code> unique index က တစ်ခုပဲ လက်ခံပါတယ်။ Schema မပြောင်းရတာ အားသာချက်ပါ။ ဒါပေမဲ့ ticket ပြောင်းသွားရင် ID ပါ ပြောင်းလို့ DB unique index (Section 2) လောက် မခိုင်ပါ။</p>
+
+  <h3>လက်ရှိ ဘယ်လိုလဲ</h3>
+  <p>RT Web UI က နှိပ်တိုင်း <b>random UUID</b> ထုတ်ပါတယ်။ ငါးခါနှိပ်ရင် run_id ငါးမျိုး ထွက်ပြီး DB က "run ငါးခု မတူဘူး" လို့ ထင်လို့ ငါးခုလုံး လက်ခံပါတယ်။</p>
+
+  <h3>Idempotency key နဲ့ဆိုရင်</h3>
+<pre><code>run_id = UUIDv5(namespace, "&lt;ticket_id&gt;:&lt;ticket ရဲ့ နောက်ဆုံး transaction id&gt;")</code></pre>
+  <ul>
+    <li><b>UUIDv5</b> က namespace နဲ့ စာသားကို hash (SHA-1) လုပ်ပြီး UUID ပုံစံ ထုတ်ပေးပါတယ်။ Random မပါလို့ <b>input တူရင် အမြဲ output တူ</b> ပါတယ်။ ဘယ် server၊ ဘယ်အချိန်မှာ တွက်တွက် အတူတူပါပဲ။</li>
+    <li><b>namespace</b> က system အတွက် သတ်မှတ်ထားတဲ့ UUID ကိန်းသေ တစ်ခုပါ။ RT Web UI node ငါးခုလုံး တူတူ သုံးရပါမယ်။</li>
+  </ul>
+  <p>ဥပမာ (တကယ် တွက်ကြည့်ထားတာ):</p>
+  <div class="wrap"><table>
+    <thead><tr><th>Key</th><th>run_id</th><th>မှတ်ချက်</th></tr></thead>
+    <tbody>
+      <tr><td><code>384:98765</code></td><td><code>e1268d18-3b11-59ca-…</code></td><td>Click 1</td></tr>
+      <tr><td><code>384:98765</code></td><td><code>e1268d18-3b11-59ca-…</code></td><td>Click 2, ticket မပြောင်း → <b>ID တူ</b></td></tr>
+      <tr><td><code>384:98770</code></td><td><code>d2a17a15-fb4a-5383-…</code></td><td>Ticket ပြောင်းပြီ (transaction အသစ်) → ID အသစ်</td></tr>
+      <tr><td><code>384:98765:retry1</code></td><td><code>0d2ede41-08cb-5638-…</code></td><td>Retry counter ထည့် → ID အသစ်</td></tr>
+    </tbody>
+  </table></div>
+  <p>ငါးခါ ပြိုင်တူ နှိပ်ရင်:</p>
+  <div class="wrap"><table>
+    <thead><tr><th>Click</th><th>run_id</th><th>DB ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>e1268d18…</code></td><td class="ok">INSERT အောင်</td></tr>
+      <tr><td>2–5</td><td><code>e1268d18…</code> (တူ)</td><td class="bad"><code>1062 Duplicate entry … for key 'idx_pipeline_runs_run_id'</code></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>ပယ်တာက <code>run_id</code> ပေါ်မှာ <b>ရှိပြီးသား</b> unique index ဖြစ်လို့ schema မပြောင်းရပါ။ DB အတွင်းမှာ InnoDB row lock နဲ့ တစ်ခုချင်း စီပုံက Section 3 နဲ့ အတူတူပါ။ Node ငါးခုကနေ လာလည်း တစ်ခုပဲ အောင်ပါတယ်။</li>
+    <li>ငြင်းတာက noc ရဲ့ 409 မဟုတ်ပါ။ <b>RT Web UI က run row insert လုပ်တဲ့နေရာမှာ</b> ကတည်းက <code>1062</code> နဲ့ ငြင်းပါတယ်။ လက်ရှိ code က ဒီ error ကို ကိုင်တွယ်တာ မရှိလို့ <code>open pipeline run: Error 1062</code> ဆိုတဲ့ error ပြပါမယ်။ ဒါကြောင့် <b>"already being processed" လို့ ပြအောင် code ထည့်ရပါမယ်</b>။</li>
+    <li>noc ရဲ့ 409 "run_id already in use" က RT Web UI ကို မဖြတ်ဘဲ API ကို တိုက်ရိုက်ခေါ်ပြီး run_id ထပ်သုံးတဲ့ case ကိုပဲ ကာကွယ်ပါတယ်။</li>
+  </ul>
+
+  <h3>Key ထဲ ဘာထည့်မလဲ</h3>
+  <p>လက်ရှိ RT Web UI ပို့တဲ့ ticket JSON ထဲမှာ <code>id, status, queue, created, started, resolved</code> ပဲ ပါပါတယ်။ <b>LastUpdated ရော transaction id ပါ မပါပါ</b>။ ဒါကြောင့် RT Web UI က နှိပ်တဲ့အချိန် RT DB ကနေ ဖတ်ရပါမယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>ရွေးစရာ</th><th>ဖတ်ပုံ</th><th>အားသာ</th><th>အားနည်း</th></tr></thead>
+    <tbody>
+      <tr><td><code>Tickets.LastUpdated</code></td><td>Ticket row ထဲမှာ ရှိပြီးသား</td><td>ဖတ်ရလွယ်</td><td><b>စက္ကန့်အထိပဲ တိကျ</b>: တစ်စက္ကန့်အတွင်း ၂ ခါ ပြောင်းရင် key တူ ထွက်နိုင်</td></tr>
+      <tr class="pick"><td>နောက်ဆုံး transaction id</td><td><code>SELECT MAX(id) FROM Transactions WHERE ObjectType='RT::Ticket' AND ObjectId=?</code></td><td>ပြောင်းတိုင်း အမြဲ တိုး၊ တိကျ</td><td>Query တစ်ကြောင်း ပိုဖတ်ရ</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>အကြံပြုချက်:</b> transaction id ကို သုံးပါ။</p>
+
+  <h3>အားနည်းချက်များ</h3>
+  <ol>
+    <li><b>Run အလုပ်လုပ်နေတုန်း ticket ပြောင်းသွားရင် duplicate ဖြစ်ပါတယ်။</b> Run A အလုပ်လုပ်နေတုန်း တစ်ယောက်ယောက်က ticket မှာ comment ရေးလိုက်ရင် transaction id ပြောင်းပါတယ်။ အဲဒီနောက် ထပ်နှိပ်ရင် key အသစ် ထွက်ပြီး <b>run ၂ ခု တစ်ပြိုင်နက်</b> ဖြစ်ပါမယ်။ DB unique index နည်းကတော့ ticket_id ကို တိုက်ရိုက်ကြည့်လို့ ဒီ case ကိုပါ တားပါတယ်။</li>
+    <li><b>နှိပ်တဲ့ action ကိုယ်တိုင် ticket ကို မရေးရပါ။</b> Button နှိပ်တာက RT ထဲ transaction (ဥပမာ "Remote resolve requested" comment) ရေးမိရင် နှိပ်တိုင်း key ပြောင်းပြီး guard အလုပ်မလုပ်တော့ပါ။ Key ကို ticket ထဲ ဘာမှမရေးခင် တွက်ရပါမယ်။ RT Web UI team နဲ့ အတည်ပြုရပါမယ်။</li>
+    <li><b>Fail ပြီးနောက် ပြန်စမ်းလို့ မရပါ။</b> noc down လို့ <code>API_UNREACHABLE</code> ဖြစ်ပြီး ticket မပြောင်းဘဲ ပြန်နှိပ်ရင် key တူလို့ <code>1062</code> ရပါတယ်။ ဖြေရှင်းနည်း (retry စည်းကမ်း): <code>1062</code> ရရင် run ဟောင်းရဲ့ state ကို ဖတ်ပါ။
+      <ul>
+        <li>Fail (terminal) ဖြစ်ပြီးသား (<code>API_UNREACHABLE</code>, <code>API_REJECTED</code>, <code>FAILED_PERMANENT</code> …) → key ကို <code>384:98765:retry1</code>, <code>retry2</code> … တိုးပြီး ပြန်ထုတ်</li>
+        <li>မပြီးသေး → "already being processed"</li>
+        <li><code>COMPLETED</code> / <code>NOT_ELIGIBLE</code> → "already processed"</li>
+      </ul></li>
+    <li><b>၂၄ နာရီ rule အဖြစ် မသုံးနိုင်ပါ။</b> Run <code>COMPLETED</code> ဖြစ်တာနဲ့ rtutil က RT ticket ကို update လုပ်လို့ transaction id ပြောင်းပါတယ်။ ဒါကြောင့် ချက်ချင်း ပြန်နှိပ်ရင် run အသစ် ဖြစ်ပါမယ်။ ဒီနည်းက "တစ်ပြိုင်နက်" ကိုပဲ တားလို့ ၂၄ နာရီ rule ကို သီးသန့် (DB query၊ Section 9) လုပ်ရပါမယ်။</li>
+    <li><b>Stuck run က မပိတ်ပါ။</b> Ticket ပြင်လိုက်တာနဲ့ key အသစ်ထွက်လို့ ticket ကတော့ ပြန်ဖွင့်ပါတယ်။ ဒါပေမဲ့ stuck run ဟောင်းက <code>completed_at</code> NULL နဲ့ report မှာ Stuck အဖြစ် ဆက်ကျန်ပါတယ်။ ဘာမှမပြင်ရင် ticket ပိတ်နေဆဲပါ။</li>
+  </ol>
+
+  <h3>DB unique index နည်းနဲ့ နှိုင်းယှဉ်ချက်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th></th><th>Idempotency key</th><th>DB unique index (<code>active_ticket_id</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>Schema ပြောင်း</td><td class="ok">မလို</td><td>Column + index</td></tr>
+      <tr><td>ပြင်ရတဲ့နေရာ</td><td>RT Web UI (key တွက် + 1062 ကိုင်တွယ် + retry စည်းကမ်း)</td><td>DB + RT Web UI (1062 ကိုင်တွယ်)</td></tr>
+      <tr><td>ပြိုင်တူ ငါးခါ (ticket မပြောင်း)</td><td class="ok">1 ခု</td><td class="ok">1 ခု</td></tr>
+      <tr><td>Run လုပ်နေတုန်း ticket ပြောင်းပြီး ထပ်နှိပ်</td><td class="bad">duplicate</td><td class="ok">တား</td></tr>
+      <tr><td>Click ကိုယ်တိုင် ticket ရေးရင်</td><td class="bad">guard ပျက်</td><td class="ok">မထိခိုက်</td></tr>
+      <tr><td>Fail ပြီး ပြန်စမ်း</td><td class="warn">retry counter လို</td><td class="ok">အလိုအလျောက် (fail = completed)</td></tr>
+      <tr><td>Stuck run</td><td class="warn">ticket ပြင်မှ ပြန်ဖွင့်</td><td class="warn">lazy takeover (30 မိနစ်) လို</td></tr>
+      <tr><td>RT DB ကို ထပ်ဖတ်</td><td>transaction id ဖတ်ရ</td><td>မလို</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>အကြံပြုချက်</h3>
+  <ul>
+    <li><b>Schema လုံးဝ မပြောင်းချင်ရင်</b> idempotency key ကို သုံးလို့ရပါတယ်။ ပြိုင်တူ double-click / ငါးခါနှိပ်တာကို ဖြေရှင်းပေးပါတယ်။ ဒါပေမဲ့ အားနည်းချက် 1 နဲ့ 2 ကို သိထားပြီး RT Web UI team နဲ့ အတည်ပြုရပါမယ်။</li>
+    <li><b>ပိုခိုင်မာတာ လိုချင်ရင်</b> DB unique index (Section 2) ကို ရွေးပါ။ ticket_id ကို တိုက်ရိုက်ကြည့်လို့ ticket ပြောင်းတာ၊ click ကိုယ်တိုင် ရေးတာ ဘယ်ဟာမှ မထိခိုက်ပါ။</li>
+  </ul>
+
+  <h2>11. noc_automation မှာ mutex + DB စစ်ခြင်း</h2>
+  <p>ပြိုင်တူ request တွေကို noc_automation မှာ <b>တစ်ခုချင်း တန်းစီ (mutex)</b> ပြီး "ဒီ ticket ကို တခြား run က ယူထားပြီးလား" ဆိုတာ DB မှာ စစ်တဲ့ နည်းပါ။ noc က instance တစ်ခုတည်း ဖြစ်နေသရွေ့ ငါးခုထဲက တစ်ခုပဲ ဆက်လုပ်ပြီး ကျန်တာ 409 ရပါတယ်။ Schema မပြောင်းရပါ။ ဒါပေမဲ့ <b>noc ကို တစ်ခုထက်ပို run တာနဲ့ (deploy လုပ်နေတဲ့ ခဏလည်း အပါအဝင်) ပျက်ပါတယ်</b>။</p>
+
+  <h3>ဘာကြောင့် noc မှာ လုပ်တာလဲ</h3>
+<pre><code>RT Web UI node 1 ─┐
+RT Web UI node 2 ─┤
+RT Web UI node 3 ─┼──► noc_automation (instance ၁ ခုတည်း) ──► Node-RED / Kafka / rtutil
+RT Web UI node 4 ─┤        ▲
+RT Web UI node 5 ─┘        └ request ၅ ခုလုံး ဒီ process ထဲ ဆုံ → mutex နဲ့ တစ်ခုချင်း စီ
+curl (API တိုက်ရိုက်) ─────┘</code></pre>
+  <ul>
+    <li><b>Mutex</b> ဆိုတာ "တစ်ကြိမ်မှာ တစ်ယောက်ပဲ ဝင်ခွင့်" ရှိတဲ့ သော့ပါ။ Go ရဲ့ <code>sync.Mutex</code> က <b>process တစ်ခုအတွင်းမှာပဲ</b> အလုပ်လုပ်ပါတယ်။</li>
+    <li>RT Web UI node ငါးခုက memory မမျှလို့ အဲဒီမှာ mutex ထားလို့ မရပါ။ noc ကတော့ တစ်ခုတည်းမို့ request အားလုံး ဆုံရာနေရာ ဖြစ်ပါတယ်။</li>
+    <li>"စစ်ပြီးမှ ယူ" (check-then-claim) ကို mutex ထဲမှာ လုပ်လို့ race မဖြစ်ပါ။ ပထမ request က ယူပြီးမှ ဒုတိယ request က စစ်ရပါတယ်။</li>
+  </ul>
+
+  <h3>အသေးစိတ် flow (ငါးခါ ပြိုင်တူ နှိပ်ရင်)</h3>
+  <p><b>အဆင့် A: RT Web UI node ငါးခု (ယခင်အတိုင်း)</b> — Click တစ်ခုချင်းက run_id မတူတဲ့ row ကို insert လုပ်ပြီး <code>SUBMITTED_TO_API</code> ပြောင်းကာ noc ကို ခေါ်ပါတယ်။ ဒါကြောင့် table ထဲမှာ <b>row ၅ ကြောင်း ရှိနေပြီးသား</b>ပါ။</p>
+  <p><b>အဆင့် B: noc မှာ (အသစ်)</b></p>
+<pre><code>claimMu.Lock()                                                  // ① တန်းစီ
+active, err := repo.FindClaimedActiveRun(ticketID, staleCutoff) // ② DB စစ်
+if active != nil {
+    claimMu.Unlock()
+    return 409 "ticket already being processed"                 // ③ ရှိရင် ငြင်း
+}
+err = helpers.CreatePipelineRun(runID, &amp;request)                // ④ ယူ (SUBMITTED_TO_API → RECEIVED)
+claimMu.Unlock()                                                // ⑤ သော့ဖွင့်
+go ProcessRemoteResolve(...)                                    // ⑥ mutex အပြင်မှာ ဆက်လုပ်</code></pre>
+  <div class="wrap"><table>
+    <thead><tr><th>အချိန်</th><th>Request 1</th><th>Request 2–5</th></tr></thead>
+    <tbody>
+      <tr><td>t0</td><td>Mutex ရ → DB စစ်: ယူထားတဲ့ run မရှိ → <code>RECEIVED</code> ပြောင်း → mutex လွှတ်</td><td>Mutex စောင့်</td></tr>
+      <tr><td>t1</td><td>Node-RED / Kafka ဆက်လုပ် (mutex မကိုင်)</td><td>တစ်ခုချင်း mutex ရ → DB စစ်: Request 1 ရဲ့ run က <code>RECEIVED</code> → <b class="bad">409</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>Mutex ကိုင်ထားချိန်က DB query ၂ ကြောင်းစာပဲ (millisecond) ဖြစ်ပါတယ်။ Node-RED ခေါ်တာက mutex အပြင်မှာမို့ request တွေ အကြာကြီး မစောင့်ရပါ။</p>
+
+  <h3>"မပြီးသေးတဲ့ run" ကို ဘယ်လို စစ်မလဲ (အရေးကြီးဆုံး)</h3>
+  <p><b><code>completed_at IS NULL</code> လို့ ရိုးရိုး စစ်ရင် မှားပါတယ်။</b> Request 1 ဝင်တဲ့အချိန် ကျန် ၄ ခုရဲ့ row တွေကလည်း <code>SUBMITTED_TO_API</code> (မပြီးသေး) ဖြစ်နေလို့ Request 1 ကိုယ်တိုင်လည်း "ရှိပြီ" လို့ ထင်ပြီး <b>ငါးခုလုံး 409</b> ဖြစ်ပါမယ်။ ဒါကြောင့် <b>noc က ယူပြီးသား (claimed) run</b> ကိုပဲ ရေတွက်ရပါတယ်:</p>
+<pre><code>SELECT run_id FROM pipeline_runs
+ WHERE ticket_id = ?
+   AND completed_at IS NULL
+   AND current_state NOT IN ('', 'SUBMITTED_TO_API')   -- noc မယူရသေးတဲ့ row မပါ
+   AND updated_at &gt; :stale_cutoff                       -- stuck run မပါ (ဥပမာ 30 မိနစ်)
+ LIMIT 1;</code></pre>
+  <ul>
+    <li><code>RECEIVED</code>, <code>PUBLISHED</code>, <code>RETRY_SCHEDULED</code>, <code>CONSUMED</code>, <code>BCS_UPDATING</code>, <code>RT_UPDATING</code> ဆိုတာ noc ယူထားပြီး အလုပ်လုပ်နေဆဲ run တွေပါ။ ဒါတွေ ရှိရင် ငြင်းပါ။</li>
+    <li><b>Stuck run:</b> noc restart ဖြစ်ရင် background goroutine ပျောက်ပြီး run က <code>RECEIVED</code> မှာ ကျန်ပါတယ်။ <code>updated_at</code> cutoff မထားရင် ticket ကို အမြဲ ပိတ်ထားပါမယ်။ Cutoff ကျော်ရင် စစ်ချက်ထဲ မပါလို့ run အသစ် ခွင့်ရပါတယ် (run ဟောင်းကတော့ report မှာ Stuck အဖြစ် ကျန်)။</li>
+    <li><code>idx_pipeline_runs_ticket_id</code> index ရှိပြီးသားမို့ query မြန်ပါတယ်။ <code>:stale_cutoff</code> ကို app ဘက်က local time နဲ့ ပို့ပါ (<code>NOW()</code> UTC ပြဿနာ)။</li>
+    <li><b>Mutex ပုံစံ:</b> ticket တိုင်းအတွက် mutex သီးသန့် (<code>map[ticketID]*sync.Mutex</code>) ထားလို့ရပေမယ့် map ကို ပြန်ရှင်းရပါတယ်။ Request နည်းပြီး ကိုင်ချိန် millisecond ပဲမို့ <b>global mutex တစ်ခုတည်း</b> နဲ့ လုံလောက်ပါတယ်။</li>
+  </ul>
+
+  <h3>Table ထဲ row ဘယ်နှကြောင်း ဖြစ်မလဲ</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>id</th><th>run_id</th><th>current_state</th><th>http_status (event)</th><th>Report</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>a1…</td><td>RECEIVED → … → COMPLETED</td><td>200</td><td>Success</td></tr>
+      <tr><td>2</td><td>b2…</td><td>API_REJECTED</td><td>409 "ticket already being processed"</td><td>Manual check · API error 409</td></tr>
+      <tr><td>3</td><td>c3…</td><td>API_REJECTED</td><td>409</td><td>API error 409</td></tr>
+      <tr><td>4</td><td>d4…</td><td>API_REJECTED</td><td>409</td><td>API error 409</td></tr>
+      <tr><td>5</td><td>e5…</td><td>API_REJECTED</td><td>409</td><td>API error 409</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>Row ၅ ကြောင်း ကျန်ပါတယ် (RT Web UI က noc မခေါ်ခင် insert လုပ်ပြီးသားမို့)။ ဒါပေမဲ့ <b>Node-RED၊ Kafka၊ RT update၊ BCS ကို တစ်ခါပဲ</b> ခေါ်ပါတယ်။</li>
+    <li>409 ရတဲ့ ၄ ခုကို RT Web UI က <code>API_REJECTED</code> နဲ့ ပိတ်လို့ <code>completed_at</code> ဖြည့်ပြီးသား (terminal) ဖြစ်ပါတယ်။</li>
+    <li>Report မှာ <b>Received = 5၊ "API error 409" = 4</b> ပေါ်ပါမယ်။ run_id ထပ်သုံးလို့ ရတဲ့ 409 နဲ့ bucket တူထဲ ရောနေလို့ ခွဲချင်ရင် event message နဲ့ ခွဲရပါမယ်။</li>
+    <li>User က "RT External API returned 409: ticket already being processed" ကို error အဖြစ် မြင်ပါမယ်။ ယဉ်ယဉ်ကျေးကျေး ပြချင်ရင် RT Web UI က 409 ကို သီးသန့် ကိုင်တွယ်ရပါမယ်။</li>
+  </ul>
+
+  <h3>အားသာချက်</h3>
+  <ul>
+    <li class="ok">Schema မပြောင်းရ၊ ပြင်ရတာ noc တစ်နေရာတည်း (controller + query တစ်ခု)။</li>
+    <li class="ok">RT Web UI မဖြတ်ဘဲ API ကို တိုက်ရိုက်ခေါ်တာကိုလည်း တားပါတယ် (noc ကို ဖြတ်ရလို့)။</li>
+    <li class="ok">RT Web UI (node ၅ ခု) ကို မပြင်ရပါ (409 message ပြင်ချင်ရင်ပဲ)။</li>
+  </ul>
+
+  <h3>အားနည်းချက်</h3>
+  <ol>
+    <li><b>noc instance ၂ ခု ဖြစ်တာနဲ့ ပျက်ပါတယ်။</b> Instance တစ်ခုချင်းမှာ mutex သီးသန့် ရှိလို့ ၂ ခုလုံး တစ်ပြိုင်နက် စစ်ပြီး "မရှိဘူး" လို့ ထင်ကာ ယူမိပါမယ်။
+      <ul>
+        <li><b>Deploy လုပ်နေတဲ့ ခဏလည်း ဖြစ်နိုင်ပါတယ်:</b> Kubernetes RollingUpdate က pod အသစ် တက်ပြီးမှ pod ဟောင်းကို ပိတ်လို့ ခဏတာ instance ၂ ခု run နေပါတယ်။ ဒီနည်းသုံးရင် deployment strategy ကို <code>Recreate</code> ထားရပါမယ် (deploy ချိန် စက္ကန့်ပိုင်း downtime ရှိ)။</li>
+        <li>နောင် noc ကို scale out လုပ်ရင် ဒီနည်းကို ဖြုတ်ပြီး DB unique index ကို ပြောင်းရပါမယ်။</li>
+      </ul></li>
+    <li><b>Row အပိုနဲ့ report ရှုပ်ပါတယ်:</b> row ၅ ကြောင်း ကျန်ပြီး "API error 409" ၄ ခုက တကယ့် error လို ပေါ်ပါတယ်။</li>
+    <li><b>Stuck run:</b> cutoff (30 မိနစ်) မကျော်မချင်း ticket ပိတ်နေပါတယ်။</li>
+  </ol>
+
+  <h3>နည်း ၃ မျိုး နှိုင်းယှဉ်ချက်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th></th><th>noc mutex + DB စစ်</th><th>Idempotency key</th><th>DB unique index</th></tr></thead>
+    <tbody>
+      <tr><td>Schema ပြောင်း</td><td class="ok">မလို</td><td class="ok">မလို</td><td>လို</td></tr>
+      <tr><td>ပြင်ရတဲ့နေရာ</td><td>noc</td><td>RT Web UI</td><td>DB + RT Web UI</td></tr>
+      <tr><td>Row (၅ click)</td><td>5 (၄ ခု 409)</td><td>1</td><td>1</td></tr>
+      <tr><td>Node-RED / BCS ခေါ်တာ</td><td>1 ခါ</td><td>1 ခါ</td><td>1 ခါ</td></tr>
+      <tr><td>API တိုက်ရိုက်ခေါ်တာ တား</td><td class="ok">တား</td><td class="bad">မတား</td><td class="ok">တား (noc 1062 ကိုင်တွယ်ရင်)</td></tr>
+      <tr><td>Ticket ပြောင်းတုန်း ထပ်နှိပ်</td><td class="ok">တား</td><td class="bad">duplicate</td><td class="ok">တား</td></tr>
+      <tr><td>noc scale out / rolling deploy</td><td class="bad">ပျက်</td><td class="ok">ကောင်း</td><td class="ok">ကောင်း</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>အကြံပြုချက်:</b> noc ကို instance တစ်ခုတည်း အမြဲထားမယ်ဆိုရင် (deployment <code>Recreate</code>) ဒီနည်းက schema မပြောင်းဘဲ ticket ပြောင်းတာကိုပါ တားနိုင်လို့ idempotency key ထက် ခိုင်ပါတယ်။ Scale out လုပ်ဖို့ အစီအစဉ်ရှိရင်တော့ DB unique index က ရေရှည်အတွက် ပိုသင့်တော်ပါတယ်။</p>
+
+  <h2 id="recommend">12. အကြံပြုချက်: အကောင်းဆုံးနည်း</h2>
+  <p class="lead"><b>DB unique index + lazy takeover</b> ကို အကြံပြုပါတယ်။ Production အခြေအနေ (RT Web UI node ၅ ခု၊ noc instance ၁ ခု၊ sweeper ပိတ်ထားမယ့် release၊ MariaDB 10.4) နဲ့ အကိုက်ညီဆုံးဖြစ်ပြီး ကျန်နည်းတွေရဲ့ အားနည်းချက် မရှိလို့ပါ။</p>
+
+  <h3>ဘာကြောင့် ဒီနည်းလဲ</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>ကာကွယ်ရမယ့် case</th><th class="c">DB unique index</th><th class="c">noc mutex</th><th class="c">Idempotency key</th><th class="c">Redis lock</th></tr></thead>
+    <tbody>
+      <tr><td>ငါးခါ ပြိုင်တူ နှိပ်</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td></tr>
+      <tr><td>RT Web UI node ၅ ခု / user ၂ ယောက်</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td></tr>
+      <tr><td>API တိုက်ရိုက်ခေါ်</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c bad">✗</td><td class="c bad">✗</td></tr>
+      <tr><td>Run လုပ်နေတုန်း ticket ပြောင်းပြီး ထပ်နှိပ်</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c bad">✗</td><td class="c ok">✓</td></tr>
+      <tr><td>noc scale out / rolling deploy</td><td class="c ok">✓</td><td class="c bad">✗</td><td class="c ok">✓</td><td class="c ok">✓</td></tr>
+      <tr><td>Infra အသစ် မလို</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c bad">✗</td></tr>
+      <tr><td>Service ကြား ညှိစရာ မလို</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c bad">✗</td></tr>
+      <tr><td>Row အပို မထွက်</td><td class="c ok">✓ (1)</td><td class="c bad">✗ (5)</td><td class="c ok">✓ (1)</td><td class="c ok">✓ (1)</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Case အားလုံးကို ✓ ရတာ ဒီနည်းတစ်ခုတည်းပါ။</b></p>
+  <ol>
+    <li><b>တားတာက DB ကိုယ်တိုင် (atomic)။</b> Node ဘယ်နှခု၊ service ဘယ်နှခု ရှိရှိ၊ deploy လုပ်နေလည်း InnoDB က တစ်ခုပဲ လက်ခံပါတယ်။</li>
+    <li><b>Guard က run row ကိုယ်တိုင်။</b> <code>completed_at</code> ဖြည့်တာနဲ့ သော့ အလိုအလျောက် ပွင့်လို့ Redis/DB မကိုက်တာ၊ DEL မေ့တာ၊ TTL ချိန်ရတာ မရှိပါ။</li>
+    <li><b>Local မှာ စမ်းပြီးသား။</b> 2026-10-18 မှာ implement လုပ်ပြီး test ၆ ခု အောင်ခဲ့ပါတယ် (နောက်မှ rollback)။ ပြန်ထည့်ရ မြန်ပါတယ်။</li>
+  </ol>
+
+  <h3>အဆင့်လိုက် Plan</h3>
+  <p><b>ဒီ release (sweeper ပိတ်ထား):</b></p>
+  <ol>
+    <li><b>DB:</b> <code>active_ticket_id</code> + <code>uq_pipeline_runs_active_ticket</code> ထည့် (Section 2)။ ALTER မလုပ်ခင် duplicate စစ်တဲ့ query ကို run ပါ။</li>
+    <li><b>RT Web UI:</b> insert မှာ <code>1062</code> ရရင် "Ticket is already being processed" ပြ။ Run ဟောင်းက <b>30 မိနစ်</b> ကျော် update မရှိရင် ပိတ်ပြီး run အသစ် ဖွင့် (lazy takeover၊ Section 8)။ Sweeper မလိုပါ။</li>
+    <li><b>noc:</b> API တိုက်ရိုက်ခေါ်တဲ့ case မှာ <code>1062</code> ကို <b>409</b> "ticket already being processed" ပြောင်း။</li>
+    <li><b>Browser:</b> နှိပ်ပြီးရင် button disable (UX အတွက်ပဲ)။</li>
+    <li><b>Runbook:</b> ticket ပိတ်နေရင် admin က လက်နဲ့ ပိတ်တဲ့ SQL (Section 8) ကို sysadmin ကို ပေးထားပါ။</li>
+  </ol>
+  <p><b>နောက် release:</b></p>
+  <ul>
+    <li><b>၂၄ နာရီ rule (<code>ALREADY_PROCESSED</code>):</b> business ဘက်က window နဲ့ re-open ခြွင်းချက် အတည်ပြုပြီးမှ DB query နဲ့ ထည့် (Redis မသုံး၊ Section 9)။</li>
+    <li><b>Sweeper:</b> ဖွင့်တဲ့အခါ lazy takeover ဆက်ထားလည်း ပြဿနာ မရှိပါ။</li>
+  </ul>
+  <p><b>ဒီ release မှာ schema လုံးဝ မပြောင်းရဘူးဆိုရင် (fallback):</b> noc mutex + DB စစ် (Section 11) ကို ယာယီ သုံးပါ။ noc တစ်နေရာတည်း ပြင်ရပေမယ့် noc deployment ကို <code>Recreate</code> ထားရပြီး report မှာ "API error 409" row တွေ ပေါ်ပါမယ်။ နောက် release မှာ unique index ပြောင်းပါ။</p>
+  <p><b>မရွေးသင့်တာ:</b> Idempotency key (ticket ပြောင်းတုန်း duplicate၊ click ကိုယ်တိုင် ticket ရေးရင် guard ပျက်)၊ Redis lock (infra အသစ်၊ service ၃ ခု ညှိ)။</p>
+
+  <h3>မစခင် အတည်ပြုရမယ့်အချက်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>မေးခွန်း</th><th>ဘယ်သူ့ကို</th><th>ဘာကြောင့်</th></tr></thead>
+    <tbody>
+      <tr><td>Production RT DB က server တစ်ခုတည်းလား၊ Galera cluster လား</td><td>Sysadmin</td><td>Galera ဆိုရင် error <code>1213</code> ကိုပါ ကိုင်တွယ်ပြီး staging မှာ ပြန်စမ်းရ</td></tr>
+      <tr><td>Production RT Web UI က ဒီ Go code လား၊ တခြား codebase လား</td><td>RT Web UI team</td><td><code>1062</code> ကိုင်တွယ်တာနဲ့ lazy takeover ကို ဘယ်မှာ ရေးမလဲ</td></tr>
+      <tr><td>Stale cutoff 30 မိနစ် လုံလောက်လား</td><td>NOC / dev</td><td>အကြာဆုံး run (retry backoff) ထက် ရှည်ရ</td></tr>
+      <tr><td>ပယ်ခံရတဲ့ request ကို 409 ပြန်မလား၊ လက်ရှိ run_id နဲ့ 200 ပြန်မလား</td><td>RT Web UI team</td><td>Browser မှာ ပြပုံ</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="plan">13. အသေးစိတ် Plan: DB unique index + lazy takeover</h2>
+  <p class="lead"><b>"Ticket တစ်ခုမှာ မပြီးသေးတဲ့ run တစ်ခုပဲ ရှိခွင့်ရှိတယ်"</b> ဆိုတဲ့ စည်းကမ်းကို DB က တားပေးပြီး stuck run ကို ticket ထပ်နှိပ်တဲ့အခိုက် ပိတ်ပေးတဲ့ plan ပါ။ အလုပ် ၅ ခု ရှိပါတယ်: DB၊ RT Web UI၊ noc၊ Browser၊ Runbook။ <b>Code ကို အရင် deploy လုပ်ပြီးမှ DB ALTER လုပ်ပါ။</b></p>
+
+  <h3>အဆင့် 0: မစခင် ဆုံးဖြတ်ရန်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>မေးခွန်း</th><th>ဘာကို သက်ရောက်လဲ</th></tr></thead>
+    <tbody>
+      <tr><td>Production RT DB က server တစ်ခုတည်းလား၊ Galera လား</td><td>Galera ဆိုရင် <code>1213</code> ကိုပါ ကိုင်တွယ်ရ</td></tr>
+      <tr><td>Production RT Web UI က ဘယ် codebase လဲ</td><td>အဆင့် 2 ကို ဘယ်မှာ ရေးမလဲ</td></tr>
+      <tr><td>Stale cutoff (default 30 မိနစ်)</td><td>အဆင့် 2 ရဲ့ setting</td></tr>
+      <tr><td>ပယ်ခံရတဲ့ request ကို ဘာပြန်မလဲ (<code>IN_PROGRESS</code> + run_id ဟောင်း)</td><td>Browser မှာ ပြပုံ</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>အဆင့် 1: DB (schema)</h3>
+<pre><code>ALTER TABLE pipeline_runs
+  ADD COLUMN IF NOT EXISTS active_ticket_id bigint(20) unsigned
+    AS (IF(completed_at IS NULL, ticket_id, NULL)) PERSISTENT,
+  ADD UNIQUE KEY IF NOT EXISTS uq_pipeline_runs_active_ticket (active_ticket_id);</code></pre>
+  <ol>
+    <li><b>ကြိုစစ်ပါ:</b> ticket တူ မပြီးသေးတဲ့ run ၂ ခု ရှိနေရင် ALTER က <code>1062</code> နဲ့ fail ပါမယ်။ ရလဒ်ပါရင် run ဟောင်းတွေကို runbook SQL (အဆင့် 5) နဲ့ အရင်ပိတ်ပါ။
+<pre><code>SELECT ticket_id, COUNT(*) FROM pipeline_runs
+ WHERE completed_at IS NULL AND ticket_id IS NOT NULL
+ GROUP BY ticket_id HAVING COUNT(*) &gt; 1;</code></pre></li>
+    <li><b>ALTER ကို release window မှာ run ပါ:</b> row တိုင်းအတွက် တွက်ရလို့ table ကို rebuild လုပ်ပါတယ်။ Table ကြီးရင် အချိန်ယူပြီး ရေးခွင့်ကို ခဏ ပိတ်နိုင်ပါတယ်။</li>
+    <li><b>File:</b> <code>FinalSql/pipeline_runs.sql</code> ကို update လုပ်ပြီး migration file <code>FinalSql/alter_active_ticket.sql</code> (နှစ်ခါ run လည်း ပြဿနာမရှိ) ထည့်ပါ။</li>
+    <li><b>rtdatacore ကို မပြင်ရပါ:</b> generated column ကို service က မရေးရလို့ entity မှာ field မထည့်ပါ။ ထည့်ရင် GORM က insert ထဲ ထည့်ပြီး error ဖြစ်ပါမယ်။</li>
+  </ol>
+  <p><b>ပြန်ဖြုတ်ရန် (rollback):</b></p>
+<pre><code>ALTER TABLE pipeline_runs DROP INDEX uq_pipeline_runs_active_ticket, DROP COLUMN active_ticket_id;</code></pre>
+
+  <h3>အဆင့် 2: RT Web UI (အဓိက code)</h3>
+  <p>Run row insert လုပ်တဲ့နေရာ (rt_web_ui ရဲ့ <code>tr.Open</code>) မှာ ဒီ logic ထည့်ပါ:</p>
+<pre><code>① INSERT run (ယခင်အတိုင်း)
+   └ အောင် → gate တွေ → noc ခေါ် (ယခင်အတိုင်း)
+② 1062 ရ → key နာမည် စစ်
+   ├ 'idx_pipeline_runs_run_id'        → run_id ထပ်နေတာ (ယခင်အတိုင်း error)
+   └ 'uq_pipeline_runs_active_ticket'  → ③
+③ ရှိနေတဲ့ run ကို ဖတ်: SELECT run_id, current_state, updated_at
+                         FROM pipeline_runs WHERE active_ticket_id = ?
+④ updated_at က cutoff (now − 30m) ထက် နောက်ကျ (အသက်ရှင်)
+   └ "Ticket is already being processed by run X" ပြန် (outcome IN_PROGRESS) ── ရပ်
+⑤ updated_at က cutoff ထက် စော (stuck) → transaction တစ်ခုထဲမှာ:
+     UPDATE pipeline_runs SET current_state='FAILED_PERMANENT',
+            last_state_reason='stale run closed: …', completed_at=:now, updated_at=:now
+      WHERE run_id=:old AND completed_at IS NULL AND updated_at &lt; :cutoff
+     1 row ပြောင်းမှ → pipeline_run_events ထဲ 'stale_run_closed' event ရေး
+⑥ INSERT ကို တစ်ခါပဲ ပြန်စမ်း
+   ├ အောင် → ဆက်လုပ်
+   └ 1062 ထပ်ရ (တခြား request က ဦးသွား) → ③ ဖတ်ပြီး IN_PROGRESS ပြန်</code></pre>
+  <ul>
+    <li><b>Key နာမည်နဲ့ ခွဲပါ:</b> <code>1062</code> က run_id unique ကလည်း ရနိုင်လို့ error message ထဲက key နာမည် <code>uq_pipeline_runs_active_ticket</code> ကို စစ်မှ ticket guard ဖြစ်ကြောင်း သေချာပါတယ်။</li>
+    <li><b>⑤ က conditional UPDATE တစ်ကြောင်း:</b> ငါးခု ပြိုင်တူ UPDATE လုပ်ရင် row lock ကြောင့် တစ်ခုပဲ 1 row ပြောင်းပြီး ကျန်တာ 0 rows ဖြစ်ပါတယ်။ Event လည်း တစ်ကြောင်းပဲ ရေးပါတယ် (local မှာ စမ်းပြီးသား)။</li>
+    <li><b>⑥ မှာ တစ်ခါပဲ ပြန်စမ်းပါ</b> (loop မဖြစ်အောင်)။</li>
+    <li><b>အချိန်ကို app ဘက်က တွက်ပါ:</b> <code>:now</code>, <code>:cutoff</code> ကို app ရဲ့ local time နဲ့ ပို့ပါ။ DB <code>NOW()</code> က UTC ပြန်လို့ ၆ နာရီခွဲ လွဲပါမယ်။</li>
+    <li><b><code>updated_at</code> ကို သုံးပါ</b> (<code>created_at</code> မဟုတ်)။ State ပြောင်းတိုင်း update ဖြစ်လို့ ရှေ့ဆက်နေတဲ့ run ကို stuck လို့ မထင်ပါ။</li>
+    <li><b>Setting:</b> <code>RT_WEB_UI_STALE_RUN_AFTER=30m</code> (env)။ Retry backoff (1m+3m+5m)၊ Node-RED timeout၊ Kafka၊ rtutil ပေါင်းထားတာထက် ရှည်ရပါမယ်။</li>
+    <li><b>Exit code / UI:</b> <code>IN_PROGRESS</code> ကို "No Process" လို (exit 1) သဘောထားပါ။ Error (exit 3) မဟုတ်ပါ။</li>
+    <li><b>Gate မတိုင်ခင် insert လုပ်တာ မပြောင်းပါ:</b> NOT_ELIGIBLE ticket ကို ပြိုင်တူနှိပ်ရင်လည်း တစ်ခုက NOT_ELIGIBLE ဖြစ်ပြီး ကျန်တာ IN_PROGRESS ဖြစ်ပါတယ်။ ပြဿနာ မရှိပါ။</li>
+  </ul>
+
+  <h3>အဆင့် 3: noc_automation (API တိုက်ရိုက်ခေါ်တဲ့ case)</h3>
+  <ul>
+    <li>RT Web UI ကို ဖြတ်လာတဲ့ request ဆိုရင် row ရှိပြီးသားမို့ noc က claim (<code>AttachSubmittedRun</code>) ပဲ လုပ်ပါတယ်။ ticket_id မပြောင်းလို့ guard နဲ့ မတိုက်ပါ။</li>
+    <li><b>curl / script နဲ့ တိုက်ရိုက်ခေါ်ရင်</b> noc က row ကို ကိုယ်တိုင် insert (<code>repo.Create</code>) လုပ်ပါတယ်။ အဲဒီမှာ <code>1062</code> (<code>uq_pipeline_runs_active_ticket</code>) ရရင် လက်ရှိ <b>500</b> "Failed to initialize remote resolve run" ကို <b>409</b> "ticket already being processed" ပြောင်းပါ။</li>
+    <li>ပြင်ရတာ <code>helpers/remote_resolve_helper.go</code> (error ခွဲ) နဲ့ <code>remote_resolve_controller.go</code> (409 ပြန်) နှစ်နေရာပါ။</li>
+    <li>Lazy takeover ကို noc မှာ မထည့်ပါ။ တိုက်ရိုက်ခေါ်တာက ပုံမှန်လမ်းကြောင်း မဟုတ်လို့ ရိုးရိုးထားပါ။</li>
+  </ul>
+
+  <h3>အဆင့် 4: Browser (UX)</h3>
+  <ul>
+    <li>Button နှိပ်ပြီးရင် response ပြန်လာတဲ့အထိ disable လုပ်ပြီး "Processing…" ပြပါ။ ပုံမှန် double-click ကို DB ထိ မရောက်ခင် တားပါတယ်။</li>
+    <li><code>IN_PROGRESS</code> ရရင် error အနီ မပြဘဲ "ဒီ ticket ကို လုပ်နေဆဲ (run X)" လို့ ပြပါ။</li>
+    <li>ဒါက UX အတွက်ပဲပါ။ Guard အစစ်က DB ပါ။</li>
+  </ul>
+
+  <h3>အဆင့် 5: Runbook (sysadmin အတွက်)</h3>
+  <p>Ticket တစ်ခု ပိတ်နေပြီး 30 မိနစ် မစောင့်နိုင်ရင် admin က လက်နဲ့ ပိတ်ပါ (အချိန်ကို local time နဲ့):</p>
+<pre><code>UPDATE pipeline_runs
+   SET current_state='FAILED_PERMANENT', last_state_reason='closed manually by admin',
+       completed_at='&lt;local now&gt;', updated_at='&lt;local now&gt;'
+ WHERE ticket_id=&lt;ticket id&gt; AND completed_at IS NULL;</code></pre>
+
+  <h3>Deploy အစီအစဉ် (အစဉ်က အရေးကြီး)</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>အဆင့်</th><th>လုပ်ရမှာ</th><th>ဘာကြောင့် ဒီအစဉ်လဲ</th></tr></thead>
+    <tbody>
+      <tr><td>①</td><td>RT Web UI + noc code ကို deploy</td><td>Index မရှိသေးရင် <code>1062</code> (active ticket) ဘယ်တော့မှ မဖြစ်လို့ code အသစ်က ဘာမှ မပြောင်းပါ (ဘေးကင်း)</td></tr>
+      <tr><td>②</td><td>Duplicate ကြိုစစ် query run</td><td>ALTER fail မဖြစ်အောင်</td></tr>
+      <tr><td>③</td><td><code>alter_active_ticket.sql</code> run</td><td>ဒီအချိန်ကစပြီး guard အလုပ်လုပ်</td></tr>
+      <tr><td>④</td><td>စစ်ဆေး (Test plan)</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p><b>ပြောင်းပြန် (ALTER အရင်) လုပ်ရင်:</b> code ဟောင်းက <code>1062</code> ကို နားမလည်လို့ duplicate click တွေမှာ "open pipeline run: Error 1062" error ပြပါမယ်။ Duplicate တော့ မဖြစ်ပေမယ့် user က error မြင်ရပါမယ်။</p>
+
+  <h3>Test plan</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>အဆင့်</th><th>စစ်ရမှာ</th><th>မျှော်လင့်ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>Unit test</td><td>Fresh run ရှိ / stale run ပိတ်ပြီး ဖွင့် / stale ကို တခြားသူ ဦးသွား / run_id 1062 ကို ticket guard နဲ့ မရော</td><td>Fake DB နဲ့ (ယခင်က pass ပြီးသား)</td></tr>
+      <tr><td>Local</td><td>ပြိုင်တူ ၅ ခါ</td><td>1 ACCEPTED၊ 4 IN_PROGRESS၊ row 1 ကြောင်း</td></tr>
+      <tr><td>Local</td><td>Stuck (cutoff 1s) ဖြစ်နေတုန်း ပြိုင်တူ ၅ ခါ</td><td>Run ဟောင်း FAILED_PERMANENT + event ၁ ခု၊ run အသစ် ၁ ခု</td></tr>
+      <tr><td>Local</td><td>API ကို curl နဲ့ ticket တူ ၂ ခါ</td><td>ဒုတိယ 409</td></tr>
+      <tr><td>Staging</td><td>RT Web UI node ၅ ခုကနေ ပြိုင်တူ</td><td>1 ခုပဲ ဆက်လုပ်</td></tr>
+      <tr><td>Staging (Galera ဆိုရင်)</td><td>DB node မတူတာကနေ ပြိုင်တူ</td><td>တစ်ခုပဲ commit၊ ကျန်တာ 1213 / 1062</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Production မှာ စောင့်ကြည့်ရန်</h3>
+  <ul>
+    <li><b>Stuck run ပိတ်ခံရတာ ဘယ်နှခါလဲ</b> (များနေရင် cutoff တိုလွန်းတာ ဒါမှမဟုတ် noc/rtutil မှာ ပြဿနာရှိတာ):
+<pre><code>SELECT DATE(occurred_at), COUNT(*) FROM pipeline_run_events
+ WHERE event='stale_run_closed' GROUP BY 1;</code></pre></li>
+    <li><b>Duplicate ပယ်ခံရတာ:</b> RT Web UI log မှာ <code>IN_PROGRESS</code> ကို ရေတွက်ပါ။ DB ထဲမှာ row မကျန်လို့ log ကပဲ မှတ်တမ်းပါ။</li>
+    <li><b>Report ရဲ့ Stuck:</b> ticket ထပ်မနှိပ်ရင် stuck run က ဆက်ပြနေပါမယ်။ Sweeper မရှိတဲ့ release မှာ ပုံမှန်ပါ။</li>
+  </ul>
+
+  <h3>ပြင်ရမယ့် file အနှစ်ချုပ်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>Repo</th><th>File</th><th>ပြောင်းတာ</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="4">work_flow_end_to_end</td><td><code>FinalSql/pipeline_runs.sql</code>၊ <code>FinalSql/alter_active_ticket.sql</code> (အသစ်)</td><td>Column + index</td></tr>
+      <tr><td><code>rt_web_ui/guard.go</code> (အသစ်)၊ <code>flow.go</code>၊ <code>config.go</code>၊ <code>main.go</code>၊ <code>serve.go</code>၊ <code>criteria_ui.html</code></td><td>① – ⑥ logic၊ <code>STALE_RUN_AFTER</code>၊ <code>IN_PROGRESS</code> outcome</td></tr>
+      <tr><td><code>guard_test.go</code> (အသစ်)</td><td>Unit test</td></tr>
+      <tr><td><code>.env.example</code>၊ <code>README.md</code>၊ <code>remote-resolve-pipeline.md</code></td><td>Docs</td></tr>
+      <tr><td>noc_automation</td><td><code>helpers/remote_resolve_helper.go</code>၊ <code>controllers/remote_resolve_controller.go</code></td><td><code>1062</code> → 409</td></tr>
+    </tbody>
+  </table></div>
+  <p>2026-10-18 မှာ rollback လုပ်ခဲ့တဲ့ implementation နဲ့ နှိုင်းယှဉ်ရင် ၂၄ နာရီ rule (<code>ALREADY_PROCESSED</code>) ကို ချန်ထားတာပဲ ကွာပါတယ်။</p>
 </main>
 </body>
 </html>
