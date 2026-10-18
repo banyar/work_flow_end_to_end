@@ -370,7 +370,7 @@ func (o *upOptions) startMock() (string, error) {
 	}
 	waited, err := waitFor(func(c context.Context) bool { return checkMock(c, o.mockPort).Level == levelOK })
 	if err != nil {
-		return "", fmt.Errorf("started but CRIT-20 did not answer within %s → docker logs %s", startWait, mockContainer)
+		return "", fmt.Errorf("started but CRIT20 did not answer within %s → docker logs %s", startWait, mockContainer)
 	}
 	return fmt.Sprintf("started (docker %s) · answering after %s", mockContainer, waited), nil
 }

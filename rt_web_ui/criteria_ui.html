@@ -227,6 +227,11 @@ const META = Object.fromEntries([
   ["04_not_eligible_service_type","ne","Service type လက်မခံ","gate · service_type_not_eligible","—",'custom_fields.service_type: "Other"'],
   ["05_not_eligible_ticket_status","ne","Ticket status လက်မခံ (Resolved)","gate · ticket_status_not_allowed","—",'status: "Resolved"'],
   ["10_remote_resolved","rs","Network နှင့် CPE အားလုံး ကောင်း","category_type_workflow · final_action","Customer Support (Resolved)","ပြောင်းစရာ မလို (all good)"],
+  ["11_bcs_success","rs","Remote resolved + BCS success","rtutil BCS · job done","Customer Support (Resolved)","BCS job_id ok-… → poll status: done"],
+  ["12_bcs_failed","rs","Remote resolved + BCS failed (job)","rtutil BCS · job failed","Customer Support (Resolved)","BCS job_id fail-… → poll status: failed"],
+  ["13_bcs_pending","rs","Remote resolved + BCS pending","rtutil BCS · job running","Customer Support (Resolved)","BCS job_id run-… → poll status: running"],
+  ["14_bcs_rejected","rs","Remote resolved + BCS ငြင်း (401)","rtutil BCS · start rejected","Customer Support (Resolved)","BCS start → HTTP 401"],
+  ["15_bcs_unavailable","rs","Remote resolved + BCS 503 (retry ကုန်)","rtutil BCS · start 5xx","Customer Support (Resolved)","BCS start → HTTP 503 ×3"],
   ["20_kept_olt_offline","kept","OLT Offline","network_good_workflow · olt_status","Network Operation Center (NOC)",'olt.status: "Offline"'],
   ["21_kept_onu_on_off","kept","ONU အတက်အကျ များ (> 20 ကြိမ်)","network_good_workflow · is_onu_onoff","Network Operation Center (NOC)","onu.is_onu_on_off: true"],
   ["22_kept_port_loss","kept","Port loss များ (> 20)","network_good_workflow · is_port_loss","Network Operation Center (NOC)","onu.is_port_loss: true"],
@@ -234,7 +239,8 @@ const META = Object.fromEntries([
   ["24_kept_line_profile_mismatch","kept","Line profile (plan) မကိုက်","network_good_workflow · is_line_profile_mismatch","Network Operation Center (NOC)","onu.profile.is_line_profile_mismatch: true"],
   ["25_kept_cpe_down","kept","CPE Down (ONU ကောင်း)","network_good_workflow · cpe_down","Network Operation Center (NOC)",'cpe.status: "Down"'],
   ["26_kept_epc_outage","kept","ONU Offline + EPC outage","network_good_workflow · epc_outage","Network Operation Center (NOC)",'onu.phase_state: "Offline" · onu.is_epc_outage: true'],
-  ["27_kept_low_usage","kept","24 နာရီ usage < 1 GB","category_type_workflow · abnormal_usage","Network Operation Center (NOC)",'onu.24h_onu_usage_gb: "0.5"'],
+  ["27_kept_low_usage","kept","24 နာရီ usage < 1 GB","category_type_workflow · abnormal_usage","Network Operation Center (NOC)",'onu.24h_onu_usage_gb: 0.5'],
+  ["28_kept_node_red_error","kept","Node-RED field error (errors[])","error_event · olt_status failed","Network Operation Center (NOC)",'olt.status: "" · errors: [olt.status 2002]'],
   ["30_transferred_ca1_broken","tr","CA1 ပြတ် (Broken)","network_good_workflow · ca1_status","Passive-Infra",'ca1.status: "Broken"'],
   ["31_transferred_ca1_low_signal","tr","CA1 signal နိမ့်","network_good_workflow · ca1_status","Passive-Infra",'ca1.status: "Low Signal"'],
   ["32_transferred_uplink_broken","tr","Uplink ပြတ် (Broken)","network_good_workflow · uplink_status","Passive-Infra",'uplink.status: "Broken"'],
@@ -253,7 +259,7 @@ let fileCpe = {};
 
 const cur = () => C.find(c => c.file === selected) || C[0];
 const cpeVal = () => $("cpe").value.trim();
-const defaultCpe = c => c.file in fileCpe ? fileCpe[c.file] : (c.g === "rs" || c.g === "kept" || c.g === "tr" ? "CRIT-" + c.num : "");
+const defaultCpe = c => c.file in fileCpe ? fileCpe[c.file] : (c.g === "rs" || c.g === "kept" || c.g === "tr" ? "CRIT" + c.num : "");
 
 async function loadInfo() {
   try {

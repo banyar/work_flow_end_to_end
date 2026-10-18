@@ -1,0 +1,9 @@
+{
+    "data": null,
+    "errors": [
+        {
+            "field": "cpe_id",
+            "error_code": 4002
+        }
+    ]
+}

@@ -65,10 +65,10 @@ criteria-mock-up:
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
 		mockoon/cli:9.9.0 --data /data/mock.json --port 3002 >/dev/null || exit 1; \
 	for i in $$(seq 1 30); do \
-		if [ "$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:$(CRITERIA_MOCK_PORT)/api/v1/onus/CRIT-20/status)" = "200" ]; then \
+		if [ "$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:$(CRITERIA_MOCK_PORT)/api/v1/cpe/CRIT20)" = "200" ]; then \
 			echo "node-red-criteria-mock started on 127.0.0.1:$(CRITERIA_MOCK_PORT) (answering after $$i s)"; exit 0; fi; \
 		sleep 1; done; \
-	echo "node-red-criteria-mock started but CRIT-20 did not answer within 30s -> docker logs node-red-criteria-mock"; exit 1
+	echo "node-red-criteria-mock started but CRIT20 did not answer within 30s -> docker logs node-red-criteria-mock"; exit 1
 
 .PHONY: criteria-mock-stop
 criteria-mock-stop:

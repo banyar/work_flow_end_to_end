@@ -12,7 +12,7 @@
     "custom_fields": {
         "ticket_no": "Jun22-TKT-384",
         "local_service_id": "2083889-001",
-        "cpe_id": "CRIT-21",
+        "cpe_id": "CRIT21",
         "circuit_id": "asdasd",
         "customer_id": "2083889",
         "customer_type": "FR-Biz",

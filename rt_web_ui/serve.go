@@ -41,7 +41,7 @@ var (
 type runRequest struct {
 	TicketID string `json:"ticket_id"`
 	Criteria string `json:"criteria"`
-	CPEID    string `json:"cpe_id"` // "" keeps the criteria file's cpe_id (CRIT-xx for the mock)
+	CPEID    string `json:"cpe_id"` // "" keeps the criteria file's cpe_id (CRITxx for the mock)
 	RunID    string `json:"run_id"` // "" generates a new UUID
 }
 

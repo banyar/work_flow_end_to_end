@@ -1,4 +1,4 @@
-# Terminal 1: Node-RED mock ဖွင့် (CRIT-xx response တွေအတွက်)
+# Terminal 1: Node-RED mock ဖွင့် (CRITxx response တွေအတွက်)
 make criteria-mock
 
 # Terminal 2: .env ထဲက NODE_RED_BASE_URL ကို http://localhost:3002 ညွှန်ထားပြီးမှ

@@ -180,7 +180,7 @@ make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automatio
 | ရလဒ် | ပြင်သော data | File |
 |---|---|---|
 | Not eligible (gate ၅ ခု) | Ticket JSON (`queue`, `status`, `cpe_id`, `opi_site_code`, `service_type`) | `tickets/01`–`05` |
-| Success · Remote resolved / Kept in NOC / Transferred | Node-RED CPE status — ticket တွင် `cpe_id = CRIT-<number>` သာ ပြောင်းပြီး mock က ထို id အလိုက် response ပြန်ပေး | `tickets/10`–`36`, `cpe_status/`, `mockoon-criteria.json` |
+| Success · Remote resolved / Kept in NOC / Transferred | Node-RED CPE status — ticket တွင် `cpe_id = CRIT<number>` သာ ပြောင်းပြီး mock က ထို id အလိုက် response ပြန်ပေး | `tickets/10`–`36`, `cpe_status/`, `mockoon-criteria.json` |
 
 ```bash
 cd rt_web_ui

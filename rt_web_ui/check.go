@@ -235,7 +235,7 @@ func checkDocker(ctx context.Context) checkResult {
 
 func checkMock(ctx context.Context, port string) checkResult {
 	r := checkResult{Name: "Node-RED mock"}
-	endpoint := fmt.Sprintf("http://localhost:%s/api/v1/onus/CRIT-20/status", port)
+	endpoint := fmt.Sprintf("http://localhost:%s/api/v1/cpe/CRIT20", port)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -251,11 +251,11 @@ func checkMock(ctx context.Context, port string) checkResult {
 		} `json:"data"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil || body.Data.OLT.Status != "Offline" {
-		r.Level, r.Detail = levelWarn, "localhost:"+port+" answers, but CRIT-20 is not the criteria mock"
+		r.Level, r.Detail = levelWarn, "localhost:"+port+" answers, but CRIT20 is not the criteria mock"
 		r.Fix = "port " + port + " ကို တခြား program သုံးနေသလား စစ်ပါ"
 		return r
 	}
-	r.Level, r.Detail = levelOK, "localhost:"+port+" · CRIT-20 → olt Offline"
+	r.Level, r.Detail = levelOK, "localhost:"+port+" · CRIT20 → olt Offline"
 	return r
 }
 

@@ -1,7 +1,7 @@
 {
     "data": {
         "cpe": {
-            "cid": "CRIT-10",
+            "cid": "CRIT10",
             "status": "Up"
         },
         "ca1": {
@@ -26,7 +26,7 @@
             "is_swap_onu": false,
             "is_low_dbm": true,
             "is_epc_outage": false,
-            "24h_onu_usage_gb": "1.5",
+            "24h_onu_usage_gb": 1.5,
             "is_usage_over_gb": true,
             "gpon_name": "0/7",
             "hostname": "YKNC07ZYNY-GB7-P7-LCF029166",
