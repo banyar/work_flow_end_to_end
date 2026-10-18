@@ -251,22 +251,6 @@ flowchart LR
   </section>
 
   <section id="events" class="stack">
-    <h2>Event အားလုံး (<code>pipeline_run_events.event</code>)</h2>
-    <p class="prose"><b>To state</b> ဗလာ (—) ဆိုရင် state မပြောင်းတဲ့ event ပါ (<code>from_state = to_state</code>)။ <b>Detail</b> က <code>detail</code> JSON column ထဲ ပါတဲ့ key တွေပါ။</p>
-    <div class="controls">
-      <label class="mono" for="q">ရှာရန်</label>
-      <input id="q" type="search" placeholder="event, state, ဒါမှမဟုတ် စာသား" autocomplete="off">
-      <div class="chips" role="group" aria-label="Filter by component" id="chips">
-        <button class="chip" type="button" data-c="" aria-pressed="true">all</button>
-        <button class="chip" type="button" data-c="rt_web_ui" aria-pressed="false">rt_web_ui</button>
-        <button class="chip" type="button" data-c="remote_resolve_service" aria-pressed="false">remote_resolve_service</button>
-        <button class="chip" type="button" data-c="retry_worker" aria-pressed="false">retry_worker</button>
-        <button class="chip" type="button" data-c="rtutil_consumer" aria-pressed="false">rtutil_consumer</button>
-        <button class="chip" type="button" data-c="bcs_webhook" aria-pressed="false">bcs_webhook</button>
-        <button class="chip" type="button" data-c="bcs_result_sweeper" aria-pressed="false">bcs_result_sweeper</button>
-      </div>
-      <span class="count" id="count" aria-live="polite"></span>
-    </div>
     <div class="scroll">
       <table id="events-table">
         <thead><tr><th>#</th><th>Event</th><th>Component</th><th>To state</th><th>ဘယ်အချိန်</th><th>Detail</th></tr></thead>
@@ -329,38 +313,8 @@ flowchart LR
     <p class="prose">Backoff: <code>RETRY_WORKER_BACKOFF_SCHEDULE</code> (default <code>1m,3m,5m</code>)၊ entry အရေအတွက် = <code>max_attempts</code> (default 3)။</p>
   </section>
 
-  <footer>Source: rtdatacore <code>entities/pipeline_run.go</code> (state များ)၊ rt_web_ui <code>gates.go</code> / <code>tracker.go</code>၊ noc_automation <code>services/</code>, <code>retry_worker/</code>, <code>publish_sweeper/</code>, <code>bcs_sweeper/</code>, <code>helpers/</code>၊ rtutil <code>internal/services/</code>၊ pipeline_report <code>report.go</code>။ Schema: <code>rt_web_ui/FinalSql/*.sql</code>။</footer>
 </div>
 
-<script>
-(function () {
-  var q = document.getElementById('q');
-  var chips = Array.prototype.slice.call(document.querySelectorAll('#chips .chip'));
-  var rows = Array.prototype.slice.call(document.querySelectorAll('#events-table tbody tr'));
-  var count = document.getElementById('count');
-  var comp = '';
-  function apply() {
-    var term = q.value.trim().toLowerCase();
-    var shown = 0;
-    rows.forEach(function (r) {
-      var okComp = !comp || (' ' + r.getAttribute('data-c') + ' ').indexOf(' ' + comp + ' ') >= 0;
-      var okText = !term || r.textContent.toLowerCase().indexOf(term) >= 0;
-      r.hidden = !(okComp && okText);
-      if (!r.hidden) shown++;
-    });
-    count.textContent = shown + ' / ' + rows.length + ' rows';
-  }
-  chips.forEach(function (c) {
-    c.addEventListener('click', function () {
-      comp = c.getAttribute('data-c');
-      chips.forEach(function (o) { o.setAttribute('aria-pressed', o === c ? 'true' : 'false'); });
-      apply();
-    });
-  });
-  q.addEventListener('input', apply);
-  apply();
-})();
-</script>
 
 <!-- Local copy: the claude.ai viewer draws the Mermaid diagram itself; here it
      loads from a CDN, so the diagram (and the web fonts) need internet. -->

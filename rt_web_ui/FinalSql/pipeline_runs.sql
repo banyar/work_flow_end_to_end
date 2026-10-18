@@ -1,102 +1,41 @@
--- pipeline_runs: one row per remote-resolve pipeline run, holding its
--- current state and business result. The run's history (every state change
--- and event) is in pipeline_run_events; a failed stage waiting for a retry
--- is in retry_jobs.
--- The database schema is this file: apply it to the RT database (DBA /
--- release step). No service creates, alters or checks the table (there is
--- no AutoMigrate).
--- rtdatacore's entities.PipelineRun tags describe the same columns, so a
--- change here must also go into those tags.
---
--- Writers: rt_web_ui opens the run (ticket fields, state ""), noc_automation
--- adds the Node-RED and workflow results, rtutil the RT update and BCS result.
 CREATE TABLE `pipeline_runs` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT
-    COMMENT 'Internal auto-increment primary key',
-  `run_id` char(36) DEFAULT NULL
-    COMMENT 'UUID of the pipeline run, shared by pipeline_run_events, retry_jobs and the Kafka message',
-
-  -- Ticket, from the RT request (written when the run is opened)
-  `ticket_id` bigint(20) unsigned DEFAULT NULL
-    COMMENT 'RT ticket ID',
-  `ticket_no` varchar(30) DEFAULT NULL
-    COMMENT 'RT ticket number custom field (e.g. Jun22-TKT-2065375)',
-  `service_area` varchar(50) DEFAULT NULL
-    COMMENT 'Service area custom field of the ticket',
-  `township` VARCHAR(45) DEFAULT NULL
-    COMMENT 'Township custom field of the ticket',
-  `ticket_created_at` datetime DEFAULT NULL
-    COMMENT 'When the RT ticket was created',
-  `tags` varchar(512) DEFAULT NULL
-    COMMENT 'Ticket tags, comma-separated; no writer yet (the tags are in rt_request_snapshot)',
-  `ticket_problem` varchar(45) DEFAULT NULL
-    COMMENT 'Ticket Problem custom field of the ticket',
-  `ticket_status` varchar(20) DEFAULT NULL
-    COMMENT 'RT ticket status as received; overwritten by rtutil at COMPLETED with the status its RT update set',
-
-  -- CPE and network, from Node-RED (written by noc_automation)
-  `cpe_id` varchar(12) DEFAULT NULL
-    COMMENT 'CPE ID custom field of the ticket; the CPE the pipeline checks',
-  `local_service_id` varchar(30) DEFAULT ''
-    COMMENT 'Local service ID custom field of the ticket',
-  `ref_bcs_process_id` varchar(36) DEFAULT ''
-    COMMENT 'Peppermint BCS async job_id (UUID), set by rtutil when the BCS job is queued; '''' until then',
-  `onu_serial` varchar(30) DEFAULT NULL
-    COMMENT 'ONU serial number from the Node-RED CPE status',
-  `olt_hostname` varchar(30) DEFAULT NULL
-    COMMENT 'OLT hostname from the Node-RED CPE status (e.g. OVF-ATAF02ZHRY)',
-  `ca1` varchar(30) DEFAULT NULL
-    COMMENT 'CA1 device name from the Node-RED CPE status',
-  `uplink` varchar(30) DEFAULT NULL
-    COMMENT 'Uplink device name from the Node-RED CPE status',
-
-  -- Run state
-  `current_state` varchar(40) DEFAULT NULL
-    COMMENT 'Pipeline state (e.g. SUBMITTED_TO_API, RECEIVED, PUBLISHED, COMPLETED, NOT_ELIGIBLE, FAILED_PERMANENT); "" right after rt_web_ui opens the run',
-  `active_retry_job_id` bigint(20) unsigned DEFAULT NULL
-    COMMENT 'retry_jobs.id of the retry in progress; NULL when none',
-  `last_state_reason` text DEFAULT NULL
-    COMMENT 'Why the run is in current_state (gate reason, error message, ...); set on every state change',
-
-  -- Workflow and BCS result
-  `is_remote_resolved` tinyint(1) DEFAULT NULL
-    COMMENT 'Workflow decision: 1 = resolved remotely, 0 = transferred or kept in NOC',
-  `is_bcs_success` tinyint(1) DEFAULT NULL
-    COMMENT 'rtutil CPEMS/BCS call result: 1 = success, 0 = failed, NULL = not called',
-  `bcs_status_message` text DEFAULT NULL
-    COMMENT 'Status or error message returned by CPEMS/BCS',
-  `final_message` text DEFAULT NULL
-    COMMENT 'Comment the workflow decided to add to the RT ticket',
-  `before_queue` varchar(45) DEFAULT NULL
-    COMMENT 'Ticket queue as received, before the workflow decision',
-  `target_queue` varchar(45) DEFAULT NULL
-    COMMENT 'Queue the workflow moves the ticket to (same as before_queue when kept in NOC)',
-  `before_bcs_channel` tinyint(5) unsigned DEFAULT NULL
-    COMMENT 'CPE WiFi channel before the BCS change (e.g. 1, 6, 11); no writer yet',
-  `target_bcs_channel` tinyint(5) unsigned DEFAULT NULL
-    COMMENT 'CPE WiFi channel set by BCS (e.g. 1, 6, 11); no writer yet',
-  `rt_request_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
-    COMMENT 'The ticket JSON as received from the RT Web UI, for audit and replay'
-    CHECK (json_valid(`rt_request_snapshot`)),
-
-  -- Timestamps
-  `created_at` datetime(3) DEFAULT NULL
-    COMMENT 'When the run was opened',
-  `updated_at` datetime(3) DEFAULT NULL
-    COMMENT 'Last change to the row',
-  `completed_at` datetime(3) DEFAULT NULL
-    COMMENT 'When the run reached a terminal state (COMPLETED, NOT_ELIGIBLE, FAILED_PERMANENT, ...); NULL while in progress',
-
+  `id` int(10) unsigned NOT NULL COMMENT 'Internal auto-increment primary key',
+  `run_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'UUID of the pipeline run, shared by pipeline_run_events, retry_jobs and the Kafka message',
+  `ticket_id` bigint(20) unsigned DEFAULT NULL COMMENT 'RT ticket ID',
+  `ticket_no` varchar(30) DEFAULT NULL COMMENT 'RT ticket number custom field (e.g. Jun22-TKT-2065375)',
+  `service_area` varchar(50) DEFAULT NULL COMMENT 'Service area custom field of the ticket',
+  `township` varchar(45) DEFAULT NULL COMMENT 'Township custom field of the ticket',
+  `ticket_created_at` datetime DEFAULT NULL COMMENT 'When the RT ticket was created',
+  `tags` varchar(512) DEFAULT NULL COMMENT 'Ticket tags, comma-separated; no writer yet (the tags are in rt_request_snapshot)',
+  `ticket_problem` varchar(45) DEFAULT NULL COMMENT 'Ticket Problem custom field of the ticket',
+  `ticket_status` varchar(20) DEFAULT NULL COMMENT 'RT ticket status as received; overwritten by rtutil at COMPLETED with the status its RT update set',
+  `cpe_id` varchar(12) DEFAULT NULL COMMENT 'CPE ID custom field of the ticket; the CPE the pipeline checks',
+  `local_service_id` varchar(30) DEFAULT '' COMMENT 'Local service ID custom field of the ticket',
+  `ref_bcs_process_id` varchar(36) DEFAULT '' COMMENT 'Peppermint BCS async job_id (UUID), set by rtutil when the BCS job is queued; '''' until then',
+  `onu_serial` varchar(30) DEFAULT NULL COMMENT 'ONU serial number from the Node-RED CPE status',
+  `olt_hostname` varchar(30) DEFAULT NULL COMMENT 'OLT hostname from the Node-RED CPE status (e.g. OVF-ATAF02ZHRY)',
+  `ca1` varchar(30) DEFAULT NULL COMMENT 'CA1 device name from the Node-RED CPE status',
+  `uplink` varchar(30) DEFAULT NULL COMMENT 'Uplink device name from the Node-RED CPE status',
+  `current_state` varchar(40) DEFAULT NULL COMMENT 'Pipeline state (e.g. SUBMITTED_TO_API, RECEIVED, PUBLISHED, COMPLETED, NOT_ELIGIBLE, FAILED_PERMANENT); "" right after rt_web_ui opens the run',
+  `active_retry_job_id` bigint(20) unsigned DEFAULT NULL COMMENT 'retry_jobs.id of the retry in progress; NULL when none',
+  `last_state_reason` text DEFAULT NULL COMMENT 'Why the run is in current_state (gate reason, error message, ...); set on every state change',
+  `is_remote_resolved` tinyint(1) DEFAULT NULL COMMENT 'Workflow decision: 1 = resolved remotely, 0 = transferred or kept in NOC',
+  `is_bcs_success` tinyint(1) DEFAULT NULL COMMENT 'rtutil CPEMS/BCS call result: 1 = success, 0 = failed, NULL = not called',
+  `bcs_status_message` text DEFAULT NULL COMMENT 'Status or error message returned by CPEMS/BCS',
+  `final_message` text DEFAULT NULL COMMENT 'Comment the workflow decided to add to the RT ticket',
+  `before_queue` varchar(45) DEFAULT NULL COMMENT 'Ticket queue as received, before the workflow decision',
+  `target_queue` varchar(45) DEFAULT NULL COMMENT 'Queue the workflow moves the ticket to (same as before_queue when kept in NOC)',
+  `before_bcs_channel` tinyint(5) unsigned DEFAULT NULL COMMENT 'CPE WiFi channel before the BCS change (e.g. 1, 6, 11); no writer yet',
+  `target_bcs_channel` tinyint(5) unsigned DEFAULT NULL COMMENT 'CPE WiFi channel set by BCS (e.g. 1, 6, 11); no writer yet',
+  `rt_request_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'The ticket JSON as received from the RT Web UI, for audit and replay' CHECK (json_valid(`rt_request_snapshot`)),
+  `created_at` datetime(3) DEFAULT NULL COMMENT 'When the run was opened',
+  `updated_at` datetime(3) DEFAULT NULL COMMENT 'Last change to the row',
+  `completed_at` datetime(3) DEFAULT NULL COMMENT 'When the run reached a terminal state (COMPLETED, NOT_ELIGIBLE, FAILED_PERMANENT, ...); NULL while in progress',
   PRIMARY KEY (`id`),
-  -- One row per run; also the lookup key of every other writer.
   UNIQUE KEY `idx_pipeline_runs_run_id` (`run_id`),
-  -- Lookups by ticket or CPE (reports, "has this ticket been processed").
   KEY `idx_pipeline_runs_ticket_id` (`ticket_id`),
   KEY `idx_pipeline_runs_cpe_id` (`cpe_id`),
-  -- Report filters.
   KEY `idx_pipeline_runs_township` (`township`),
   KEY `idx_pipeline_runs_ticket_status` (`ticket_status`),
-  -- Runs in a state since a time (stuck-run sweeper, per-state report counts).
   KEY `idx_pipeline_runs_state_created` (`current_state`,`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci
-  COMMENT='Current state and business result of each remote-resolve pipeline run';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='Current state and business result of each remote-resolve pipeline run'

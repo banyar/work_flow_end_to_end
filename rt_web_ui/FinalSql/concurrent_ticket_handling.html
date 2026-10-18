@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concurrent Ticket Handling</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --ink: #1f2328; --ink-2: #59636e;
+    --border: #d8dee4; --head: #f0f2f4; --code: #eef1f4;
+    --ok: #1a7f37; --bad: #cf222e; --warn: #9a6700; --accent: #0969da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #171a20; --ink: #e6e8eb; --ink-2: #9aa4af;
+      --border: #2c323a; --head: #1e232a; --code: #232932;
+      --ok: #3fb950; --bad: #f85149; --warn: #d29922; --accent: #4493f8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 16px; background: var(--bg); color: var(--ink);
+    font: 15px/1.65 system-ui, -apple-system, "Segoe UI", "Noto Sans Myanmar", sans-serif;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  h2 { font-size: 18px; margin: 36px 0 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .meta { color: var(--ink-2); font-size: 13px; margin: 0 0 18px; }
+  .lead { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+          border-radius: 8px; padding: 14px 16px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--head); font-weight: 600; font-size: 13px; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  tr.pick td { background: color-mix(in srgb, var(--ok) 10%, transparent); }
+  code {
+    font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code); padding: 1px 5px; border-radius: 4px;
+  }
+  pre { background: var(--code); border: 1px solid var(--border); border-radius: 8px;
+        padding: 12px 14px; overflow-x: auto; margin: 0 0 12px; }
+  pre code { background: none; padding: 0; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .bad { color: var(--bad); font-weight: 600; }
+  .warn { color: var(--warn); font-weight: 600; }
+  .c { text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Concurrent Ticket Submission Handling</h1>
+  <p class="meta">2026-10-18 · Remote-resolve pipeline · Design (implementation မလုပ်ရသေး)</p>
+
+  <p class="lead">Ticket တစ်စောင်တည်းကို tab များများ၊ user နှစ်ယောက်၊ API တိုက်ရိုက်ခေါ်တာ ဘယ်လိုပဲ ပြိုင်တူ ပို့ပို့ <b>database ရဲ့ unique index က တစ်ခုပဲ လက်ခံပြီး ကျန်တာကို ပယ်ပါမယ်</b>။ DB အတွင်းမှာ InnoDB row lock နဲ့ လုပ်တာဖြစ်လို့ application ဘက်မှာ lock code ရေးစရာ မလိုပါ။</p>
+
+  <h2>1. လက်ရှိ ဖြစ်ပုံ</h2>
+  <p>လက်ရှိ code က ပြိုင်တူ request ကို မတားပါ။ နှိပ်တိုင်း <code>run_id</code> (UUID) အသစ် ထုတ်ပြီး <code>ticket_id</code> ကို ဘယ်နေရာမှ မစစ်တဲ့အတွက် ငါးခါနှိပ်ရင် run ငါးခု သီးခြားစီ ဖြစ်ပါတယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>အဆင့်</th><th>ငါးခါ နှိပ်ရင် ဖြစ်တာ</th></tr></thead>
+    <tbody>
+      <tr><td><code>pipeline_runs</code></td><td>Row ၅ ကြောင်း (Report မှာ Received = 5)</td></tr>
+      <tr><td>Node-RED (CPE status)</td><td>၅ ခါ ခေါ်</td></tr>
+      <tr><td>Kafka</td><td>Message ၅ ခု</td></tr>
+      <tr><td>Remote resolve ticket</td><td>rtutil က တစ်ခုချင်း process လုပ်ရင် ပထမ run က Resolved ပြောင်းပြီး ကျန် ၄ ခု <code>SKIPPED</code>။ rtutil replica တစ်ခုထက်ပိုရင် ပြိုင်တူ process လုပ်မိပြီး <b>BCS (channel ပြောင်း) ကို အကြိမ်ကြိမ် ခေါ်နိုင်</b></td></tr>
+      <tr><td>Queue transfer / Kept in NOC ticket</td><td>Skip စစ်ချက် မရှိလို့ RT update ၅ ခါ၊ <b>comment ၅ ခု</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>ရှိပြီးသား guard တွေက <code>run_id</code> အလိုက်ပဲ ဖြစ်ပါတယ်: <code>run_id</code> တူ request ထပ်ဝင်ရင် HTTP 409၊ rtutil က ပြီးပြီးသား run ကို skip။ <code>ticket_id</code> တူပြီး <code>run_id</code> မတူရင် မကာကွယ်ပါ။</p>
+
+  <h2>2. ဖြေရှင်းနည်း: active run unique index</h2>
+  <p>Ticket တစ်စောင်မှာ မပြီးသေးတဲ့ run (<code>completed_at IS NULL</code>) <b>တစ်ခုပဲ</b> ရှိခွင့်ပြုတဲ့ index ကို <code>pipeline_runs</code> မှာ ထည့်ပါမယ်။</p>
+<pre><code>ALTER TABLE pipeline_runs
+  ADD active_ticket_id bigint(20) unsigned
+      AS (IF(completed_at IS NULL, ticket_id, NULL)) PERSISTENT,
+  ADD UNIQUE KEY uq_pipeline_runs_active_ticket (active_ticket_id);</code></pre>
+  <ul>
+    <li>Run မပြီးသေးရင် <code>active_ticket_id</code> = <code>ticket_id</code> ဖြစ်လို့ ticket တူ run နောက်တစ်ခု insert လုပ်ရင် duplicate error ဖြစ်ပါတယ်။</li>
+    <li>Run ပြီးသွားရင် (<code>completed_at</code> ဖြည့်) <code>active_ticket_id</code> = NULL ဖြစ်ပါတယ်။ Unique index က NULL တွေကို ကန့်သတ်မထားလို့ နောက်ထပ် run ဖွင့်ခွင့် ပြန်ရပါတယ်။</li>
+    <li>Request ဘယ်ကလာလာ pipeline run ဖွင့်ဖို့ ဒီ table ထဲ insert လုပ်ရပါတယ်။ ဒါကြောင့် DB တစ်နေရာက အားလုံးကို တားပါတယ်။</li>
+  </ul>
+
+  <h3>SQL တစ်ကြောင်းချင်း</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>SQL</th><th>အဓိပ္ပာယ်</th></tr></thead>
+    <tbody>
+      <tr><td><code>ALTER TABLE pipeline_runs</code></td><td>ရှိပြီးသား <code>pipeline_runs</code> table ကို ပြင်မယ်</td></tr>
+      <tr><td><code>ADD active_ticket_id bigint(20) unsigned</code></td><td>Column အသစ် ထည့်တာပါ။ Value ကို <code>ticket_id</code> ကနေ ကူးမှာမို့ type ကို <code>ticket_id</code> နဲ့ တူအောင် ထားပါတယ်</td></tr>
+      <tr><td><code>AS (IF(completed_at IS NULL, ticket_id, NULL))</code></td><td><b>Generated column</b> ပါ။ App က ဘယ်တော့မှ မရေးပါ။ Row insert / update လုပ်တိုင်း DB က formula နဲ့ ကိုယ်တိုင် တွက်ပါတယ်:<br>• run <b>မပြီးသေး</b> (<code>completed_at IS NULL</code>) → <code>ticket_id</code><br>• run <b>ပြီးပြီ</b> → <code>NULL</code></td></tr>
+      <tr><td><code>PERSISTENT</code></td><td>တွက်ထားတဲ့ value ကို disk ပေါ်မှာ တကယ်သိမ်းပါတယ် (MySQL မှာ <code>STORED</code>)။ <code>VIRTUAL</code> ဆိုရင် ဖတ်တိုင်း တွက်ပြီး မသိမ်းပါ။ Unique index ကို ယုံကြည်ရဖို့နဲ့ Galera ဖြစ်လာရင် ဘေးကင်းဖို့ <code>PERSISTENT</code> ကို ရွေးတာပါ</td></tr>
+      <tr><td><code>ADD UNIQUE KEY uq_pipeline_runs_active_ticket (active_ticket_id)</code></td><td><code>active_ticket_id</code> တူတဲ့ row နှစ်ကြောင်း မရှိရပါ။ <b>အရေးကြီးဆုံး:</b> unique index က <code>NULL</code> တွေကို ထပ်ခွင့်ပြုပါတယ်။ ဒါကြောင့် ပြီးသွားတဲ့ run (NULL) ဘယ်နှခုရှိရှိ ရပြီး၊ မပြီးသေးတဲ့ run ကတော့ ticket တစ်ခုအတွက် <b>တစ်ခုပဲ</b> ရှိခွင့်ရှိပါတယ်</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>ဥပမာ: ticket 384 ရဲ့ ဖြစ်စဉ်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>အဆင့်</th><th><code>run_id</code></th><th><code>ticket_id</code></th><th><code>completed_at</code></th><th><code>active_ticket_id</code> (DB တွက်)</th><th>ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>① ပထမ click</td><td>A</td><td>384</td><td>NULL</td><td><b>384</b></td><td class="ok">insert အောင်</td></tr>
+      <tr><td>② ဒုတိယ click (A မပြီးသေး)</td><td>B</td><td>384</td><td>NULL</td><td><b>384</b></td><td class="bad">1062 Duplicate entry '384'</td></tr>
+      <tr><td>③ Run A ပြီး</td><td>A</td><td>384</td><td>10:05</td><td>NULL</td><td>A က index ထဲက ထွက်</td></tr>
+      <tr><td>④ နောက်ထပ် click</td><td>C</td><td>384</td><td>NULL</td><td><b>384</b></td><td class="ok">insert အောင် (384 မရှိတော့)</td></tr>
+      <tr><td>⑤ တခြား ticket</td><td>D</td><td>500</td><td>NULL</td><td>500</td><td class="ok">ticket မတူလို့ မထိခိုက်</td></tr>
+    </tbody>
+  </table></div>
+  <p>Run မပြီးခင် ticket က "သော့ခတ်" ထားသလို ဖြစ်ပြီး <code>completed_at</code> ဖြည့်တာနဲ့ "သော့ဖွင့်" ဖြစ်ပါတယ်။ App code မလိုဘဲ DB က အလိုအလျောက် လုပ်ပါတယ်။</p>
+  <p><b>ဘာကြောင့် <code>UNIQUE (ticket_id)</code> တိုက်ရိုက် မထည့်တာလဲ:</b> အဲဒါဆိုရင် ticket တစ်ခုမှာ run <b>တစ်ခါပဲ</b> ရှိခွင့်ရလို့ နောက်နေ့ ticket ပြန်ဖွင့်လာရင်တောင် run အသစ် မဖွင့်နိုင်ပါ။ တားချင်တာက "<b>တစ်ပြိုင်နက်</b>" ကိုပဲ ဖြစ်လို့ မပြီးသေးတဲ့ run တွေကိုပဲ ရွေးတားဖို့ generated column လိုပါတယ်။</p>
+
+  <h3>Implement လုပ်တဲ့အခါ သတိထားရန်</h3>
+  <ol>
+    <li><b>ALTER မလုပ်ခင် duplicate ရှိမရှိ စစ်ပါ။</b> ticket တူ မပြီးသေးတဲ့ run နှစ်ခု ရှိနေရင် ALTER ကိုယ်တိုင် <code>1062</code> နဲ့ fail ပါမယ်။ ရလဒ်ပါလာရင် run ဟောင်းတွေကို (Section 8 runbook SQL နဲ့) အရင်ပိတ်ပါ:
+<pre><code>SELECT ticket_id, COUNT(*) FROM pipeline_runs
+ WHERE completed_at IS NULL AND ticket_id IS NOT NULL
+ GROUP BY ticket_id HAVING COUNT(*) &gt; 1;</code></pre></li>
+    <li><b>App က ဒီ column ကို မရေးရပါ။</b> Generated column ထဲ value ထည့်ရင် MariaDB က error 1906 (strict mode) ပြပါတယ်။ rtdatacore entity မှာ GORM tag ကို read-only (<code>gorm:"-&gt;"</code>) ထားရပါမယ်၊ မဟုတ်ရင် GORM က insert ထဲ ထည့်ပါမယ်။</li>
+    <li><b>ALTER က table ကို rebuild လုပ်ပါတယ်။</b> Row တိုင်းအတွက် တွက်ရလို့ table ကြီးရင် အချိန်ယူပြီး ရေးခွင့်ကို ခဏ ပိတ်နိုင်ပါတယ်။ Release window မှာ run ပါ။</li>
+    <li><b><code>completed_at</code> ကို terminal state တိုင်းမှာ ဖြည့်ရပါမယ်။</b> ဒီစည်းကမ်းက <code>completed_at</code> ကိုပဲ ကြည့်လို့ terminal ရောက်ပြီး မဖြည့်မိရင် ticket ပိတ်နေပါမယ်။ လက်ရှိ rtdatacore က terminal state မှာ ဖြည့်ပေးပါတယ်။</li>
+    <li><b><code>ticket_id</code> NULL ဆိုရင် မတားပါ။</b> Gate မှာ <code>ticket_id</code> အမြဲပါလို့ ပြဿနာ မရှိပါ။</li>
+  </ol>
+
+  <h3>Request လာပုံအလိုက် တားနိုင်/မနိုင်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>Request လာပုံ</th><th class="c">Browser button disable</th><th class="c">Server memory lock</th><th class="c">DB unique index</th></tr></thead>
+    <tbody>
+      <tr><td>တစ်ခါတည်း ငါးခါ နှိပ်</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td></tr>
+      <tr><td>Tab များများ</td><td class="c bad">✗</td><td class="c ok">✓ server တစ်ခုတည်းဆိုရင်</td><td class="c ok">✓</td></tr>
+      <tr><td>User နှစ်ယောက်</td><td class="c bad">✗</td><td class="c ok">✓ server တစ်ခုတည်းဆိုရင်</td><td class="c ok">✓</td></tr>
+      <tr><td>API ကို curl / script နဲ့ တိုက်ရိုက်ခေါ်</td><td class="c bad">✗</td><td class="c ok">✓ server တစ်ခုတည်းဆိုရင်</td><td class="c ok">✓</td></tr>
+      <tr><td>Server pod / replica တစ်ခုထက်ပို</td><td class="c bad">✗</td><td class="c bad">✗</td><td class="c ok">✓</td></tr>
+    </tbody>
+  </table></div>
+  <p>Schema ပြောင်းတာမို့ <code>rt_web_ui/FinalSql/pipeline_runs.sql</code> နဲ့ rtdatacore <code>entities.PipelineRun</code> tag နှစ်ခုလုံးကို ပြင်ရပါမယ်။</p>
+
+  <h2>3. ငါးခါ ပြိုင်တူ နှိပ်တဲ့အခါ DB အတွင်းမှာ ဖြစ်တာ</h2>
+  <p>Insert တိုင်းမှာ InnoDB က index entry (<code>active_ticket_id</code> = 384) ပေါ် row lock ကို အလိုအလျောက် ယူပါတယ်။ ဒါကြောင့် <b>အမြဲ တစ်ခုပဲ အောင်ပါတယ်</b>၊ နှစ်ခုအောင်တာ ဘယ်တော့မှ မဖြစ်ပါ။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>အချိန်</th><th>Click 1 (T1)</th><th>Click 2 (T2)</th><th>Click 3–5</th></tr></thead>
+    <tbody>
+      <tr><td>t0</td><td><code>INSERT</code> ticket 384 → index entry 384 ပေါ် <b>exclusive lock</b> ယူ</td><td></td><td></td></tr>
+      <tr><td>t1</td><td></td><td><code>INSERT</code> ticket 384 → 384 ရှိနေပြီ (commit မလုပ်ရသေး) → T1 ကို <b>စောင့်</b></td><td>အတူတူ စောင့်</td></tr>
+      <tr><td>t2</td><td>COMMIT → lock လွှတ်</td><td class="bad">ERROR 1062 Duplicate entry</td><td class="bad">ERROR 1062</td></tr>
+      <tr><td>T1 rollback ဖြစ်ရင်</td><td></td><td class="ok">Insert အောင် (T2 အနိုင်ရ)</td><td class="bad">ERROR 1062</td></tr>
+    </tbody>
+  </table></div>
+  <p>စောင့်ရတဲ့အချိန်က insert transaction ကြာသလောက်ပဲ (millisecond) ဖြစ်ပါတယ်။ Insert တစ်ခုတည်း ဖြစ်လို့ deadlock မဖြစ်ပါ။</p>
+  <p><b>Local test (MariaDB 10.4, 2026-10-16):</b> ယာယီ table တစ်ခုမှာ ticket 384 ကို insert ၅ ခု ပြိုင်တူ ပို့စမ်းပါတယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>စမ်းတာ</th><th>ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>Insert ၅ ခု ပြိုင်တူ</td><td>1 ခု အောင်၊ 4 ခု <code>ERROR 1062 Duplicate entry '384' for key 'uq_active'</code></td></tr>
+      <tr><td>Run ပြီး (<code>completed_at</code> ဖြည့်) ပြီးနောက် ticket တူ insert</td><td class="ok">အောင် (run အသစ် ဖွင့်လို့ရ)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Ticket တူ ငါးခါ ဝင်လာရင် table ထဲမှာ row ဘယ်နှစ်ကြောင်းလဲ</h3>
+  <p>ငါးခါ ပြိုင်တူ ဝင်လာရင် <b><code>pipeline_runs</code> မှာ row ၁ ကြောင်းပဲ</b> ဖြစ်ပါတယ်။ ပယ်ခံရတဲ့ ၄ ခုက table ထဲ လုံးဝ မရောက်ပါ။</p>
+
+  <p><b>လက်ရှိ (guard မရှိ): row ၅ ကြောင်း</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th>id</th><th>run_id</th><th>ticket_id</th><th>current_state</th><th>completed_at</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>a1…</td><td>384</td><td>COMPLETED</td><td>10:00:05</td></tr>
+      <tr><td>2</td><td>b2…</td><td>384</td><td>SKIPPED</td><td>10:00:06</td></tr>
+      <tr><td>3</td><td>c3…</td><td>384</td><td>SKIPPED</td><td>10:00:06</td></tr>
+      <tr><td>4</td><td>d4…</td><td>384</td><td>SKIPPED</td><td>10:00:07</td></tr>
+      <tr><td>5</td><td>e5…</td><td>384</td><td>SKIPPED</td><td>10:00:07</td></tr>
+    </tbody>
+  </table></div>
+  <p>Node-RED ကို ၅ ခါ ခေါ်ပြီး Kafka message ၅ ခု ထွက်ပါတယ်။ Transfer ticket ဆိုရင် comment ၅ ခု ဖြစ်ပါတယ်။</p>
+
+  <p><b>Guard ထည့်ပြီး: row ၁ ကြောင်း</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th>id</th><th>run_id</th><th>ticket_id</th><th>current_state</th><th>completed_at</th><th>active_ticket_id</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>a1…</td><td>384</td><td>COMPLETED</td><td>10:00:05</td><td>NULL</td></tr>
+    </tbody>
+  </table></div>
+  <div class="wrap"><table>
+    <thead><tr><th>Click</th><th>DB ရလဒ်</th><th>Table ထဲ</th><th>User မြင်ရတာ</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td class="ok">INSERT အောင်</td><td>row id 1</td><td>Processing… → result</td></tr>
+      <tr><td>2</td><td class="bad"><code>1062 Duplicate entry '384'</code></td><td>ဘာမှ မဝင်</td><td>"Ticket is already being processed"</td></tr>
+      <tr><td>3</td><td class="bad"><code>1062</code></td><td>ဘာမှ မဝင်</td><td>အတူတူ</td></tr>
+      <tr><td>4</td><td class="bad"><code>1062</code></td><td>ဘာမှ မဝင်</td><td>အတူတူ</td></tr>
+      <tr><td>5</td><td class="bad"><code>1062</code></td><td>ဘာမှ မဝင်</td><td>အတူတူ</td></tr>
+    </tbody>
+  </table></div>
+  <p>Node-RED၊ Kafka၊ RT update၊ BCS ကို တစ်ခါပဲ ခေါ်ပါတယ်။ <code>pipeline_run_events</code> ထဲမှာလည်း run 1 ရဲ့ event တွေပဲ ရှိပါတယ်။</p>
+
+  <p><b>Click ဝင်လာတဲ့အချိန်အလိုက် row အရေအတွက်</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th>ဝင်လာပုံ</th><th>Row</th><th>ဘာကြောင့်</th></tr></thead>
+    <tbody>
+      <tr><td>၅ ခါလုံး ပြိုင်တူ (run 1 မပြီးခင်)</td><td><b>1</b></td><td>Run 1 active ဖြစ်နေတုန်း ကျန်တာ အားလုံး ပယ်ခံရ</td></tr>
+      <tr><td>Run 1 ပြီးမှ (၁ မိနစ်ကြာ) နောက်တစ်ခါ နှိပ်</td><td><b>2</b></td><td>Run 1 ပြီးသွားပြီ (<code>active_ticket_id</code> = NULL) မို့ run အသစ် ခွင့်ပြု။ လိုချင်တဲ့ အပြုအမူပါ</td></tr>
+      <tr><td>Run 1 stuck (30 မိနစ်ကျော်) ဖြစ်နေတုန်း ၅ ခါ နှိပ်</td><td><b>2</b></td><td>Run 1 ကို lazy takeover နဲ့ <code>FAILED_PERMANENT</code> ပိတ်ပြီး run အသစ် ၁ ခုပဲ ဝင် (Section 8)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Stuck case မှာ table ထဲ ဒီလို ဖြစ်ပါမယ်:</p>
+  <div class="wrap"><table>
+    <thead><tr><th>id</th><th>run_id</th><th>current_state</th><th>completed_at</th><th>active_ticket_id</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>a1… (stuck)</td><td>FAILED_PERMANENT (stale run closed)</td><td>10:40</td><td>NULL</td></tr>
+      <tr><td>6</td><td>f6…</td><td>SUBMITTED_TO_API → …</td><td>NULL</td><td><b>384</b></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b><code>id</code> မှာ ကွက်လပ် ကျန်ပါတယ်။</b> Fail ဖြစ်တဲ့ INSERT တွေကလည်း AUTO_INCREMENT နံပါတ်ကို စားသွားလို့ နောက် run ရဲ့ id က 2 မဟုတ်ဘဲ 6 ဖြစ်နိုင်ပါတယ် (local test မှာ id 1 ပြီးရင် 6)။ ပုံမှန်ပဲမို့ ပြဿနာ မရှိပါ။</li>
+    <li><b>ပယ်ခံရတဲ့ click တွေက DB ထဲ မှတ်တမ်း မကျန်ပါ။</b> သိချင်ရင် RT Web UI app log မှာ "duplicate submission rejected, ticket 384, existing run a1…" လို့ ရေးပါ။</li>
+  </ul>
+
+  <h2>4. Lock ကိုယ်တိုင်ရေးတဲ့ နည်းတွေနဲ့ နှိုင်းယှဉ်ချက်</h2>
+  <p>Unique index (F) ကို ရွေးပါတယ်။ Lock ကိုယ်တိုင်ရေးရတဲ့ C၊ D၊ E တွေက မှားနိုင်တဲ့နေရာ ပိုများပါတယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>နည်း</th><th>လုပ်ပုံ</th><th>ပြဿနာ</th></tr></thead>
+    <tbody>
+      <tr><td>A. အရင်စစ်ပြီးမှ insert (lock မပါ)</td><td><code>SELECT</code> active run → မရှိရင် <code>INSERT</code></td><td><span class="bad">✗</span> Race condition: ငါးခုလုံး တစ်ပြိုင်နက် SELECT လုပ်ပြီး "မရှိဘူး" လို့ မြင်ကြလို့ ငါးခုလုံး insert လုပ်ပါတယ်</td></tr>
+      <tr><td>B. Server memory lock (Go mutex)</td><td><code>ticket_id</code> အလိုက် mutex</td><td><span class="bad">✗</span> Pod တစ်ခုထက်ပိုရင် မတားပါ။ Restart ရင် ပျောက်ပါတယ်</td></tr>
+      <tr><td>C. <code>SELECT … FOR UPDATE</code></td><td>Transaction ထဲမှာ lock ပြီးမှ insert</td><td><span class="warn">!</span> Row မရှိသေးလို့ gap lock ပဲ ရပါတယ်။ Gap lock ကို နှစ်ခုလုံးယူထားနိုင်လို့ insert မှာ <b>deadlock</b> ဖြစ်ပါတယ်။ <code>READ COMMITTED</code> မှာ gap lock မရှိလို့ လုံးဝ မတားပါ</td></tr>
+      <tr><td>D. MariaDB <code>GET_LOCK('ticket:384', 5)</code></td><td>Lock ယူ → စစ် → insert → <code>RELEASE_LOCK</code></td><td><span class="warn">!</span> Lock က DB connection နဲ့ ချိတ်လို့ connection pool မှာ connection တူအောင် ထိန်းရပါတယ်။ Release မေ့ရင် ticket ပိတ်နေမယ်</td></tr>
+      <tr><td>E. Redis distributed lock</td><td><code>SET ticket:384 NX EX 30</code></td><td><span class="warn">!</span> Redis အသစ် လိုပါတယ်။ TTL ကုန်ပြီး လုပ်ငန်း မပြီးသေးရင် duplicate ဖြစ်နိုင်ပါတယ်</td></tr>
+      <tr class="pick"><td><b>F. DB unique index</b></td><td>Insert လုပ်ရုံပဲ</td><td><span class="ok">✓</span> DB က atomic အာမခံပါတယ်။ Lock code၊ release၊ TTL မလိုပါ။ Pod အရေအတွက်နဲ့ isolation level ပေါ် မမှီခိုပါ</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>5. ပယ်ခံရတဲ့ request ကို ဘာပြန်မလဲ</h2>
+  <p>Insert မှာ <code>1062 Duplicate entry</code> ရရင် error အဖြစ် မပြဘဲ "Ticket is already being processed" လို့ ပြန်ပါမယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>Option</th><th>Response</th><th>Browser ဘက်</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>HTTP 409 + message</td><td>"ခုနက ပို့ထားပြီးသား" လို့ ပြ</td></tr>
+      <tr><td>2</td><td>HTTP 200 + လက်ရှိ run ရဲ့ <code>run_id</code></td><td>တူညီတဲ့ run ရဲ့ status ကို ဆက်ပြ</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>ပယ်ခံရတဲ့ request တွေက Node-RED၊ Kafka၊ RT၊ BCS ဘယ်ဟာကိုမှ မခေါ်ပါ။ ဒါကြောင့် comment ထပ်တာ၊ BCS ထပ်ခေါ်တာ အလိုအလျောက် ပျောက်ပါမယ်။</li>
+    <li>Browser button ကို နှိပ်ပြီးရင် disable လုပ်တာက user မျက်နှာစာအတွက်ပဲ ဖြစ်ပါတယ်။ Guard အစစ်က DB ပါ။</li>
+  </ul>
+  <p>ဘယ် option ယူမလဲ RT Web UI ဘက်နဲ့ အတည်ပြုဖို့ ကျန်ပါသေးတယ်။</p>
+
+  <h2>6. သတိထားရမယ့်အချက်များ</h2>
+  <ol>
+    <li><b>Insert ကို transaction တိုတိုနဲ့ ထားပါ။</b> Insert နဲ့ HTTP call (Node-RED စသည်) ကို transaction တစ်ခုတည်းထဲ ထည့်ရင် ကျန်တဲ့ click တွေက HTTP call ပြီးတဲ့အထိ စောင့်နေရပါမယ်။ Insert ကို autocommit လုပ်ပြီးမှ ကျန်အလုပ်တွေ လုပ်ပါ။</li>
+    <li><b>Stuck run က ticket ကို ပိတ်ထားနိုင်ပါတယ်။</b> Run က terminal state မရောက်ရင် <code>completed_at</code> NULL ပဲ ကျန်ပြီး ticket ကို ထပ်မ run နိုင်တော့ပါ။ Stuck sweeper (<code>PUBLISHED_TIMEOUT_ENABLED</code>၊ လက်ရှိ false) ဖွင့်ထားရမယ်၊ သို့မဟုတ် admin က manual ပိတ်ပေးနိုင်တဲ့ နည်း ရှိရပါမယ်။</li>
+    <li><b>Run ပြီးရင် ထပ်နှိပ်ခွင့်ရပါတယ်။</b> ဒီ index က "တစ်ပြိုင်နက်" ကိုပဲ တားပါတယ်။ ပြီးသွားတဲ့ ticket ကို ထပ်တားချင်ရင် <code>ALREADY_PROCESSED</code> (၂၄ နာရီ rule) ဆိုတဲ့ business rule သီးသန့် လိုပါတယ်။</li>
+    <li><b><code>ticket_id</code> NULL ဆိုရင်</b> unique က မတားပါ။ <code>ticket_id</code> က gate မှာ အမြဲ ပါပြီးသားမို့ ပြဿနာ မရှိပါ။</li>
+    <li><b>အရင်ဆုံး insert လုပ်တဲ့နေရာ</b> က RT Web UI ဘက်ဖြစ်လို့ duplicate error ကို အဲဒီမှာ ကိုင်တွယ်ရပါမယ်။</li>
+  </ol>
+
+  <h2>7. Production: RT Web UI cluster ၅ လုံး</h2>
+  <p>Production မှာ RT Web UI ကိုပဲ instance ၅ ခု run ထားပြီး RT database (<code>rt5</code>) ကို ၅ ခုလုံး မျှသုံးပါတယ်။ ဒါကြောင့် unique index နည်းက <b>ပြောင်းစရာ မလိုဘဲ အလုပ်လုပ်ပါတယ်</b>။ Lock ယူတာက RT Web UI node မှာ မဟုတ်ဘဲ DB မှာ ဖြစ်လို့ node ဘယ်နှခု ရှိရှိ အတူတူပါပဲ။</p>
+<pre><code>Browser tab 1 ─┐                 ┌─ RT Web UI node 1 ─┐
+Browser tab 2 ─┤                 ├─ RT Web UI node 2 ─┤
+User B        ─┼─ Load balancer ─┼─ RT Web UI node 3 ─┼─► rt5.pipeline_runs  ◄── unique index က ဒီမှာ တား
+curl / script ─┘                 ├─ RT Web UI node 4 ─┤        │
+                                 └─ RT Web UI node 5 ─┘        ▼
+                                          (insert အောင်တဲ့ run တစ်ခုပဲ) ─► noc_automation ─► Kafka ─► rtutil</code></pre>
+
+  <div class="wrap"><table>
+    <thead><tr><th>Click ၅ ခု ရောက်တဲ့နေရာ</th><th>ဖြစ်တာ</th></tr></thead>
+    <tbody>
+      <tr><td>Node တစ်ခုတည်းကို ၅ ခုလုံး</td><td>DB က တစ်ခုလက်ခံ၊ ၄ ခု <code>1062</code></td></tr>
+      <tr><td>Load balancer က node ၅ ခုကို ခွဲပို့</td><td>အတူတူပဲ: DB က တစ်ခုလက်ခံ၊ ၄ ခု <code>1062</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>RT Web UI cluster ကြောင့် မသုံးနိုင်တော့တဲ့ နည်းများ:</b></p>
+  <ul>
+    <li><b>Node memory lock / RT session</b> — Load balancer က click တစ်ခုချင်းကို node မတူတာ ပို့နိုင်ပြီး node တစ်ခုက တစ်ခုရဲ့ memory ကို မမြင်ပါ။ Sticky session ထားလည်း user နှစ်ယောက် (session မတူ) ကို မတားနိုင်ပါ။</li>
+    <li><b>Browser button disable</b> — UX အတွက်ပဲ (Section 2)။</li>
+    <li>ဒါကြောင့် node ၅ ခုလုံး မျှသုံးတဲ့ <b>DB တစ်နေရာ</b> မှာ တားမှ ရပါတယ်။</li>
+  </ul>
+
+  <p><b>RT Web UI ဘက်မှာ လုပ်ရမှာ:</b></p>
+  <ol>
+    <li><b>Run row insert မှာ duplicate ကို ကိုင်တွယ်ပါ။</b> RT Web UI (Perl / DBI) က insert လုပ်တဲ့အခါ error <code>1062</code> ရရင် noc API ကို မခေါ်ဘဲ "Ticket is already being processed" ပြပါ (Section 5)။ Node ၅ ခုလုံးမှာ code တူတူ deploy ဖြစ်ရပါမယ်။</li>
+    <li><b>Insert ကို autocommit နဲ့ ချက်ချင်း commit လုပ်ပါ။</b> RT request ရဲ့ transaction ကြီးထဲ ထည့်ရင် lock ကို request ပြီးတဲ့အထိ ကိုင်ထားပြီး ကျန် node တွေ စောင့်နေရပါမယ်။</li>
+    <li><b>DB primary ကိုပဲ ရေးပါ။</b> RT DB မှာ read replica ရှိရင် node တွေက insert ကို primary ကို ပို့ရပါမယ်။</li>
+  </ol>
+
+  <p><b>Node တစ်ခု သေရင် (restart / deploy):</b> Node က run row ကို insert ပြီး noc API မခေါ်ရသေးခင် သေရင် run က state <code>""</code> မှာ ကျန်ပြီး ticket ကို ပိတ်ထားပါမယ်။ noc_automation restart ဖြစ်ရင်လည်း <code>SUBMITTED_TO_API</code> / <code>RECEIVED</code> မှာ ကျန်နိုင်ပါတယ်။ ဒါကြောင့်:</p>
+  <ul>
+    <li>Terminal မဟုတ်တဲ့ state <b>အားလုံး</b> (<code>""</code>၊ <code>SUBMITTED_TO_API</code>၊ <code>RECEIVED</code>၊ <code>PUBLISHED</code> …) ကို N မိနစ်ကျော်ရင် terminal (ဥပမာ <code>FAILED_PERMANENT</code>) ပြောင်းပြီး <code>completed_at</code> ဖြည့်ပေးတဲ့ sweeper လိုပါတယ်။ လက်ရှိ <code>PUBLISHED</code> အတွက်ပဲ ရှိပြီး ပိတ်ထားပါတယ် (<code>PUBLISHED_TIMEOUT_ENABLED=false</code>)။</li>
+    <li>Sweeper ကို noc_automation (instance တစ်ခု) မှာ ထားရင် node ၅ ခုကြား ညှိစရာ မလိုပါ။ <code>UPDATE … WHERE current_state = ? AND updated_at &lt; ?</code> ပုံစံ conditional update နဲ့ ပိတ်ရင် RT Web UI က အချိန်တူ ရေးနေတာနဲ့ မတိုက်ပါ။</li>
+  </ul>
+
+  <p><b>နောက်ဘက် service တွေ:</b> noc_automation နဲ့ rtutil က instance တစ်ခုစီပဲ ဖြစ်ပြီး run အောင်တဲ့ တစ်ခုပဲ သူတို့ဆီ ရောက်တော့ Node-RED၊ Kafka၊ RT update၊ BCS တစ်ခါပဲ ဖြစ်ပါတယ်။ နောင် သူတို့ကို scale out လုပ်လည်း entry guard က အရင်တားပြီးသား ဖြစ်ပါတယ်။</p>
+
+  <p><b>အတည်ပြုရန်:</b> RT DB က server တစ်ခုတည်း (သို့ primary + replica) ဖြစ်ရပါမယ်။ RT DB ကိုယ်တိုင် Galera multi-master ဆိုရင် node မတူတဲ့ insert ရှုံးတာက <code>1062</code> မဟုတ်ဘဲ <code>1213 Deadlock</code> ရလို့ အဲဒါကိုပါ ကိုင်တွယ်ရပြီး staging မှာ ပြန်စမ်းရပါမယ်။</p>
+
+  <h2>8. Release မှာ sweeper ပိတ်ထားရင်</h2>
+  <p>Background sweeper မရှိရင် stuck run တစ်ခုက ticket ကို အမြဲ ပိတ်ထားပါမယ်။ ဖြေရှင်းနည်းက <b>insert မှာ duplicate ရတဲ့အခိုက် ရှိနေတဲ့ run ဟောင်းနေရင် အဲဒီမှာပဲ ပိတ်ပြီး ပြန် insert လုပ်တာ</b> (lazy takeover) ပါ။ Sweeper မလိုဘဲ ticket ကို တစ်ယောက်ယောက် ထပ်နှိပ်မှသာ စစ်ပါတယ်။</p>
+<pre><code>1. INSERT run                                   → အောင် → noc API ခေါ် (ပုံမှန်)
+2. 1062 ရ → ရှိနေတဲ့ active run ကို ဖတ်
+     SELECT run_id, current_state, updated_at
+       FROM pipeline_runs WHERE active_ticket_id = :ticket_id
+3. updated_at က cutoff ထက် နောက်ကျ (အသက်ရှင်) → "Ticket is already being processed" (ရပ်)
+4. updated_at က cutoff ထက် စော (ဟောင်း/stuck) → conditional UPDATE နဲ့ ပိတ်
+     UPDATE pipeline_runs
+        SET current_state = 'FAILED_PERMANENT',
+            last_state_reason = 'stale run closed: ticket resubmitted',
+            completed_at = :now, updated_at = :now
+      WHERE run_id = :old_run_id
+        AND completed_at IS NULL
+        AND updated_at &lt; :cutoff
+     + pipeline_run_events ထဲ event တစ်ကြောင်း (audit)
+5. INSERT ကို တစ်ခါပဲ ပြန်စမ်း → အောင် → ဆက်လုပ် / 1062 → "already being processed"</code></pre>
+
+  <p><b>ပြိုင်တူ ၅ ခါ နှိပ်ရင်လည်း မှန်ပါတယ်:</b> ၅ ခုလုံး <code>1062</code> ရပြီး ၅ ခုလုံး UPDATE လုပ်ပါတယ်။ Row lock ကြောင့် ပထမ UPDATE က 1 row ပြောင်းပြီး ကျန် ၄ ခုက <code>completed_at IS NULL</code> မမှန်တော့လို့ 0 rows ပါ။ ပြီးရင် ၅ ခုလုံး ပြန် INSERT လုပ်တော့ unique index က တစ်ခုပဲ လက်ခံပါတယ်။ RT Web UI node ၅ ခုကြားမှာ ညှိစရာ မလိုပါ။</p>
+  <p><b>Local test (MariaDB 10.4, 2026-10-18):</b> 2 နာရီ ဟောင်းနေတဲ့ <code>RECEIVED</code> run ရှိတဲ့ ticket 384 ကို request ၅ ခု ပြိုင်တူ (UPDATE → INSERT) ပို့စမ်းပါတယ်။ Run ဟောင်းကို ၁ ခုကပဲ ပိတ်နိုင်ပြီး (1 row၊ ကျန် 0 rows) run အသစ် ၁ ခုပဲ ဝင်ပါတယ်။ ကျန် ၄ ခု <code>1062</code> ရပါတယ်။</p>
+
+  <div class="wrap"><table>
+    <thead><tr><th>အချက်</th><th>ဆုံးဖြတ်ချက်</th></tr></thead>
+    <tbody>
+      <tr><td>Cutoff (ဘယ်လောက် ဟောင်းရင် stuck လို့ယူမလဲ)</td><td><b>30 မိနစ်</b> (အကြံပြု)။ အသက်ရှင်တဲ့ run တစ်ခုရဲ့ အကြာဆုံးအချိန်ထက် ကျော်ရပါမယ်: retry backoff (<code>1m,3m,5m</code> = 9 မိနစ်) + Node-RED timeout + Kafka + rtutil။ တိုလွန်းရင် အလုပ်လုပ်နေတဲ့ run ကို ပိတ်မိပြီး duplicate ပြန်ဖြစ်ပါမယ်</td></tr>
+      <tr><td><code>updated_at</code> သုံး (<code>created_at</code> မဟုတ်)</td><td>State ပြောင်းတိုင်း <code>updated_at</code> ပြောင်းလို့ ရှေ့ဆက်နေတဲ့ run က ဟောင်းတယ်လို့ မထွက်ပါ</td></tr>
+      <tr><td><b>အချိန်ကို app က တွက်ပါ</b> (<code>NOW()</code> မသုံးရ)</td><td>App က local time (+06:30) နဲ့ ရေးပြီး DB <code>NOW()</code> က UTC ပြန်လို့ ၆ နာရီခွဲ လွဲပါတယ်။ <code>:now</code>၊ <code>:cutoff</code> ကို app ဘက်က parameter အဖြစ် ပို့ပါ</td></tr>
+      <tr><td>ပိတ်တဲ့ state</td><td>ရှိပြီးသား <code>FAILED_PERMANENT</code> + reason (state အသစ် မလိုလို့ report / rtdatacore မပြောင်းရ)</td></tr>
+      <tr><td>Run ဟောင်းက နောက်မှ ပြန်နိုး</td><td>ဖြစ်ခဲပါတယ် (30 မိနစ် ကျော်ပြီးမှ)။ ဖြစ်ရင် RT ကို ထပ် update လုပ်နိုင်ပေမယ့် rtutil က RT status ကို ပြန်စစ်လို့ remote resolve ဆိုရင် <code>SKIPPED</code> ဖြစ်ပါတယ်</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>Sweeper နဲ့ နှိုင်းယှဉ်ချက်:</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th></th><th>Background sweeper</th><th>Lazy takeover (ဒီ release)</th></tr></thead>
+    <tbody>
+      <tr><td>Stuck run ကို ပိတ်တဲ့အချိန်</td><td>Interval အလိုက် အမြဲ</td><td>Ticket ကို ထပ်နှိပ်မှ</td></tr>
+      <tr><td>Report မှာ stuck run</td><td>Terminal ဖြစ်သွား</td><td>ထပ်မနှိပ်ရင် In progress / Stuck ပြနေဆဲ (pipeline_report က Stuck ကို ပြပြီးသား)</td></tr>
+      <tr><td>ထပ် run ရမယ့် process</td><td>လို</td><td>မလို (RT Web UI insert ထဲမှာပဲ)</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>Manual runbook (အရေးပေါ်):</b> Ticket တစ်ခု ပိတ်နေရင် admin က run ကို ကိုယ်တိုင် ပိတ်နိုင်ပါတယ် (အချိန်ကို local time နဲ့ ထည့်ပါ):</p>
+<pre><code>UPDATE pipeline_runs
+   SET current_state = 'FAILED_PERMANENT',
+       last_state_reason = 'closed manually by admin',
+       completed_at = '&lt;local now&gt;', updated_at = '&lt;local now&gt;'
+ WHERE ticket_id = &lt;ticket id&gt; AND completed_at IS NULL;</code></pre>
+
+  <p><b>Release အတွက် အကျဉ်း:</b> (1) unique index (2) RT Web UI insert မှာ 1062 ကိုင်တွယ် + lazy takeover (cutoff 30 မိနစ်) (3) manual runbook။ Sweeper ကို နောက် release မှာ ဖွင့်တဲ့အခါ lazy takeover က ဆက်ထားလည်း ဘေးမဲ့ပါတယ် (နှစ်ခုလုံး conditional UPDATE မို့ မတိုက်ပါ)။</p>
+
+  <h2>9. Idempotency key + Redis 24 နာရီ cache နဲ့ ဖြစ်နိုင်တဲ့ conflict</h2>
+  <p>Ticket အလိုက် Redis key ကို 24 နာရီ TTL နဲ့ ထားရင် အဓိကပြဿနာက <b>"တစ်ပြိုင်နက် ပို့တာ တားတာ" နဲ့ "24 နာရီအတွင်း ထပ်လုပ်တာ တားတာ" ဆိုတဲ့ ရည်ရွယ်ချက် ၂ ခုကို key တစ်ခုထဲ ရောထည့်မိတာ</b>ပါ။ Concurrency က စက္ကန့်ပိုင်းပဲ ကြာပေမယ့် key က 24 နာရီ ပိတ်ထားလို့ တကယ် ထပ်လုပ်ရမယ့် case တွေပါ ပိတ်ခံရပါတယ်။</p>
+  <p class="meta">Idempotency key ဆိုတာ: run_id ကို random UUID အစား ticket ကနေ တွက်ထုတ်တာ (ဥပမာ <code>UUIDv5(ticket_id + LastUpdated)</code>)။ Click ၅ ခါလုံး run_id တူထွက်လို့ ရှိပြီးသား run_id unique နဲ့ 409 က ပယ်ပေးပါတယ်။</p>
+
+  <h3>1. Ticket re-open flow နဲ့ တိုက်ပါတယ် (အကြီးဆုံး)</h3>
+  <ul>
+    <li>RT Web UI gate က <code>re-open</code>, <code>re-open-1</code> … <code>re-open-5</code> status တွေကို ခွင့်ပြုထားပြီး rtutil က ReOpen → Resolved2၊ ReOpen2 → Resolved3 … ပြောင်းပေးပါတယ်။ <b>Ticket ပြန်ဖွင့်ပြီး ထပ် process လုပ်တာ design ထဲမှာ ပါပြီးသား</b> ဖြစ်ပါတယ်။</li>
+    <li>ဥပမာ: 09:00 remote resolve → 11:00 customer က re-open → NOC ထပ်နှိပ် → Redis key ကျန်နေလို့ <b>မနက်ဖြန် 09:00 အထိ ပိတ်ခံရ</b>ပါမယ်။</li>
+  </ul>
+
+  <h3>2. Fail ဖြစ်တဲ့ run တွေကလည်း 24 နာရီ ပိတ်ထားပါမယ်</h3>
+  <ul>
+    <li><code>API_UNREACHABLE</code>၊ <code>FAILED_PERMANENT</code>၊ <code>CPE_NOT_FOUND</code>၊ <code>NOT_ELIGIBLE</code> ဖြစ်ပြီး ပြဿနာ ပြင်ပြီးလို့ ထပ်စမ်းချင်ရင်လည်း key ကျန်နေလို့ မရပါ။</li>
+    <li>Fail တိုင်း key ကို DEL လုပ်ရမယ်ဆိုရင် fail ဖြစ်တဲ့နေရာ (RT Web UI၊ noc၊ retry worker၊ rtutil) <b>service ၄ ခုလုံးက Redis ကို ချိတ်ရ</b>ပါမယ်။</li>
+  </ul>
+
+  <h3>3. Key ပုံစံနဲ့ 24 နာရီ ဆန့်ကျင်ပါတယ်</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>Key</th><th>ဖြစ်တာ</th></tr></thead>
+    <tbody>
+      <tr><td><code>ticket:384</code> (ticket_id ပဲ)</td><td>တားတာ ခိုင်ပေမယ့် conflict 1 နဲ့ 2 အပြည့်ဖြစ်</td></tr>
+      <tr><td><code>ticket:384:&lt;LastUpdated&gt;</code> (idempotency key)</td><td>rtutil က RT update လုပ်တာနဲ့ LastUpdated ပြောင်းလို့ key အသစ်ထွက်ပါတယ်။ <b>24 နာရီ ဆိုတာ အဓိပ္ပာယ်မရှိတော့</b> (run ပြီးတာနဲ့ ပြန်နှိပ်လို့ရ)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>4. Redis နဲ့ DB မတူတော့ပါ (source of truth နှစ်ခု)</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>ဖြစ်ပုံ</th><th>ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>Redis SET အောင်ပြီး DB insert မလုပ်ခင် RT Web UI node သေ</td><td class="bad">DB မှာ run မရှိဘဲ ticket 24 နာရီ ပိတ် (ဘာကြောင့်လဲ ရှာမရ)</td></tr>
+      <tr><td>Redis restart (persistence မရှိ) / memory ပြည့်လို့ key ဖျက်ခံရ (eviction)</td><td class="bad">Key ပျောက်ပြီး duplicate ပြန်ဖြစ်</td></tr>
+      <tr><td>Redis master failover မှာ key replicate မလုပ်ရသေးခင် master သေ</td><td class="bad">Node အသစ်မှာ key မရှိလို့ ပြိုင်တူ request ဝင်</td></tr>
+      <tr><td>Report</td><td class="warn">Redis က ပယ်ရင် DB မှာ row မရှိလို့ report မှာ မပေါ် (<code>ALREADY_PROCESSED</code> state ကို သုံးမရ)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5. ရှိပြီးသား guard တွေနဲ့ ထပ်နေပါတယ်</h3>
+  <ul>
+    <li>Redis "already processed"၊ run_id 409 "run_id already in use"၊ DB unique <code>1062</code> ဆိုပြီး layer ၃ ခုက user ကို message ၃ မျိုး ပြနိုင်ပြီး debug ခက်ပါတယ်။</li>
+    <li>Workflow engine ရဲ့ "Remote Resolve within 14 days" (historical ticket match၊ လက်ရှိ disabled) step နဲ့ စည်းကမ်းထပ်ပါတယ်။</li>
+  </ul>
+
+  <h3>6. Operation ဘက်က ပြဿနာ</h3>
+  <ul>
+    <li><b>Environment ကြား key တိုက်:</b> SIT / QA / Prod က Redis တစ်ခုတည်း သုံးရင် <code>prod:ticket:384</code> လို prefix လိုပါတယ်။</li>
+    <li><b>Admin override:</b> ticket ကို လက်နဲ့ ပြန်ဖွင့်ဖို့ <code>DEL</code> runbook နဲ့ Redis access လိုပါတယ်။</li>
+    <li><b>24 နာရီ rolling vs report ရဲ့ "ဒီနေ့":</b> 23:00 run နဲ့ မနက်ဖြန် 08:00 run က နေ့မတူပေမယ့် ပိတ်ထားပါမယ်။</li>
+    <li>Redis ကို ထောင်ရ၊ monitor လုပ်ရ၊ HA ထားရတဲ့ service အသစ်တစ်ခု ထပ်တိုးပါတယ်။</li>
+  </ul>
+
+  <h3>အကြံပြုချက်: ရည်ရွယ်ချက် ၂ ခုကို ခွဲလုပ်ပါ</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>ရည်ရွယ်ချက်</th><th>ကြာချိန်</th><th>နည်း</th><th>Redis</th></tr></thead>
+    <tbody>
+      <tr><td><b>တစ်ပြိုင်နက် ပို့တာ တား</b> (5 clicks)</td><td>Run ကြာသလောက် (စက္ကန့်–မိနစ်)</td><td>DB unique index (Section 2) သို့ idempotency run_id</td><td class="ok">မလို</td></tr>
+      <tr><td><b>24 နာရီအတွင်း ထပ်လုပ်တာ တား</b> (business rule)</td><td>24 နာရီ</td><td>Gate မှာ DB query: <code>ticket_id = ? AND current_state = 'COMPLETED' AND completed_at &gt; :now - 24h</code> ရှိရင် <code>ALREADY_PROCESSED</code> row ရေး (re-open status ဆိုရင် ခြွင်းချက်)</td><td class="ok">မလို</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><code>idx_pipeline_runs_ticket_id</code> index ရှိပြီးသားမို့ query မြန်ပါတယ်။ DB တစ်ခုတည်းက source of truth ဖြစ်လို့ report မှာ <code>ALREADY_PROCESSED</code> ပေါ်ပါတယ်။</li>
+    <li>24h rule ကို <b><code>COMPLETED</code> run</b> ပေါ်မှာပဲ ကန့်သတ်လို့ fail run တွေက ticket ကို မပိတ်ပါ။ <code>:now</code> ကို app ဘက်က local time နဲ့ ပို့ပါ (<code>NOW()</code> UTC ပြဿနာ)။</li>
+    <li>Re-open ကို ခြွင်းချက်ပေးမလား၊ window ဘယ်လောက်ထားမလဲ <b>business ဘက်က ဆုံးဖြတ်ရပါမယ်</b>။</li>
+    <li>Redis ကို သုံးချင်ရင် DB query ကို မြန်အောင် <b>cache</b> အဖြစ်ပဲ သုံးပါ (key မရှိရင် DB ကို ပြန်ကြည့်)။ ဆုံးဖြတ်ချက်ကို Redis ပေါ် မမှီခိုစေပါနဲ့။</li>
+  </ul>
+</main>
+</body>
+</html>
