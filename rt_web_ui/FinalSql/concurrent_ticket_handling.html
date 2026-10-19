@@ -456,6 +456,51 @@ curl / script ─┘                 ├─ RT Web UI node 4 ─┤        │
   </table></div>
   <p><b>အကြံပြုချက်:</b> transaction id ကို သုံးပါ။</p>
 
+  <h3>Transaction id မပါဘဲ ticket_id တစ်ခုတည်းနဲ့ ထုတ်ရင်</h3>
+  <p><code>run_id = UUIDv5(namespace, "&lt;ticket_id&gt;")</code> ဆိုရင် <b>ticket တစ်ခုမှာ run_id အမြဲ တစ်ခုတည်း</b> ထွက်လို့ ticket ကို <b>တစ်သက်လုံး run တစ်ခါပဲ</b> လုပ်ခွင့်ရပါမယ်။ ပြိုင်တူ ငါးခါနှိပ်တာကို တားပေမယ့် ပထမ run ပြီးရင် (အောင်အောင်၊ fail ဖြစ်ဖြစ်) နောက်ထပ် ဘယ်တော့မှ ပြန်မလုပ်နိုင်ပါ။</p>
+  <ul>
+    <li><code>"384"</code> ကို UUIDv5 နဲ့ တွက်ရင် ဘယ်အချိန်တွက်တွက် အမြဲ ID တူ ထွက်ပါတယ်။</li>
+    <li><code>pipeline_runs.run_id</code> က unique ဖြစ်လို့ run_id တစ်ခုကို row တစ်ကြောင်းပဲ ထည့်ခွင့်ရှိပါတယ်။ Row ဝင်ပြီးတာနဲ့ နောက်ထပ် insert အားလုံး <code>1062</code> ရပြီး run ပြီးလို့ ပွင့်လာမယ့် "သော့" မရှိပါ။ Transaction id ပါရင်တော့ ticket ပြောင်းတိုင်း key အသစ်ထွက်လို့ ပြန်ပွင့်ပါတယ်။</li>
+  </ul>
+  <div class="wrap"><table>
+    <thead><tr><th>Case</th><th>Transaction id ပါ</th><th>Transaction id မပါ (ticket_id ပဲ)</th></tr></thead>
+    <tbody>
+      <tr><td>ငါးခါ ပြိုင်တူ နှိပ်</td><td class="ok">1 ခုပဲ</td><td class="ok">1 ခုပဲ</td></tr>
+      <tr><td>Run ပြီးနောက် ticket re-open လုပ်ပြီး ထပ်နှိပ်</td><td class="ok">run အသစ်</td><td class="bad">အမြဲ ငြင်း</td></tr>
+      <tr><td>noc down (<code>API_UNREACHABLE</code>) ပြီး ပြန်စမ်း</td><td class="warn">retry counter လို</td><td class="bad">အမြဲ ငြင်း</td></tr>
+      <tr><td><code>NOT_ELIGIBLE</code> ဖြစ်ပြီး ticket ပြင်ကာ ထပ်နှိပ်</td><td class="ok">run အသစ်</td><td class="bad">အမြဲ ငြင်း</td></tr>
+      <tr><td>Stuck run ဖြစ်နေ</td><td class="warn">ticket ပြင်မှ ပြန်ဖွင့်</td><td class="bad">အမြဲ ပိတ်</td></tr>
+      <tr><td>နောက်လ ticket တူ ပြန်ပေါ်</td><td class="ok">run အသစ်</td><td class="bad">အမြဲ ငြင်း</td></tr>
+    </tbody>
+  </table></div>
+  <p>Ticket 384 မှာ ဖြစ်ပုံ:</p>
+  <div class="wrap"><table>
+    <thead><tr><th>အချိန်</th><th>ဖြစ်တာ</th><th>run_id</th><th>ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>10:00</td><td>ငါးခါ ပြိုင်တူ</td><td><code>uuid5("384")</code></td><td>1 ခု insert၊ 4 ခု 1062</td></tr>
+      <tr><td>10:05</td><td>Run ပြီး (COMPLETED)</td><td>—</td><td>—</td></tr>
+      <tr><td>11:00</td><td>Customer re-open လုပ်လို့ NOC ထပ်နှိပ်</td><td><code>uuid5("384")</code> (တူ)</td><td class="bad">1062</td></tr>
+      <tr><td>နောက်နေ့</td><td>ထပ်နှိပ်</td><td><code>uuid5("384")</code> (တူ)</td><td class="bad">1062</td></tr>
+    </tbody>
+  </table></div>
+  <p>Table ထဲမှာ ticket 384 အတွက် row <b>တစ်ကြောင်းပဲ အမြဲ</b> ရှိပါမယ်။</p>
+  <p><b>ပြင်လို့ မရဘူးလား:</b></p>
+  <ul>
+    <li><b>Row ဟောင်းကို ဖျက်ပြီး ပြန်သုံး:</b> run history (<code>pipeline_run_events</code>)၊ report နဲ့ audit ပျောက်ပါမယ်။</li>
+    <li><b>Row ဟောင်းကို reset လုပ်ပြီး ပြန်သုံး:</b> noc က <code>SUBMITTED_TO_API</code> run ကိုပဲ claim လုပ်ပြီး ကျန်တာကို 409 "run_id already in use" နဲ့ ငြင်းပါတယ်။ Reset ဆိုရင် history ကို overwrite လုပ်ရလို့ ပြဿနာ အတူတူပါ။</li>
+  </ul>
+  <p><b>Transaction id အစား တခြားဟာ ထည့်ရင်:</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th>Key</th><th>ဖြစ်ပုံ</th><th>ပြဿနာ</th></tr></thead>
+    <tbody>
+      <tr><td><code>384</code></td><td>တစ်သက်မှာ တစ်ခါ</td><td>အပေါ်က ပြဿနာအားလုံး</td></tr>
+      <tr><td><code>384:2026-10-19</code> (နေ့စွဲ)</td><td>တစ်ရက်မှာ တစ်ခါ</td><td>Fail ရင် မနက်ဖြန်မှ ပြန်စမ်းရ၊ ဒီနေ့ re-open လုပ်ရင် ပိတ်၊ 23:59 နဲ့ 00:01 ကို ခွဲထုတ်</td></tr>
+      <tr><td><code>384:&lt;status&gt;</code> (<code>384:new</code>, <code>384:re-open</code>)</td><td>Ticket ပြန်ဖွင့်ပြီး status ပြောင်းတိုင်း တစ်ခါ</td><td>Status မပြောင်းဘဲ fail ပြီး ပြန်စမ်းရင် ပိတ်၊ stuck ဖြစ်ရင် အဲဒီ status မှာ အမြဲ ပိတ်</td></tr>
+      <tr><td><code>384:&lt;transaction id&gt;</code></td><td>Ticket ပြောင်းတိုင်း တစ်ခါ</td><td>Run လုပ်နေတုန်း ticket ပြောင်းရင် duplicate (အောက်က အားနည်းချက် 1)</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>သင်ခန်းစာ:</b> idempotency key မှာ "<b>ဘယ်အချိန်မှာ run အသစ် ခွင့်ပြုမလဲ</b>" ဆိုတာ key ထဲ ထည့်တဲ့ အစိတ်အပိုင်းကပဲ ဆုံးဖြတ်ပါတယ်။ ticket_id တစ်ခုတည်းဆိုရင် "ဘယ်တော့မှ မခွင့်ပြု" ဖြစ်သွားလို့ transaction id (သို့ ticket ပြောင်းရင် ပြောင်းမယ့် တန်ဖိုးတစ်ခုခု) <b>မဖြစ်မနေ ပါရပါမယ်</b>။ DB unique index + lazy takeover (Section 12) ကတော့ <code>completed_at</code> ကို ကြည့်ပြီး "run မပြီးသေးချိန်မှာပဲ" ပိတ်လို့ ဘယ် key ထည့်မလဲ ဆိုတဲ့ ပြဿနာ မရှိပါ။</p>
+
   <h3>အားနည်းချက်များ</h3>
   <ol>
     <li><b>Run အလုပ်လုပ်နေတုန်း ticket ပြောင်းသွားရင် duplicate ဖြစ်ပါတယ်။</b> Run A အလုပ်လုပ်နေတုန်း တစ်ယောက်ယောက်က ticket မှာ comment ရေးလိုက်ရင် transaction id ပြောင်းပါတယ်။ အဲဒီနောက် ထပ်နှိပ်ရင် key အသစ် ထွက်ပြီး <b>run ၂ ခု တစ်ပြိုင်နက်</b> ဖြစ်ပါမယ်။ DB unique index နည်းကတော့ ticket_id ကို တိုက်ရိုက်ကြည့်လို့ ဒီ case ကိုပါ တားပါတယ်။</li>
@@ -541,6 +586,45 @@ go ProcessRemoteResolve(...)                                    // ⑥ mutex အ
     <li><b>Stuck run:</b> noc restart ဖြစ်ရင် background goroutine ပျောက်ပြီး run က <code>RECEIVED</code> မှာ ကျန်ပါတယ်။ <code>updated_at</code> cutoff မထားရင် ticket ကို အမြဲ ပိတ်ထားပါမယ်။ Cutoff ကျော်ရင် စစ်ချက်ထဲ မပါလို့ run အသစ် ခွင့်ရပါတယ် (run ဟောင်းကတော့ report မှာ Stuck အဖြစ် ကျန်)။</li>
     <li><code>idx_pipeline_runs_ticket_id</code> index ရှိပြီးသားမို့ query မြန်ပါတယ်။ <code>:stale_cutoff</code> ကို app ဘက်က local time နဲ့ ပို့ပါ (<code>NOW()</code> UTC ပြဿနာ)။</li>
     <li><b>Mutex ပုံစံ:</b> ticket တိုင်းအတွက် mutex သီးသန့် (<code>map[ticketID]*sync.Mutex</code>) ထားလို့ရပေမယ့် map ကို ပြန်ရှင်းရပါတယ်။ Request နည်းပြီး ကိုင်ချိန် millisecond ပဲမို့ <b>global mutex တစ်ခုတည်း</b> နဲ့ လုံလောက်ပါတယ်။</li>
+  </ul>
+
+  <h3>API ရောက်တဲ့အချိန် DB ထဲမှာ ticket တူ row ဘယ်နှကြောင်း ရှိနေပြီလဲ</h3>
+  <p>ငါးခါ ပြိုင်တူ နှိပ်ရင် API (noc) ဆီ request ရောက်တဲ့အချိန်မှာ <b>DB ထဲမှာ အဲဒီ ticket ရဲ့ row ၅ ကြောင်းလုံး ရှိနေပြီးသား</b> ဖြစ်ပါတယ်၊ ပထမဆုံး ရောက်တဲ့ request အချိန်မှာကတည်းကပါ။</p>
+  <p><b>Local စမ်းသပ်မှု (2026-10-19):</b> ယာယီ DB နဲ့ fake API ကို သုံးပြီး ticket 384 ကို ငါးခါ ပြိုင်တူ ပို့ပါတယ်။ Fake API က request ရောက်တိုင်း DB ထဲက ticket 384 row တွေကို ရေတွက်ပါတယ်။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>API ရောက်တဲ့ အစဉ်</th><th>Request (run_id)</th><th>အဲဒီအချိန် DB ထဲက ticket 384 row</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>7ddfcba8</code></td><td><b>5</b> (၅ ကြောင်းလုံး <code>SUBMITTED_TO_API</code>)</td></tr>
+      <tr><td>2</td><td><code>72182fea</code></td><td>5</td></tr>
+      <tr><td>3</td><td><code>e88a6828</code></td><td>5</td></tr>
+      <tr><td>4</td><td><code>da629c22</code></td><td>5</td></tr>
+      <tr><td>5</td><td><code>8d964334</code></td><td>5</td></tr>
+      <tr><td>နောက်မှ တစ်ခါထပ်နှိပ်</td><td><code>87f6a1f5</code></td><td><b>6</b></td></tr>
+    </tbody>
+  </table></div>
+  <p><b>ဘာကြောင့်လဲ:</b> RT Web UI က click တစ်ခုချင်းအတွက် ဒီအစဉ်အတိုင်း လုပ်ပါတယ်:</p>
+<pre><code>① pipeline_runs ထဲ row insert (state "")        ← ms အနည်းငယ်
+② Gate စစ်
+③ SUBMITTED_TO_API ပြောင်း
+④ noc API ခေါ် (HTTP)                            ← network ကြာချိန်</code></pre>
+  <p>① – ③ က DB ထဲမှာပဲ ဖြစ်လို့ မြန်ပြီး ④ က network ကနေ သွားရလို့ ပိုကြာပါတယ်။ ဒါကြောင့် ငါးခုလုံးက API ကို မခေါ်ခင်ကတည်းက row ကိုယ်စီ ထည့်ပြီးသားပါ။</p>
+  <ul>
+    <li><b>ရောက်တဲ့အစဉ်က insert အစဉ်နဲ့ မတူပါ။</b> Insert ပထမဆုံးက <code>72182fea</code> (id အငယ်ဆုံး) ဖြစ်ပေမယ့် API ကို ပထမရောက်တာ <code>7ddfcba8</code> ပါ။ "အရင် insert လုပ်တဲ့သူ အနိုင်ရ" လို့ ယူဆလို့ မရပါ။ noc mutex ကို <b>အရင်ရတဲ့ request</b> ကပဲ အနိုင်ရပါတယ်။</li>
+  </ul>
+  <div class="wrap"><table>
+    <thead><tr><th>ဖြစ်ပုံ</th><th>API ရောက်ချိန် row</th></tr></thead>
+    <tbody>
+      <tr><td>ပြိုင်တူ ငါးခါ (ပုံမှန်)</td><td>5</td></tr>
+      <tr><td>Click တွေ ကြားကာလ ရှိ (ဥပမာ ၁ စက္ကန့်ခြား)</td><td>1 မှ 5 ကြား</td></tr>
+      <tr><td>Ticket ကို အရင်က run ဖူးရင်</td><td>ဒီ 5 + <b>run ဟောင်း row တွေ</b> (စမ်းသပ်မှုမှာ 6)</td></tr>
+      <tr><td>API ကို curl နဲ့ တိုက်ရိုက်ခေါ်</td><td><b>0</b> (RT Web UI မဖြတ်လို့ noc က ကိုယ်တိုင် ဆောက်)</td></tr>
+      <tr><td>Gate မှာ fail (NOT_ELIGIBLE)</td><td>Row ရှိပေမယ့် API ကို လုံးဝ မရောက်</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>ဒါကြောင့် ရိုးရိုး ရေတွက်လို့ မရပါ။</b> "ticket မှာ row ရှိလား" သို့ "<code>completed_at IS NULL</code> row ရှိလား" လို့ စစ်ရင် ပထမ request ကိုယ်တိုင်လည်း ၅ ကြောင်း တွေ့လို့ <b>ငါးခုလုံး 409</b> ဖြစ်ပြီး run ဟောင်း row တွေကြောင့်လည်း မှားပါမယ်။ noc က <b>ယူပြီးသား (claimed) run</b> ကိုပဲ ရေတွက်ရပါတယ် (အပေါ်က SQL)။</li>
+    <li><b>တကယ့် noc မှာ:</b> fake API က state မပြောင်းလို့ row အားလုံး <code>SUBMITTED_TO_API</code> မှာ ကျန်ပါတယ်။ တကယ့် noc မှာတော့ ပထမ request က mutex ရပြီး ကိုယ့် row ကို <code>RECEIVED</code> ပြောင်းကာ 200 ပြန်ပြီး ကျန် ၄ ခုက <code>RECEIVED</code> row ကို တွေ့လို့ 409 ရပါမယ်။</li>
+    <li><b>DB unique index plan (Section 13) မှာ ဒီပြဿနာ မရှိပါ:</b> row insert (①) မှာကတည်းက ၄ ခုကို ငြင်းလို့ API ရောက်ချိန်မှာ ticket 384 ရဲ့ မပြီးသေးတဲ့ row <b>၁ ကြောင်းပဲ</b> ရှိပါတယ်။</li>
   </ul>
 
   <h3>Table ထဲ row ဘယ်နှကြောင်း ဖြစ်မလဲ</h3>
@@ -762,6 +846,125 @@ go ProcessRemoteResolve(...)                                    // ⑥ mutex အ
     <li><b>Duplicate ပယ်ခံရတာ:</b> RT Web UI log မှာ <code>IN_PROGRESS</code> ကို ရေတွက်ပါ။ DB ထဲမှာ row မကျန်လို့ log ကပဲ မှတ်တမ်းပါ။</li>
     <li><b>Report ရဲ့ Stuck:</b> ticket ထပ်မနှိပ်ရင် stuck run က ဆက်ပြနေပါမယ်။ Sweeper မရှိတဲ့ release မှာ ပုံမှန်ပါ။</li>
   </ul>
+
+  <h3>Production RT DB က Galera ဆိုရင် (1213 ကိုင်တွယ်ခြင်း)</h3>
+  <p>Galera မှာလည်း unique index က <b>တစ်ခုပဲ အောင်အောင်</b> တားတာ မပြောင်းပါ။ ပြောင်းတာက <b>ဘယ်အချိန်၊ ဘယ် error နဲ့ ငြင်းလဲ</b> ပါ: request တွေ <b>DB node တူ</b>ကို ရေးရင် ယခင်အတိုင်း INSERT ချိန်မှာ <code>1062 Duplicate entry</code>၊ <b>DB node မတူ</b>ကို ရေးရင် COMMIT ချိန်မှာ <code>1213 Deadlock found</code> ရပါတယ်။ ဒါကြောင့် code က <code>1213</code> ကိုလည်း "ticket ကို တခြားသူ ယူသွားပြီ ဖြစ်နိုင်တယ်" လို့ ကိုင်တွယ်ရပါမယ်။</p>
+
+  <p><b>1. Galera ဘယ်လို အလုပ်လုပ်လဲ</b></p>
+  <ul>
+    <li>DB node အားလုံး (ဥပမာ ၃ ခု) မှာ data အပြည့် ရှိပြီး <b>node တိုင်းမှာ ရေးလို့ရ</b>ပါတယ် (multi-master)။</li>
+    <li>Transaction ကို <b>node တစ်ခုထဲမှာပဲ အရင် လုပ်</b>ပါတယ်။ Row lock တွေက အဲဒီ node ထဲမှာပဲ ရှိပြီး တခြား node က မသိပါ။</li>
+    <li><b>COMMIT ချိန်</b>မှာ ပြောင်းတဲ့ row တွေ (write-set) ကို node အားလုံးဆီ အစဉ်တကျ ပို့ပြီး "<b>certification</b>" စစ်ပါတယ်: တစ်ချိန်တည်း commit လုပ်နေတဲ့ transaction နဲ့ primary key / unique key တူတာ ရှိလား။</li>
+    <li>တူရင် <b>အရင် commit အစဉ်ရတဲ့သူ အနိုင်ရ</b>ပြီး နောက်ကသူ့ transaction ကို rollback လုပ်ကာ client က <code>1213 Deadlock found when trying to get lock; try restarting transaction</code> ရပါတယ်။</li>
+  </ul>
+
+  <p><b>2. 1062 နဲ့ 1213 ဘယ်အချိန်ဖြစ်လဲ</b></p>
+  <p>(က) Request ၅ ခုလုံး DB node တူ (Node A):</p>
+  <div class="wrap"><table>
+    <thead><tr><th>အချိန်</th><th>Click 1</th><th>Click 2–5</th></tr></thead>
+    <tbody>
+      <tr><td>t0</td><td>INSERT → Node A မှာ row lock</td><td></td></tr>
+      <tr><td>t1</td><td></td><td>INSERT → Node A မှာ စောင့်</td></tr>
+      <tr><td>t2</td><td class="ok">COMMIT</td><td class="bad"><code>1062</code> (single server နဲ့ အတူတူ)</td></tr>
+    </tbody>
+  </table></div>
+  <p>(ခ) Request တွေ DB node မတူ (Click 1 → Node A, Click 2 → Node B):</p>
+  <div class="wrap"><table>
+    <thead><tr><th>အချိန်</th><th>Click 1 (Node A)</th><th>Click 2 (Node B)</th></tr></thead>
+    <tbody>
+      <tr><td>t0</td><td>INSERT ticket 384 → Node A မှာ <b>အောင်</b> (Node B က မသိ)</td><td>INSERT ticket 384 → Node B မှာ <b>အောင်</b> (Node A က မသိ)</td></tr>
+      <tr><td>t1</td><td>COMMIT → write-set ပို့ (အစဉ် ၁)</td><td>COMMIT → write-set ပို့ (အစဉ် ၂)</td></tr>
+      <tr><td>t2</td><td class="ok">Certification pass</td><td class="bad"><code>uq_pipeline_runs_active_ticket</code> key တိုက် → <code>1213</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>နှစ်ခုလုံးမှာ တစ်ခုပဲ အောင်တာ မပြောင်းပါ။ (ခ) မှာ ရှုံးသူက <code>1062</code> မဟုတ်ဘဲ <code>1213</code> ကို INSERT ချိန် မဟုတ်ဘဲ <b>COMMIT ချိန်</b> မှာ သိရပါတယ်။</p>
+
+  <p><b>3. Autocommit INSERT ဆိုရင် 1062 ပဲ မြင်ရနိုင်တယ် (<code>wsrep_retry_autocommit</code>)</b></p>
+  <ul>
+    <li><code>wsrep_retry_autocommit</code> (default <b>1</b>) က <b>autocommit statement</b> (transaction မဖွင့်ဘဲ run တဲ့ INSERT တစ်ကြောင်း) certification ကြောင့် fail ရင် server က တစ်ခါ အလိုအလျောက် ပြန် run ပေးပါတယ်။ ပြန် run ချိန်မှာ အနိုင်ရသူရဲ့ row ရောက်ပြီးသားမို့ <b><code>1062</code></b> ရပါတယ်။</li>
+  </ul>
+  <div class="wrap"><table>
+    <thead><tr><th>လုပ်ဆောင်ချက်</th><th>ပုံစံ</th><th>Galera conflict မှာ ရမယ့် error</th></tr></thead>
+    <tbody>
+      <tr><td>Run row INSERT (rtdatacore <code>Create</code>၊ <code>SkipDefaultTransaction: true</code>)</td><td>Autocommit</td><td>ပုံမှန် <code>1062</code> (retry 1 ကြိမ်ပြီးနောက်)၊ retry ပါ ရှုံးရင် <code>1213</code></td></tr>
+      <tr><td>Lazy takeover (UPDATE + event INSERT)</td><td>Explicit transaction</td><td><code>1213</code></td></tr>
+      <tr><td>noc claim (<code>AttachSubmittedRun</code>)၊ <code>TransitionState</code></td><td>Explicit transaction</td><td><code>1213</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>ဒါကြောင့် <code>1213</code> ကို ဘယ်နေရာမှာ ရလည်း ကိုင်တွယ်ရပါမယ်။ Sysadmin က <code>wsrep_retry_autocommit=0</code> ထားရင် INSERT မှာလည်း <code>1213</code> တိုက်ရိုက် ရပါမယ်။</p>
+
+  <p><b>4. အရင်ဆုံး မေးရမယ့်မေးခွန်း: ရေးတာ node တစ်ခုတည်းကိုလား</b></p>
+  <p>Galera သုံးတဲ့ နေရာအများစုမှာ proxy (MaxScale၊ HAProxy၊ ProxySQL) နဲ့ <b>write အားလုံးကို node တစ်ခုတည်းဆီ</b> ပို့ပါတယ် (single-writer)။</p>
+  <div class="wrap"><table>
+    <thead><tr><th>Production setup</th><th>ဖြစ်ပုံ</th></tr></thead>
+    <tbody>
+      <tr><td><b>Single-writer</b> (write အားလုံး node တစ်ခု)</td><td class="ok">Single server နဲ့ အတူတူ: <code>1062</code> ပဲ၊ ထပ်ပြင်စရာ မလို</td></tr>
+      <tr><td><b>Multi-writer</b> (RT Web UI node တစ်ခုချင်း DB node မတူ ရေး)</td><td class="warn"><code>1213</code> ကိုင်တွယ်ရ (အောက်က plan)</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Sysadmin ကို မေးရန်:</b> Galera ဆိုရင် write တွေကို node တစ်ခုတည်းဆီ ပို့ထားလား (proxy ဘာသုံးလဲ)၊ <code>wsrep_retry_autocommit</code> နဲ့ <code>wsrep_sync_wait</code> ဘယ်လောက်ထားလဲ။</p>
+
+  <p><b>5. Multi-writer ဆိုရင် RT Web UI code မှာ ပြင်ရမှာ (အဆင့် 2 ထဲ ထပ်ထည့်)</b></p>
+<pre><code>① INSERT run
+   ├ အောင် → ဆက်လုပ်
+   ├ 1062 (uq_pipeline_runs_active_ticket) → ③ (ယခင်အတိုင်း)
+   └ 1213 (key နာမည် မပါ) → "conflict ဖြစ်နိုင်" → ③
+③ ရှိနေတဲ့ run ကို ဖတ် — SET SESSION wsrep_sync_wait = 1 နဲ့ (causal read)
+   ├ ရှိ + အသက်ရှင် → IN_PROGRESS
+   ├ ရှိ + stuck → ⑤ lazy takeover
+   └ မရှိ → (1213 က တခြား ticket နဲ့ ဆိုင်တာ ဖြစ်နိုင်) → ⑥ INSERT ပြန်စမ်း
+⑤ Lazy takeover transaction
+   ├ အောင် → ⑥
+   └ 1213 → "တခြား node က အရင်ပိတ်သွားပြီ" လို့ယူ → ⑥
+⑥ INSERT တစ်ခါပဲ ပြန်စမ်း → 1062 / 1213 ထပ်ရရင် ③ ဖတ်ပြီး IN_PROGRESS</code></pre>
+  <ul>
+    <li><b><code>1213</code> မှာ key နာမည် မပါပါ။</b> <code>1062</code> လို ဘယ် unique key နဲ့ တိုက်လဲ မပြောလို့ DB ကို ပြန်ဖတ်ပြီး "ticket မှာ active run ရှိလား" စစ်မှ သိရပါတယ်။</li>
+    <li><b>ပြန်ဖတ်တာကို <code>wsrep_sync_wait = 1</code> နဲ့ ဖတ်ပါ။</b> တခြား node ရဲ့ commit ကို ဒီ node မှာ apply လုပ်ဖို့ millisecond အနည်းငယ် ကြာနိုင်လို့ (default <code>0</code>) <code>1213</code> ရပြီးချက်ချင်း ဖတ်ရင် အနိုင်ရသူရဲ့ row ကို မမြင်ရသေးနိုင်ပါ။ ဒီ query တစ်ခုအတွက်ပဲ session မှာ ထားပါ (global မထား၊ ဖတ်တာအားလုံး နှေးမယ်)။</li>
+    <li><b>ပြန်စမ်းတာ တစ်ခါပဲ</b> (loop မဖြစ်အောင်)။ ထပ်ရှုံးရင် <code>IN_PROGRESS</code> ပြန်ပါ။</li>
+    <li><b>Lazy takeover ပြိုင်တူ:</b> node ၂ ခုက stuck run တစ်ခုကို တစ်ပြိုင်နက် UPDATE လုပ်ရင် local မှာ ၂ ခုလုံး အောင်ပေမယ့် COMMIT မှာ primary key တူလို့ တစ်ခု <code>1213</code> ရပါတယ်။ ရှုံးသူရဲ့ <code>stale_run_closed</code> event ပါ rollback ဖြစ်လို့ event တစ်ကြောင်းပဲ ကျန်ပါတယ်။</li>
+  </ul>
+
+  <p><b>6. noc မှာ ပြင်ရမှာ</b></p>
+  <ul>
+    <li>API တိုက်ရိုက်ခေါ်တဲ့ case မှာ <code>repo.Create</code> က <code>1213</code> ရရင်လည်း <b>409</b> "ticket already being processed" (သို့ retry ခိုင်းတဲ့ 503) ပြန်ပါ။</li>
+    <li><b>အထွေထွေ:</b> multi-writer မှာ <code>1213</code> က guard မဟုတ်တဲ့နေရာ (ဥပမာ noc background goroutine နဲ့ တခြား node က run row တစ်ခုကို အချိန်တူ update) မှာလည်း ဖြစ်နိုင်ပါတယ်။ rtdatacore transaction တွေမှာ "1213 ရရင် တစ်ခါ ပြန်စမ်း" wrapper ကို သီးသန့် စဉ်းစားသင့်ပါတယ် (ဒီ plan ရဲ့ scope ပြင်ပ)။</li>
+  </ul>
+
+  <p><b>7. ALTER ကို Galera မှာ run တဲ့အခါ</b></p>
+  <ul>
+    <li>Galera က DDL ကို default <b>TOI (Total Order Isolation)</b> နဲ့ run လို့ node <b>အားလုံးမှာ တစ်ပြိုင်နက်</b> run ပြီး ပြီးတဲ့အထိ <b>cluster တစ်ခုလုံးမှာ table ကို ရေးတာ ရပ်</b> ပါတယ်။ Table rebuild လုပ်လို့ <code>pipeline_runs</code> ကြီးလေ ကြာလေ ဖြစ်ပါတယ်။ <b>Release window မှာ run ပြီး table size ကို ကြိုစစ်ပါ</b> (<code>SELECT COUNT(*) FROM pipeline_runs</code>)။</li>
+    <li><b>RSU (node တစ်ခုချင်း ALTER) ကို မသုံးပါနဲ့။</b> ALTER လုပ်နေတုန်း node တွေ schema မတူ ဖြစ်ပြီး replication ပြဿနာ ဖြစ်နိုင်ပါတယ်။</li>
+  </ul>
+
+  <p><b>8. Galera မှာ အရင် စမ်းရမယ့် အချက်</b></p>
+  <ul>
+    <li><b>Generated column ပေါ်က unique key ကို certification မှာ စစ်လား:</b> Galera က primary key နဲ့ unique key တွေကို certification key အဖြစ် သုံးပါတယ်။ <code>PERSISTENT</code> column က row ထဲမှာ value တကယ်ရှိလို့ ပါသင့်ပေမယ့် generated column နဲ့ Galera မှာ ယခင်က bug တွေ ရှိခဲ့လို့ <b>staging မှာ မဖြစ်မနေ စမ်းရပါမယ်</b>။ မစစ်ရင် (node ၂ ခုမှာ ၂ ခုလုံး commit အောင်ရင်) အစားထိုးနည်း: <code>ticket_active_run (ticket_id PRIMARY KEY, run_id)</code> table သီးသန့် ထားပြီး run စရင် insert၊ ပြီးရင် delete (primary key certification က အခိုင်မာဆုံး၊ ဒါပေမဲ့ delete ကို service ၃ ခုမှာ ထည့်ရလို့ ပိုရှုပ်)။</li>
+    <li><b>AUTO_INCREMENT:</b> Galera က node အလိုက် id ကို ခုန်ပြီး ထုတ်ပါတယ် (<code>auto_increment_increment</code> = node အရေအတွက်၊ ဥပမာ 1, 4, 7 …)။ id ကွက်လပ် ပိုများပေမယ့် ပြဿနာ မဟုတ်ပါ။</li>
+    <li><b>Primary key:</b> Galera မှာ table တိုင်း primary key လိုပါတယ်။ <code>pipeline_runs</code> မှာ <code>id</code> ရှိပြီးသားပါ။</li>
+  </ul>
+
+  <p><b>9. Galera test plan (staging သို့ local docker ၃-node)</b></p>
+  <div class="wrap"><table>
+    <thead><tr><th>စမ်းတာ</th><th>မျှော်လင့်ရလဒ်</th></tr></thead>
+    <tbody>
+      <tr><td>Node တူကို ပြိုင်တူ INSERT ၅ ခု</td><td>1 အောင်၊ 4 <code>1062</code></td></tr>
+      <tr><td>Node ၃ ခုကို ခွဲပြီး ပြိုင်တူ INSERT ၅ ခု (<code>wsrep_retry_autocommit=1</code>)</td><td>1 အောင်၊ ကျန်တာ <code>1062</code> (တစ်ခါတစ်ရံ <code>1213</code>)</td></tr>
+      <tr><td>အတူတူ (<code>wsrep_retry_autocommit=0</code>)</td><td>1 အောင်၊ node မတူတာ <code>1213</code></td></tr>
+      <tr><td>Node ၂ ခုကနေ stuck run တစ်ခုကို lazy takeover ပြိုင်တူ</td><td>တစ်ခုပဲ ပိတ်၊ event ၁ ကြောင်း၊ ရှုံးသူ <code>1213</code></td></tr>
+      <tr><td><code>1213</code> ရပြီးချက်ချင်း <code>wsrep_sync_wait=1</code> နဲ့ ဖတ်</td><td>အနိုင်ရသူရဲ့ row ကို မြင်ရ</td></tr>
+      <tr><td>ALTER ကို TOI နဲ့ run</td><td>Node အားလုံးမှာ column + index ပါ၊ ကြာချိန် မှတ်</td></tr>
+      <tr><td><b>Generated column unique ကို node မတူမှာ စမ်း</b></td><td><b>၂ ခုလုံး commit မအောင်ရ</b> (အောင်သွားရင် PK table နည်း ပြောင်း)</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>10. Checklist</b></p>
+  <ol>
+    <li>Sysadmin ကို မေး: single-writer လား multi-writer လား၊ <code>wsrep_retry_autocommit</code>၊ <code>wsrep_sync_wait</code></li>
+    <li><b>Single-writer</b> ဆိုရင် ပြင်စရာ မလို (ဒီ section အပေါ်က plan အတိုင်း)</li>
+    <li><b>Multi-writer</b> ဆိုရင်: RT Web UI မှာ <code>1213</code> ကို <code>1062</code> လို ကိုင်တွယ် + <code>wsrep_sync_wait=1</code> နဲ့ ပြန်ဖတ်၊ lazy takeover မှာ <code>1213</code> = "တခြားသူ ပိတ်ပြီး"၊ noc မှာ <code>1213</code> → 409</li>
+    <li>Generated column unique ကို Galera staging မှာ စမ်း (မအောင်ရင် PK table နည်း)</li>
+    <li>ALTER ကို release window မှာ TOI နဲ့ run (table size ကြိုစစ်)</li>
+  </ol>
 
   <h3>ပြင်ရမယ့် file အနှစ်ချုပ်</h3>
   <div class="wrap"><table>
