@@ -17,3 +17,11 @@ ALTER TABLE pipeline_runs
   MODIFY COLUMN `ref_bcs_process_id` varchar(36) DEFAULT ''
     COMMENT 'Peppermint BCS async job_id (UUID), set by rtutil when the BCS job is queued; '''' until then',
   ADD INDEX IF NOT EXISTS `idx_pipeline_runs_ref_bcs_process_id` (`ref_bcs_process_id`);
+
+
+
+
+  ALTER TABLE pipeline_runs
+  ADD active_ticket_id bigint unsigned
+      GENERATED ALWAYS AS (IF(completed_at IS NULL, ticket_id, NULL)) STORED,
+  ADD UNIQUE KEY uq_pipeline_runs_active_ticket (active_ticket_id);
