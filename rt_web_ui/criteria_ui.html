@@ -245,7 +245,7 @@ const META = Object.fromEntries([
   ["31_transferred_ca1_low_signal","tr","CA1 signal နိမ့်","network_good_workflow · ca1_status","Passive-Infra",'ca1.status: "Low Signal"'],
   ["32_transferred_uplink_broken","tr","Uplink ပြတ် (Broken)","network_good_workflow · uplink_status","Passive-Infra",'uplink.status: "Broken"'],
   ["33_transferred_uplink_low_signal","tr","Uplink signal နိမ့်","network_good_workflow · uplink_status","Passive-Infra",'uplink.status: "Low Signal"'],
-  ["34_transferred_not_low_dbm","tr","ONU signal ကောင်း (is_low_dbm = false)","network_good_workflow · is_low_dbm","LANOps","onu.is_low_dbm: false"],
+  ["34_transferred_low_dbm","tr","ONU signal နိမ့် (is_low_dbm = true)","network_good_workflow · is_low_dbm","LANOps","onu.is_low_dbm: true"],
   ["35_transferred_swap_onu","tr","ONU လဲရန် (swap ONU)","network_good_workflow · swap_onu","LANOps","onu.is_swap_onu: true"],
   ["36_transferred_onu_down","tr","ONU Offline (EPC outage မဟုတ်)","network_good_workflow · onu_down","LANOps",'onu.phase_state: "Offline" · onu.is_epc_outage: false'],
 ].map(([file, g, title, step, queue, field]) => [file, { file, g, title, step, queue, field, num: file.slice(0, 2) }]));

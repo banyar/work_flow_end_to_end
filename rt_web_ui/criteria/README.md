@@ -47,13 +47,15 @@ Run သည် rtutil က RT ticket ကို update လုပ်ပြီးမ�
 | [`31_transferred_ca1_low_signal.json`](tickets/31_transferred_ca1_low_signal.json) (`CRIT31`) | Success · Transferred | CA1 Low Signal | network_good_workflow · ca1_status=Low Signal | Passive-Infra | `ca1.status: "Low Signal"` |
 | [`32_transferred_uplink_broken.json`](tickets/32_transferred_uplink_broken.json) (`CRIT32`) | Success · Transferred | Uplink Broken | network_good_workflow · uplink_status=Broken | Passive-Infra | `uplink.status: "Broken"` |
 | [`33_transferred_uplink_low_signal.json`](tickets/33_transferred_uplink_low_signal.json) (`CRIT33`) | Success · Transferred | Uplink Low Signal | network_good_workflow · uplink_status=Low Signal | Passive-Infra | `uplink.status: "Low Signal"` |
-| [`34_transferred_not_low_dbm.json`](tickets/34_transferred_not_low_dbm.json) (`CRIT34`) | Success · Transferred | ONU Working + is_low_dbm=false | network_good_workflow · ONU Phase State=Working → is_low_dbm (IS_FALSE) | LANOps | `onu.is_low_dbm: false` |
+| [`34_transferred_low_dbm.json`](tickets/34_transferred_low_dbm.json) (`CRIT34`) | Success · Transferred | ONU Working + is_low_dbm=true | network_good_workflow · ONU Phase State Working: ONU Low Dbm (IS_TRUE) | LANOps | `onu.is_low_dbm: true` |
 | [`35_transferred_swap_onu.json`](tickets/35_transferred_swap_onu.json) (`CRIT35`) | Success · Transferred | ONU Working + swap ONU | network_good_workflow · ONU Phase State=Working → swap_onu | LANOps | `onu.is_swap_onu: true` |
 | [`36_transferred_onu_down.json`](tickets/36_transferred_onu_down.json) (`CRIT36`) | Success · Transferred | ONU Working မဟုတ် + EPC outage မဟုတ် | network_good_workflow · ONU Phase State=Default → onu_down | LANOps | `onu.phase_state: "Offline"` · `onu.is_epc_outage: false` |
 
-"All good" response (`10` နှင့် default): `olt.status: "Online"`, `ca1.status` / `uplink.status: "OK"`, `onu.phase_state: "Working"`, `onu.is_low_dbm: true`, `onu.is_swap_onu` / `is_onu_on_off` / `is_port_loss` / `is_bip8_error` / `profile.is_line_profile_mismatch: false`, `cpe.status: "Up"`, `onu["24h_onu_usage_gb"]: 1.5`။
+"All good" response (`10` နှင့် default): `olt.status: "Online"`, `ca1.status` / `uplink.status: "OK"`, `onu.phase_state: "Working"`, `onu.is_low_dbm: false`, `onu.is_swap_onu` / `is_onu_on_off` / `is_port_loss` / `is_bip8_error` / `profile.is_line_profile_mismatch: false`, `cpe.status: "Up"`, `onu["24h_onu_usage_gb"]: 1.5`။
 
-> **`is_low_dbm`:** workflow တွင် `IS_FALSE` ဖြစ်သဖြင့် `is_low_dbm: false` (signal ကောင်း) ဖြစ်လျှင် "ONU has been offline for over 12 hours" ဖြင့် LANOps သို့ ရွှေ့သည် (`34`)။ ရည်ရွယ်ချက်ရှိရှိ ဟုတ်မဟုတ် team နှင့် အတည်ပြုရန်။
+> **`is_low_dbm`:** workflow config (`workflow_engine_configs/network_good_workflow.json`) တွင် `IS_TRUE` ဖြစ်သဖြင့် `is_low_dbm: true` (signal နိမ့်) ဖြစ်လျှင် "ONU has been offline for over 12 hours" ဖြင့် LANOps သို့ ရွှေ့သည် (`34`)။ ကျန် criteria များ၏ body တွင် `false`။
+>
+> **Node-RED field types (noc_automation `models.NodeRedONU`):** `voltage`, `temperature`, `signal` = number၊ `uptime` = string၊ `profile.id` = int၊ body တွင် `errors: []` ပါသည်။ Type မကိုက်လျှင် noc က parse မလုပ်နိုင်ဘဲ `CPE_FETCH_RETRY_SCHEDULED` ဖြစ်သည်။
 
 Workflow engine (noc_automation) ကို ဤ file များဖြင့် တိုက်ရိုက် run ၍ `target_queue` / status ကို စစ်ပြီး — ၁၆ ခုလုံး အထက်ပါ table အတိုင်း ထွက်သည် (`28` မပါ၊ contract အသစ်ဖြင့် ပြန်မစစ်ရသေး)။
 

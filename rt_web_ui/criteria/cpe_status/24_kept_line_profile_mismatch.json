@@ -21,10 +21,10 @@
             "rx_power": -27,
             "tx_power": 0.5,
             "bias": 5,
-            "voltage": "",
-            "temperature": "",
+            "voltage": 3.4,
+            "temperature": 53.0,
             "is_swap_onu": false,
-            "is_low_dbm": true,
+            "is_low_dbm": false,
             "is_epc_outage": false,
             "24h_onu_usage_gb": 1.5,
             "is_usage_over_gb": true,
@@ -32,14 +32,14 @@
             "hostname": "YKNC07ZYNY-GB7-P7-LCF029166",
             "serial": "FO2F15009949",
             "phase_state": "Working",
-            "signal": "-23.566",
+            "signal": -23.566,
             "last_seen": "2026-08-12T04:11:25.741Z",
-            "uptime": 19131,
+            "uptime": "19131",
             "is_onu_on_off": false,
             "is_bip8_error": false,
             "is_port_loss": false,
             "profile": {
-                "id": "29",
+                "id": 29,
                 "name": "INFRA3",
                 "line_profile_name": "MN_FR-SLA_25.00Mbps",
                 "is_line_profile_mismatch": true
@@ -55,5 +55,6 @@
                 "status": "OBOB-B"
             }
         }
-    }
+    },
+    "errors": []
 }
