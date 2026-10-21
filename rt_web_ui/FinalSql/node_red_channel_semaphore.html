@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Node-RED Channel Semaphore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Myanmar:wght@400;500;600&display=swap">
+<style>
+/* Same family as "Go Channel Limiter" / "Node-RED Throughput Design": one reading column,
+   each step = number + heading + diagram/code + notes. */
+:root {
+  --bg: #f4f6f5; --panel: #ffffff; --fg: #1b2421; --muted: #56645e; --line: #d6ddd9;
+  --accent: #0d7766; --accent-soft: #dcefea; --warn: #b0521a; --warn-soft: #f7e6da; --bad: #a8323a;
+  --code-bg: #eef2f0;
+  --font-display: "IBM Plex Sans Condensed", "Noto Sans Myanmar", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", "Noto Sans Myanmar", "Myanmar Text", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111715; --panel: #18201d; --fg: #e3eae6; --muted: #9aa8a1; --line: #2b3531;
+    --accent: #4fc0a9; --accent-soft: #173a33; --warn: #e3904f; --warn-soft: #3d2a1b; --bad: #ec7d84;
+    --code-bg: #0d1311; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111715; --panel: #18201d; --fg: #e3eae6; --muted: #9aa8a1; --line: #2b3531;
+  --accent: #4fc0a9; --accent-soft: #173a33; --warn: #e3904f; --warn-soft: #3d2a1b; --bad: #ec7d84;
+  --code-bg: #0d1311; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.75; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 40px 16px 72px; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.25; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 24px; font-weight: 600; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 18px; }
+.lede { font-size: 17px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.chip { font-family: var(--font-mono); font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--panel); }
+.chip.pick { border-color: var(--accent); color: var(--accent); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.fact { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 2px; }
+.fact b { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.fact span { font-size: 13.5px; color: var(--muted); }
+section { display: grid; gap: 18px; }
+.step-head { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+.step-no { font-family: var(--font-mono); font-size: 13px; color: var(--accent); grid-row: span 2; padding-top: 4px; }
+.step-head .eyebrow { grid-column: 2; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px; overflow-x: auto; }
+.panel pre.mermaid { margin: 0; min-width: 640px; text-align: center; background: transparent; }
+.caption { color: var(--muted); font-size: 14px; }
+pre.code { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; overflow-x: auto; font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6; color: var(--fg); }
+pre.code .c { color: var(--muted); }
+pre.code .k { color: var(--accent); font-weight: 500; }
+pre.code .add { background: var(--accent-soft); display: inline-block; width: 100%; }
+.chan { display: grid; gap: 14px; }
+.chan-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.chan-label { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.cells { display: grid; grid-template-columns: repeat(8, 34px); border: 2px solid var(--fg); border-radius: 4px; }
+.cell { height: 34px; border-right: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.cell:last-child { border-right: none; }
+.cell.on { background: var(--accent); color: var(--panel); }
+.arrow { font-family: var(--font-mono); color: var(--accent); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule { border-top: 2px solid var(--line); padding-top: 10px; display: grid; gap: 4px; }
+.rule.full { border-top-color: var(--warn); }
+.rule b { font-family: var(--font-display); font-weight: 600; }
+.callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 14px 18px; border-radius: 0 6px 6px 0; display: grid; gap: 8px; }
+.callout h3 { color: var(--warn); }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 14px 18px; border-radius: 0 6px 6px 0; display: grid; gap: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; font-size: 14px; background: var(--bg); }
+tr:last-child td { border-bottom: none; }
+.yes { color: var(--accent); font-weight: 600; }
+.no { color: var(--bad); font-weight: 600; }
+ul.points, ol.points { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 72ch; }
+ul.points li::marker, ol.points li::marker { color: var(--accent); }
+.timeline { display: grid; gap: 22px; }
+.tl { display: grid; gap: 6px; min-width: 560px; }
+.tl h3 { font-size: 15px; }
+.track { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 10px; }
+.track > span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.lane { position: relative; height: 16px; background: var(--code-bg); border-radius: 3px; }
+.bar { position: absolute; top: 2px; height: 12px; border-radius: 2px; background: var(--accent); }
+.bar.fail { background: var(--bad); }
+.bar.wait { background: transparent; border: 1px dashed var(--muted); }
+.axis { display: grid; grid-template-columns: 76px 1fr; gap: 10px; }
+.ticks { position: relative; height: 18px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">rt-external-api (noc_automation) · Node-RED limit · နည်း ၁</div>
+  <h1>Node-RED Channel Semaphore</h1>
+  <p class="lede">Node-RED က request <b>10</b> ခုအထိပဲ တစ်ပြိုင်နက် လက်ခံနိုင်ပါတယ်။ noc_automation က Node-RED ကို ခေါ်တဲ့ နေရာတစ်ခုတည်း (Node-RED client) မှာ <b>slot 8 ခုပါတဲ့ Go channel</b> ကို ဝင်ခွင့်လက်မှတ်အဖြစ် ထားပြီး တစ်ပြိုင်နက် 8 ခုထက် မပို့အောင် ကန့်သတ်တဲ့ နည်းကို ဒီ page မှာ အသေးစိတ် ရှင်းပြထားပါတယ်။</p>
+  <div class="meta">
+    <span class="chip pick">နည်း ၁ · အကြံပြု · channel semaphore</span>
+    <span class="chip">Redmine #20789</span>
+    <span class="chip">dependency အသစ် မလို</span>
+    <span class="chip">ပြင်ရမယ့် file: node_red_service.go</span>
+  </div>
+  <div class="facts">
+    <div class="fact"><b>10</b><span>Node-RED တစ်ပြိုင်နက် လက်ခံနိုင်တဲ့ အများဆုံး</span></div>
+    <div class="fact"><b>8</b><span>Slot (limit) · တခြား system အတွက် 2 ချန်</span></div>
+    <div class="fact"><b>~96</b><span>တစ်မိနစ် call (8 slot × 60s ÷ 5s)</span></div>
+    <div class="fact"><b>1</b><span>ပြင်ရမယ့်နေရာ · shared Node-RED client</span></div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="step-head"><span class="step-no">00</span><div class="eyebrow">ပြဿနာ</div><h2>ပမာဏ မဟုတ်ဘူး၊ burst ပါ</h2></div>
+  <p>တစ်ရက် ticket 1000 ခုဆိုရင် ပျမ်းမျှ တစ်မိနစ် ~0.7 ခုပဲ ဖြစ်လို့ ပမာဏက ပြဿနာ မဟုတ်ပါ။ ပြဿနာက API က request တစ်ခုစီကို goroutine တစ်ခုနဲ့ ချက်ချင်း Node-RED ဆီ ပို့ပြီး <b>တစ်ပြိုင်နက် ခေါ်တဲ့ အရေအတွက်ကို ဘာမှ မကန့်သတ်ထားတာ</b> ပါ။ ticket 100 ခု တစ်ပြိုင်နက် ဝင်လာရင် Node-RED ကို 100 ခု တစ်ပြိုင်နက် ခေါ်ပြီး 90 ခု fail ဖြစ်ကာ ချက်ချင်း ပြန်ခေါ်ကြလို့ ပိုပိတ်ဆို့ပါတယ်။</p>
+</section>
+
+<section id="channel">
+  <div class="step-head"><span class="step-no">01</span><div class="eyebrow">အခြေခံ</div><h2>Buffered channel = ဝင်ခွင့်လက်မှတ် 8 စောင်</h2></div>
+  <p><code>make(chan struct{}, 8)</code> က နေရာ 8 ခုပါတဲ့ channel ပါ။ Node-RED ကို မခေါ်ခင် channel ထဲ တစ်ခု <b>ထည့်</b> (slot ယူ) ပြီး ခေါ်ပြီးရင် တစ်ခု <b>ပြန်ထုတ်</b> (slot လွှတ်) ပါတယ်။ Channel ရဲ့ သဘာဝအရ <b>ပြည့်နေရင် ထည့်ချင်တဲ့ goroutine က အလိုအလျောက် စောင့်</b>ပါတယ်။ ဒါကြောင့် တစ်ပြိုင်နက် 8 ခုထက် ဘယ်တော့မှ မပိုပါ။</p>
+  <div class="panel chan" aria-label="Buffered channel with 3 of 8 slots used">
+    <div class="chan-row">
+      <span class="chan-label">slot ယူ <code>slots &lt;- struct{}{}</code></span>
+      <span class="arrow">→</span>
+      <div class="cells" id="cells"></div>
+      <span class="arrow">→</span>
+      <span class="chan-label">slot လွှတ် <code>&lt;-slots</code></span>
+    </div>
+    <span class="caption">8 ခုထဲက 3 ခု သုံးထား (Node-RED ကို 3 ခု ခေါ်နေ)</span>
+  </div>
+  <div class="rules">
+    <div class="rule"><b>Slot လွတ်သေးရင်</b><span>ချက်ချင်း ယူပြီး Node-RED ကို ခေါ်ပါတယ်။ Load နည်းချိန်မှာ အရင်နဲ့ အတူတူ မြန်ပါတယ်။</span></div>
+    <div class="rule full"><b>8/8 ပြည့်နေရင်</b><span>တစ်ခုခု ပြီးလို့ slot လွတ်တဲ့အထိ <b>စောင့်ပါတယ်</b>။ စောင့်ချိန် ကန့်သတ်ချက် မထားပါ (retry job ထဲ မပို့ပါ)။ Call တိုင်း <code>NODE_RED_TIMEOUT</code> နဲ့ ပြီးလို့ slot က အမြဲ ပြန်လွတ်ပါတယ်။</span></div>
+    <div class="rule"><b><code>struct{}</code> ဘာကြောင့်လဲ</b><span>Data မလိုဘဲ "နေရာ" ပဲ လိုလို့ memory 0 byte ယူတဲ့ type ကို သုံးပါတယ်။</span></div>
+  </div>
+</section>
+
+<section id="where">
+  <div class="step-head"><span class="step-no">02</span><div class="eyebrow">ဘယ်မှာ ထည့်မလဲ</div><h2>Shared Node-RED client တစ်ခုတည်းမှာ ထည့်ရုံ</h2></div>
+  <p>Node-RED ကို ခေါ်တာ လမ်းကြောင်း ၂ ခုရှိပါတယ်: API ကနေ ဝင်လာတဲ့ ticket (goroutine တစ်ခုစီ) နဲ့ Retry Worker။ <code>bootstrap/remote_resolve.go</code> ရဲ့ <code>loadDeps()</code> က client ကို <b>တစ်ခါပဲ ဆောက်ပြီး</b> (<code>l.deps</code> ထဲ သိမ်း) service ရော Retry Worker ကိုပါ အတူတူ ပေးပါတယ်။ ဒါကြောင့် client ထဲမှာ channel ထည့်ရုံနဲ့ <b>လမ်းကြောင်း ၂ ခုလုံးပေါင်း 8 ခု</b> ကန့်သတ်ပြီးသား ဖြစ်ပါတယ်။</p>
+  <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  A["API goroutines<br/>ProcessRemoteResolve (ticket တစ်ခုစီ)"] --> F
+  R["Retry Worker<br/>(retry_jobs)"] --> F
+  subgraph C["nodeRedClientImpl (shared, loadDeps က တစ်ခါဆောက်)"]
+    F["FetchCPEStatus(cpeID)<br/>retry loop"] --> S{{"acquire()<br/>slots &lt;- struct{}{}"}}
+    S -->|"8/8 ပြည့်"| W["slot လွတ်တဲ့အထိ စောင့်"]
+    W -->|"slot လွတ်"| S
+    S -->|"slot ရ"| CALL["fetchCPEStatusSingle()"]
+    CALL --> REL["release()<br/>&lt;-slots"]
+  end
+  CALL --> NR["Node-RED (max 10)"]
+</pre>
+  </div>
+  <p class="caption">Node-RED ဘက်က တစ်ပြိုင်နက် 8 ခုထက် မမြင်ရပါ။ ကျန် 2 ခုကို တခြား system တွေ သုံးနိုင်အောင် ချန်ထားပါတယ်။</p>
+</section>
+
+<section id="flow">
+  <div class="step-head"><span class="step-no">03</span><div class="eyebrow">Call တစ်ခုချင်း</div><h2>Slot စောင့် → ခေါ် → လွှတ်</h2></div>
+  <div class="panel">
+<pre class="mermaid">
+flowchart TD
+  S["FetchCPEStatus(cpeID)<br/>attempt N"] --> ACQ["slots &lt;- struct{}{}<br/>(ပြည့်နေရင် လွတ်တဲ့အထိ စောင့်)"]
+  ACQ --> CALL["Node-RED ကို တစ်ကြိမ် ခေါ်<br/>(NODE_RED_TIMEOUT အတွင်း)"]
+  CALL --> REL["defer release(): &lt;-slots"]
+  REL --> RES{"response"}
+  RES -->|200| OK["workflow → Kafka → PUBLISHED"]
+  RES -->|404| NF["CPE_NOT_FOUND (retry မလုပ်)"]
+  RES -->|"other error / timeout"| SLEEP["time.Sleep(NODE_RED_RETRY_DELAY_MS)<br/>slot မကိုင်"]
+  SLEEP -->|"attempt ကျန်"| S
+  SLEEP -->|"attempt ကုန်"| RJ[("retry_jobs (DB)<br/>ယခင်အတိုင်း")]
+</pre>
+  </div>
+  <ul class="points">
+    <li><b>Slot ကို attempt တစ်ကြိမ်ချင်းမှာ ယူပါတယ်</b> (retry loop တစ်ခုလုံးမှာ မဟုတ်)။ Retry ကြား <code>time.Sleep</code> မှာ slot ကို လွှတ်ထားလို့ တခြား ticket တွေ ဆက်သုံးလို့ ရပါတယ်။</li>
+    <li><b>Slot စောင့်တာကြောင့် retry job ထဲ မပို့ပါ။</b> Ticket တိုင်း slot ရတဲ့အထိ စောင့်ပြီး Node-RED ကို ခေါ်ပါတယ်။ Retry job ထဲ ရောက်တာက ယခင်အတိုင်း Node-RED call တွေ attempt ကုန်အောင် fail ဖြစ်မှပဲ ဖြစ်ပါတယ် (<code>RETRY_WORKER_ENABLED=false</code> ဆိုရင် <code>FAILED_PERMANENT</code>)။</li>
+    <li><b>အကြာဆုံး ဘယ်လောက် စောင့်ရမလဲ:</b> ကိုယ့်ရှေ့မှာ စောင့်နေသူ အရေအတွက် ÷ 8 × call ကြာချိန်ပါ။ ဥပမာ ticket 100 ခု burst ဖြစ်ရင် နောက်ဆုံး ticket က (100 ÷ 8) × 5s ≈ <b>60 စက္ကန့်</b> စောင့်ရပါတယ်။</li>
+    <li><b>Deadlock မဖြစ်ပါ:</b> slot ကိုင်ထားတဲ့ call တိုင်းက <code>NODE_RED_TIMEOUT</code> (HTTP timeout) နဲ့ အဆုံးသတ်ပြီး <code>defer</code> နဲ့ slot ပြန်လွှတ်လို့ Node-RED မဖြေတောင် slot တွေ အမြဲ ပြန်လွတ်ပါတယ်။</li>
+    <li><b><code>defer release()</code></b> ဖြစ်လို့ error / panic ဖြစ်လည်း slot ပြန်လွှတ်ပါတယ်။ Slot ပျောက် (leak) မဖြစ်ပါ။</li>
+  </ul>
+</section>
+
+<section id="code">
+  <div class="step-head"><span class="step-no">04</span><div class="eyebrow">Code</div><h2><code>frontiir/services/node_red_service.go</code> ပြင်ပုံ</h2></div>
+  <h3>4.1 Struct</h3>
+<pre class="code"><span class="k">type</span> nodeRedClientImpl <span class="k">struct</span> {
+	baseURL      <span class="k">string</span>
+	apiKey       <span class="k">string</span>
+	environment  <span class="k">string</span>
+	maxRetries   <span class="k">int</span>
+	retryDelayMs time.Duration
+	httpClient   *http.Client
+<span class="add">	slots <span class="k">chan</span> <span class="k">struct</span>{} <span class="c">// make(chan struct{}, NODE_RED_MAX_CONCURRENCY); nil = no limit</span></span>
+}</pre>
+
+  <h3>4.2 Slot ယူ / လွှတ်</h3>
+<pre class="code"><span class="c">// acquire takes a slot, waiting as long as it takes for one to free up.</span>
+<span class="c">// Every holder gives its slot back within NODE_RED_TIMEOUT (defer release),</span>
+<span class="c">// so the wait always ends.</span>
+<span class="k">func</span> (c *nodeRedClientImpl) acquire() (release <span class="k">func</span>()) {
+	<span class="k">if</span> c.slots == <span class="k">nil</span> { <span class="c">// NODE_RED_MAX_CONCURRENCY=0: no limit (rollback switch)</span>
+		<span class="k">return</span> <span class="k">func</span>() {}
+	}
+	c.slots &lt;- <span class="k">struct</span>{}{} <span class="c">// blocks while 8/8 are in use</span>
+	<span class="k">return</span> <span class="k">func</span>() { &lt;-c.slots }
+}
+
+<span class="c">// fetchLimited is one Node-RED call inside a slot.</span>
+<span class="k">func</span> (c *nodeRedClientImpl) fetchLimited(cpeID <span class="k">string</span>) (*models.NodeRedResponse, <span class="k">error</span>) {
+	release := c.acquire()
+	<span class="k">defer</span> release()
+	<span class="k">return</span> c.fetchCPEStatusSingle(cpeID)
+}</pre>
+
+  <h3>4.3 Retry loop (<code>FetchCPEStatus</code>)</h3>
+<pre class="code"><span class="k">for</span> attempt := 1; attempt &lt;= c.maxRetries; attempt++ {
+<span class="add">	response, err := c.fetchLimited(cpeID)             <span class="c">// was: c.fetchCPEStatusSingle(cpeID)</span></span>
+	<span class="k">if</span> err == <span class="k">nil</span> {
+		<span class="k">return</span> response, <span class="k">nil</span>
+	}
+	<span class="k">if</span> errors.Is(err, common.ERR_CPE_NOT_FOUND) {
+		<span class="k">return</span> <span class="k">nil</span>, err
+	}
+	lastErr = err
+	<span class="k">if</span> attempt &lt; c.maxRetries {
+		time.Sleep(c.retryDelayMs)                     <span class="c">// slot is NOT held here</span>
+	}
+}</pre>
+
+  <h3>4.4 Constructor (<code>NewNodeRedClient</code>)</h3>
+<pre class="code"><span class="add">maxConc := utils.GetEnvInt(<span class="c">"NODE_RED_MAX_CONCURRENCY"</span>) <span class="c">// unset / 0 = no limit</span></span>
+client := &amp;nodeRedClientImpl{ <span class="c">/* … existing fields … */</span> }
+<span class="add"><span class="k">if</span> maxConc &gt; 0 {</span>
+<span class="add">	client.slots = <span class="k">make</span>(<span class="k">chan</span> <span class="k">struct</span>{}, maxConc)</span>
+<span class="add">}</span></pre>
+
+  <div class="note">
+    <h3>Service ဘက်မှာ ပြင်စရာ မလိုပါ</h3>
+    <p>Slot စောင့်တာက <code>FetchCPEStatus</code> အထဲမှာပဲ ဖြစ်ပြီး error အသစ် မထွက်လို့ <code>remote_resolve_service.go</code> နဲ့ Retry Worker ကို မပြင်ရပါ။ Retry Worker ကလည်း client တူကို သုံးလို့ အလိုအလျောက် ကန့်သတ်ပြီးသား ဖြစ်ပါတယ်။</p>
+  </div>
+  <div class="callout">
+    <h3>ဖျက်သင့်တဲ့ helper ၂ ခု</h3>
+    <p>Package-level <code>FetchCPEStatus()</code> နဲ့ <code>FetchCPEStatusWithRetry()</code> က ခေါ်တိုင်း <code>NewNodeRedClient()</code> နဲ့ <b>client အသစ်</b> (channel အသစ်) ဆောက်လို့ limit ကို ကျော်ပါတယ်။ လက်ရှိ ခေါ်တဲ့နေရာ မရှိလို့ ဖျက်ပါ၊ မဟုတ်ရင် နောက်တစ်ယောက် သုံးမိပြီး limit ပျက်ပါမယ်။</p>
+  </div>
+</section>
+
+<section id="config">
+  <div class="step-head"><span class="step-no">05</span><div class="eyebrow">Config</div><h2>Env setting နဲ့ ချိန်ညှိပုံ</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Env</th><th>အကြံပြု</th><th>အဓိပ္ပာယ် / ဘာကြောင့်</th></tr></thead>
+      <tbody>
+        <tr><td><code>NODE_RED_MAX_CONCURRENCY</code> <b>(အသစ်)</b></td><td><code>8</code></td><td>Slot အရေအတွက်။ Node-RED 10 ထဲက တခြား system အတွက် 2 ချန်။ <code>0</code> / မထားရင် limit မရှိ (rollback)။ Instance 2 ခုဆိုရင် <code>4</code></td></tr>
+        <tr><td><code>NODE_RED_TIMEOUT</code></td><td>(ရှိပြီးသား)</td><td>Call တစ်ခုရဲ့ HTTP timeout = slot တစ်ခု ကိုင်ထားနိုင်တဲ့ အကြာဆုံးအချိန်။ Slot တွေ အမြဲ ပြန်လွတ်အောင် အာမခံတဲ့ setting ပါ</td></tr>
+        <tr><td><code>NODE_RED_MAX_RETRIES</code>, <code>NODE_RED_RETRY_DELAY_MS</code></td><td>(ရှိပြီးသား)</td><td>Attempt တစ်ကြိမ်ချင်း slot ယူ၊ delay အတွင်း slot မကိုင်</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>တွက်ချက်ပုံ:</b> Node-RED call တစ်ခု ~5 စက္ကန့်ဆိုရင် slot 8 ခုနဲ့ တစ်မိနစ် 8 × (60 ÷ 5) ≈ <b>96 call</b>။ Burst 100 ခု ဝင်လာရင် နောက်ဆုံး ticket က ~60 စက္ကန့် စောင့်ပြီး 100 ခုလုံး retry job မရောက်ဘဲ ပထမအကြိမ်မှာပဲ ပြီးပါတယ်။ ~5 စက္ကန့်က ခန့်မှန်းချက်ဖြစ်လို့ production log ကနေ တကယ်ကြာချိန်ကို တိုင်းပြီး ပြန်ချိန်ပါ။</p>
+</section>
+
+<section id="example">
+  <div class="step-head"><span class="step-no">06</span><div class="eyebrow">ဥပမာ · ticket 100 ခု တစ်ပြိုင်နက်</div><h2>Semaphore ရှိရင် နဲ့ မရှိရင်</h2></div>
+  <div class="panel timeline" id="timeline" aria-label="Timeline: without limit vs with 8-slot semaphore over 60 seconds"></div>
+  <div class="legend" aria-hidden="true">
+    <span><i class="sw" style="background: var(--accent)"></i> Node-RED call (~5s)</span>
+    <span><i class="sw" style="background: var(--bad)"></i> fail (Node-RED ပြည့်)</span>
+    <span><i class="sw" style="border: 1px dashed var(--muted)"></i> slot စောင့်</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>Limit မရှိ (လက်ရှိ)</th><th>Semaphore 8</th></tr></thead>
+      <tbody>
+        <tr><td>Node-RED မြင်ရတဲ့ တစ်ပြိုင်နက် request</td><td class="no">100</td><td class="yes">8 ထက် မပို</td></tr>
+        <tr><td>ပထမအကြိမ် fail</td><td class="no">~90</td><td class="yes">0</td></tr>
+        <tr><td>100 ခုလုံး ပြီးချိန်</td><td class="no">မိနစ်ပိုင်း (retry job 1m, 3m, 5m) သို့ FAILED_PERMANENT</td><td class="yes">~1 မိနစ်</td></tr>
+        <tr><td>Node-RED တခြား user</td><td class="no">ပိတ်ဆို့ခံရ</td><td class="yes">2 slot ကျန်</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="caveats">
+  <div class="step-head"><span class="step-no">07</span><div class="eyebrow">သိထားရမှာ</div><h2>Channel semaphore ရဲ့ ကန့်သတ်ချက်များ</h2></div>
+  <ul class="points">
+    <li><b>Burst ကြီးရင် စောင့်ချိန် ရှည်ပါတယ်။</b> စောင့်ချိန် ကန့်သတ်ချက် မထားလို့ ticket 1000 ခု တစ်ပြိုင်နက် ဝင်ရင် နောက်ဆုံး ticket က (1000 ÷ 8) × 5s ≈ 10 မိနစ် စောင့်ပါတယ်။ ဒါပေမဲ့ retry job / <code>FAILED_PERMANENT</code> မဖြစ်ဘဲ အကုန် ပြီးပါတယ် (<code>RETRY_WORKER_ENABLED=false</code> နဲ့လည်း အဆင်ပြေ)။ Report မှာ စောင့်နေတဲ့ run တွေက <code>FETCHING_CPE_STATUS</code> မှာ ခဏ ပေါ်ပါမယ်။</li>
+    <li><b>Restart ဖြစ်ရင် စောင့်နေတဲ့ ticket ပျောက်ပါတယ်။</b> Channel က memory ထဲမှာပဲ ရှိလို့ slot စောင့်နေတုန်း / Node-RED ခေါ်နေတုန်း app restart ဖြစ်ရင် goroutine ပျောက်ပြီး run က <code>RECEIVED</code> / <code>FETCHING_CPE_STATUS</code> မှာ ပိတ်မိနေပါမယ်။ Semaphore ကြောင့် goroutine တွေ ပိုကြာကြာ စောင့်လို့ (စောင့်ချိန် ကန့်သတ်ချက် မရှိလို့ အထူးသဖြင့်) ဒီအန္တရာယ် ပိုကြီးပါတယ်။ ဒီ run တွေကို retry job အဖြစ် ပြန်ထည့်ပေးမယ့် sweeper လိုပါတယ် ("Node-RED Throughput Design" page အဆင့် ၁ · sweeper အသစ်)။</li>
+    <li><b>Instance တစ်ခုချင်း သီးသန့်ပါ။</b> Channel က process တစ်ခုထဲမှာပဲ ရှိလို့ noc instance 2 ခုဆိုရင် 8 + 8 = 16 ဖြစ်ပြီး Node-RED ရဲ့ 10 ကို ကျော်ပါတယ်။ Instance အရေအတွက်နဲ့ စားထားပါ (2 ခု → 4)၊ မဟုတ်ရင် Redis semaphore ကို သုံးပါ။</li>
+    <li><b>ရောက်တဲ့အစဉ် (FIFO) အာမခံချက် မရှိပါ။</b> Slot လွတ်တဲ့အခါ စောင့်နေသူထဲက ဘယ်သူ ရမလဲ Go runtime က ဆုံးဖြတ်ပါတယ်။ Ticket တစ်ရက် 1000 အတွက် ပြဿနာ မဟုတ်ပါ။</li>
+    <li><b>စောင့်နေတဲ့ goroutine တွေ memory ထဲ ရှိနေပါတယ်။</b> Goroutine တစ်ခု ~KB အနည်းငယ်ပဲ ဖြစ်လို့ ရာဂဏန်းအထိ ပြဿနာ မရှိပါ။</li>
+    <li><b>Node-RED limit က rate (တစ်စက္ကန့် 10 ခု) ဆိုရင်</b> channel အစား <code>golang.org/x/time/rate</code> ကို သုံးရပါမယ်။ Node-RED team နဲ့ "တစ်ပြိုင်နက် 10" လား "တစ်စက္ကန့် 10" လား အတည်ပြုပါ။ ထည့်ရမယ့်နေရာကတော့ အတူတူပါ။</li>
+  </ul>
+</section>
+
+<section id="test">
+  <div class="step-head"><span class="step-no">08</span><div class="eyebrow">Test</div><h2>ဘယ်လို စစ်မလဲ</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Test</th><th>လုပ်ပုံ</th><th>အောင်ရမယ့် ရလဒ်</th></tr></thead>
+      <tbody>
+        <tr><td>Unit: limit</td><td><code>httptest</code> server က request တစ်ခုကို 200ms ကိုင်ပြီး တစ်ပြိုင်နက် in-flight အများဆုံးကို မှတ်။ Goroutine 50 ခုက <code>FetchCPEStatus</code> ခေါ် (<code>go test -race</code>)</td><td>In-flight အများဆုံး ≤ 8၊ 50 ခုလုံး အောင်၊ race မရှိ</td></tr>
+        <tr><td>Unit: စောင့်</td><td>Slot 1၊ server က 500ms ကိုင်။ Goroutine 2 ခု</td><td>ဒုတိယက ~500ms စောင့်ပြီး <b>အောင်</b> (error မဖြစ်၊ retry job မရောက်)</td></tr>
+        <tr><td>Unit: sleep မှာ slot လွှတ်</td><td>Slot 1၊ ပထမ call 500 error၊ retry delay 300ms။ Delay အတွင်း တခြား goroutine ခေါ်</td><td>တခြား goroutine က delay အတွင်း slot ရ</td></tr>
+        <tr><td>Unit: limit ပိတ်</td><td><code>NODE_RED_MAX_CONCURRENCY=0</code></td><td>ယခင်အတိုင်း (limit မရှိ)</td></tr>
+        <tr><td>Local e2e</td><td>Criteria mock (Mockoon) ရဲ့ response <code>latency</code> ကို 5000ms ထား၊ ticket 20 ခု တစ်ပြိုင်နက် ပို့၊ mock log မှာ တစ်ပြိုင်နက် request ကြည့်</td><td>Mock က တစ်ပြိုင်နက် 8 ထက် မမြင်၊ 20 ခုလုံး <code>PUBLISHED</code> (retry job 0)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="rollout">
+  <div class="step-head"><span class="step-no">09</span><div class="eyebrow">Deploy · စောင့်ကြည့် · Rollback</div><h2>Release လုပ်ပုံ</h2></div>
+  <ol class="points">
+    <li><b>Deploy:</b> noc code အသစ်ကို <code>NODE_RED_MAX_CONCURRENCY=8</code> နဲ့ deploy လုပ်ပါ။ DB / schema မပြောင်းလို့ deploy အစဉ် ဂရုစိုက်စရာ မလိုပါ။</li>
+    <li><b>Log ထည့်ပါ:</b> slot စောင့်ချိန် 1 စက္ကန့်ထက် ကြာရင် <code>cpe_id</code>, <code>wait_ms</code>, <code>in_use</code> နဲ့ log ရေးပါ။</li>
+    <li><b>စောင့်ကြည့်ပါ:</b> slot စောင့်ချိန် (<code>wait_ms</code>) အများဆုံး၊ <code>FETCHING_CPE_STATUS</code> မှာ ကြာနေတဲ့ run အရေအတွက်၊ Node-RED call ကြာချိန် (တကယ့် ~Xs ကို တိုင်းပြီး 05 ရဲ့ တွက်ချက်ပုံကို ပြန်စစ်)။</li>
+    <li><b>Rollback:</b> code ပြန်မ deploy ဘဲ <code>NODE_RED_MAX_CONCURRENCY=0</code> ပြောင်းပြီး restart လုပ်ရုံနဲ့ limit ပိတ်ပါတယ်။</li>
+  </ol>
+</section>
+
+<footer>"Go Channel Limiter" page ရဲ့ နည်း ၁ (channel semaphore) ကို သီးသန့် အသေးစိတ် ချဲ့ထားတဲ့ page ပါ။ Code ဥပမာတွေက noc_automation <code>frontiir/services/node_red_service.go</code> နဲ့ <code>frontiir/bootstrap/remote_resolve.go</code> (commit <code>e649d25</code>) ပေါ်မှာ အခြေခံထားပါတယ်။ ~5 စက္ကန့် call ကြာချိန်က ခန့်မှန်းချက်ပါ။</footer>
+
+</div>
+
+<script>
+(function () {
+  var cells = document.getElementById("cells");
+  if (cells) {
+    var h = "";
+    for (var i = 0; i < 8; i++) h += '<div class="cell' + (i < 3 ? " on" : "") + '">' + (i < 3 ? "■" : "") + "</div>";
+    cells.innerHTML = h;
+  }
+  // Timeline 0–60s. Bars: [start, duration, kind].
+  var MAX = 60;
+  function pct(s) { return (s / MAX * 100) + "%"; }
+  function lane(label, bars) {
+    var b = bars.map(function (x) {
+      return '<i class="bar ' + (x[2] || "") + '" style="left:' + pct(x[0]) + ";width:calc(" + pct(x[1]) + ' - 2px)"></i>';
+    }).join("");
+    return '<div class="track"><span>' + label + '</span><div class="lane">' + b + "</div></div>";
+  }
+  function axis() {
+    var t = "";
+    [0, 15, 30, 45, 60].forEach(function (s) { t += '<span style="left:' + pct(s) + '">' + s + "s</span>"; });
+    return '<div class="axis"><span></span><div class="ticks">' + t + "</div></div>";
+  }
+  var none = '<div class="tl"><h3>Limit မရှိ: 100 ခု တစ်ပြိုင်နက် → 10 ခုပဲ အောင်</h3>';
+  none += lane("ticket 1–10", [[0, 5]]);
+  none += lane("ticket 11–100", [[0, 1, "fail"], [1, 1, "fail"], [2, 1, "fail"]]);
+  none += lane("retry job", [[0, 60, "wait"]]);
+  none += axis() + "</div>";
+  var sem = '<div class="tl"><h3>Semaphore 8: တစ်ပြိုင်နက် 8 ခု၊ slot လွတ်တာနဲ့ နောက်တစ်ခု</h3>';
+  function busy() { var a = []; for (var s = 0; s < 60; s += 5) a.push([s, 5]); return a; }
+  for (var n = 1; n <= 3; n++) sem += lane("slot " + n, busy());
+  sem += lane("…", busy());
+  sem += lane("slot 8", busy());
+  sem += lane("စောင့်နေ", [[0, 58, "wait"]]);
+  sem += axis() + "</div>";
+  var tl = document.getElementById("timeline");
+  if (tl) tl.innerHTML = none + sem;
+})();
+</script>
+<!-- Local file: Mermaid loads from a CDN, so the diagrams need internet. -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  (function () {
+    if (typeof mermaid === "undefined") return;
+    var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    mermaid.initialize({ startOnLoad: true, securityLevel: "strict", theme: dark ? "dark" : "neutral", flowchart: { useMaxWidth: false } });
+  })();
+</script>
+</body>
+</html>
