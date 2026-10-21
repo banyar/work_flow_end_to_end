@@ -64,7 +64,7 @@ SUBMITTED_TO_API
   |  run ကို SUBMITTED_TO_API မှ RECEIVED သို့ ဆက်ယူ (row မရှိလျှင် အသစ် create)
   |    --run_id သည် အခြား state တွင် ရှိနေ--> HTTP 409 --> API_REJECTED
   |    --DB error--> HTTP 500 --> API_REJECTED
-  |  HTTP 200 + run_id  --> [rt_web_ui] event api_accepted ("Ticket Processing started")
+  |  HTTP 202 + run_id  --> [rt_web_ui] event api_accepted ("Ticket Processing started")
   v
 Node-RED CPE status fetch (immediate retry x3)
   |-- 404 ---------------> CPE_NOT_FOUND (terminal)
@@ -155,11 +155,11 @@ make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automatio
 
    | API အဖြေ | State | Event (`rt_web_ui`) | ပြသမည့်စာ |
    |---|---|---|---|
-   | 200 | API က `SUBMITTED_TO_API → RECEIVED` ဆက်ယူပြီး (rt_web_ui က state **မရေး**) | `api_accepted` (detail `{http_status, message}`) | Ticket Processing started |
+   | 202 | API က `SUBMITTED_TO_API → RECEIVED` ဆက်ယူပြီး (rt_web_ui က state **မရေး**) | `api_accepted` (detail `{http_status, message}`) | Ticket Processing started |
    | 400 / 409 / 500 | `API_REJECTED` | `api_rejected` | RT External API returned … |
    | Connection error / timeout | `API_UNREACHABLE` | `api_unreachable` | RT External API unreachable: … |
 
-   - 200 ပြန်လာချိန်တွင် API ၏ background processing က `FETCHING_CPE_STATUS` / `WORKFLOW_EVALUATED` သို့ ရောက်နေနိုင်သဖြင့် state ပြန်ရေးလျှင် run ကို နောက်ပြန်ဆွဲချမိမည်။ ထို့ကြောင့် `AppendEvent` (state မပြောင်း) ကိုသာ သုံးသည်။
+   - 202 ပြန်လာချိန်တွင် API ၏ background processing က `FETCHING_CPE_STATUS` / `WORKFLOW_EVALUATED` သို့ ရောက်နေနိုင်သဖြင့် state ပြန်ရေးလျှင် run ကို နောက်ပြန်ဆွဲချမိမည်။ ထို့ကြောင့် `AppendEvent` (state မပြောင်း) ကိုသာ သုံးသည်။
    - `API_REJECTED` / `API_UNREACHABLE` ကို run သည် `SUBMITTED_TO_API` တွင် ရှိနေဆဲ ဖြစ်မှသာ ရေးသည်။ API က ဆက်ယူပြီးဖြစ်ပါက (ဥပမာ API လက်ခံပြီးမှ client timeout) event သာ ထည့်ပြီး API ၏ state ကို မထိပါ။
 
 ### 0.3 API ဘက် — run ကို ဆက်ယူခြင်း
@@ -213,7 +213,7 @@ API သည် ထို `run_id` ၏ run ကို `RECEIVED` သို့ ရ�
 Code — route `POST /api/v1/cpe/remote-resolve` (`frontiir/api/cpe_lookup_routes.go`) → `RemoteResolveController.RemoteResolve` (`frontiir/api/controllers/remote_resolve_controller.go`) → `helpers.CreatePipelineRun` (`frontiir/helpers/remote_resolve_helper.go`) → rtdatacore `PipelineRunRepository.AttachSubmittedRun`၊ row မရှိလျှင် `PipelineRunRepository.Create`။ Response struct သည် `models.RemoteResolveAcceptedResponse` (`frontiir/api/models/remote_resolve.go`)။
 
 - `pipeline_runs.run_id` တွင် unique index ရှိသည်။ **`run_id` တူ request ထပ်ပို့ပါက** (run သည် `SUBMITTED_TO_API` မဟုတ်တော့) HTTP **409** "run_id already in use" ပြန်ကာ processing မစပါ။ ဆိုလိုသည်မှာ `run_id` အလိုက် duplicate guard ဖြစ်သည် (ticket အလိုက် မဟုတ်ပါ — ticket တူ `run_id` မတူ request ၂ ခုသည် run ၂ ခု ဖြစ်ဆဲ)။ Retry လုပ်လိုပါက RT Web UI က `run_id` အသစ်ဖြင့် ပို့ရမည်။
-- Row ဖန်တီးပြီးလျှင် HTTP 200 ကို ချက်ချင်းပြန်ပြီး ကျန်အဆင့်များကို background goroutine ဖြင့် ဆက်လုပ်သည်။
+- Row ဖန်တီးပြီးလျှင် HTTP 202 (Accepted) ကို ချက်ချင်းပြန်ပြီး ကျန်အဆင့်များကို background goroutine ဖြင့် ဆက်လုပ်သည်။
 
 Initial data —
 
@@ -347,7 +347,7 @@ Result ကို `is_bcs_success`, `bcs_status_message` တွင် မှတ�
 | `""` | `NOT_ELIGIBLE` | `not_in_noc_queue` / `ticket_status_not_allowed` / `cpe_or_local_service_id_missing` / `opi_customer_excluded` / `service_type_not_eligible` | `rt_web_ui` | Section 1 gate fail ("No Process") |
 | `""` | `SUBMITTED_TO_API` | `payload_submitted` | `rt_web_ui` | API သို့ POST မလုပ်မီ |
 | `SUBMITTED_TO_API` | `RECEIVED` | `api_received` | `remote_resolve_service` | API က rt_web_ui ၏ run ကို ဆက်ယူ |
-| (any) | (same) | `api_accepted` | `rt_web_ui` | API 200 — "Ticket Processing started" |
+| (any) | (same) | `api_accepted` | `rt_web_ui` | API 202 — "Ticket Processing started" |
 | `SUBMITTED_TO_API` | `API_REJECTED` | `api_rejected` | `rt_web_ui` | API 400 / 409 / 500 |
 | `SUBMITTED_TO_API` | `API_UNREACHABLE` | `api_unreachable` | `rt_web_ui` | API connection error / timeout |
 | (new) | `RECEIVED` | — (row create) | `remote_resolve_service` | rt_web_ui မပါဘဲ API ကို တိုက်ရိုက်ခေါ်ချိန် run ဖန်တီး |
@@ -762,7 +762,6 @@ Normal production flow တွင် `run_id` ကို မဖြစ်မနေ�
 | `ScheduleRetry` / `FAILED_PERMANENT` transition ကိုယ်တိုင် DB error ဖြင့် fail ဖြစ်ခြင်း | Run သည် `FETCHING_CPE_STATUS` / `WORKFLOW_EVALUATED` တွင် အမြဲကျန်နေသည် (log-and-continue) |
 | Node-RED mock mode ဖယ်ရှားပြီး (`NODE_RED_USE_MOCK`, `cpe_status_mock.json` မရှိတော့) | Local / test environment တွင်လည်း reachable Node-RED လိုသည် (Mockoon — `Local` :3001၊ criteria :3002)။ Criteria mock သည် 200 response သာ ပြန်သဖြင့် 404/500 simulate မလုပ်နိုင်သေး |
 | `category_type_workflow` ၏ ticket field များ (`program`, `ticket_problem`, `tags`, `root_cause`, `plan_start_date`) သည် `REMOTE_RESOLVE_CUSTOM_FIELDS` တွင် မပါလျှင် normalized payload ထဲ မရောက် | ထို step များ ဘယ်တော့မှ match မဖြစ် (local `.env` = `cpe_id,local_service_id`)။ ထည့်လျှင် required field ဖြစ်သွားပြီး မပါသော request = HTTP 400 |
-| Workflow `is_low_dbm` step သည် `IS_FALSE` | Signal ကောင်းသော (`is_low_dbm: false`) ONU ကို "ONU has been offline for over 12 hours" ဖြင့် LANOps သို့ ရွှေ့ — ရည်ရွယ်ချက် ဟုတ်မဟုတ် အတည်ပြုရန် |
 | rt_web_ui ၏ rtdatacore ပြောင်းလဲမှု (state ၅ ခု၊ `AppendEvent`, `AttachSubmittedRun`, `ErrRunNotClaimable`) သည် commit / tag မလုပ်ရသေး — tag `v1.1.14` တွင် မပါ | `GOWORK=off` (production) build fail — rtdatacore tag အသစ် (v1.1.15) ထုတ်ပြီး noc_automation နှင့် rt_web_ui ၏ `go.mod` ကို bump ရမည် (rt_web_ui သည် v1.1.13 တွင် ရှိနေဆဲ) |
 | rt_web_ui တွင် automated test မရှိ (`flow_test.go` ဖယ်ရှားထား) | Gate / API response → state mapping ကို regression test မရှိ |
 | rt_web_ui သည် CLI သာ — RT ၏ NOC queue-change event ကို အလိုအလျောက် မဖမ်း | Ticket တစ်ခုချင်း JSON ဖြင့် run ရသည်။ Watcher service (Phase 2) လိုသည် |

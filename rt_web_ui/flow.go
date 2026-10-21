@@ -15,7 +15,7 @@ import (
 type Outcome string
 
 const (
-	OutcomeAccepted    Outcome = "ACCEPTED"     // 200: "Ticket Processing started"
+	OutcomeAccepted    Outcome = "ACCEPTED"     // 202: "Ticket Processing started"
 	OutcomeNotEligible Outcome = "NOT_ELIGIBLE" // a gate failed: "No Process"
 	OutcomeRejected    Outcome = "REJECTED"     // 4xx/5xx: error message
 	OutcomeUnreachable Outcome = "UNREACHABLE"  // no HTTP answer
@@ -32,7 +32,7 @@ type Result struct {
 
 // Process runs final.html section 1 for one ticket: open the run, check
 // the gates (NOT_ELIGIBLE on failure), send the payload
-// (SUBMITTED_TO_API) and record the API's answer. On 200 the API itself has
+// (SUBMITTED_TO_API) and record the API's answer. On 202 the API itself has
 // already moved the run to RECEIVED and may be further along, so only an
 // event is added - writing a state here could roll the run back.
 func Process(ctx context.Context, cfg Config, p *Payload, runID string, tr Tracker, api Submitter) (Result, error) {
@@ -71,7 +71,7 @@ func Process(ctx context.Context, cfg Config, p *Payload, runID string, tr Track
 		res.Outcome, res.Message = OutcomeUnreachable, "RT External API unreachable: "+err.Error()
 		res.State, err = recordFailure(tr, runID, entities.PipelineStateAPIUnreachable, EventAPIUnreachable,
 			res.Message, map[string]any{"error": err.Error()})
-	case resp.StatusCode == http.StatusOK:
+	case resp.StatusCode == http.StatusAccepted:
 		res.Outcome, res.HTTPStatus, res.Message = OutcomeAccepted, resp.StatusCode, "Ticket Processing started"
 		err = tr.AppendEvent(runID, EventAPIAccepted, map[string]any{"http_status": resp.StatusCode, "message": resp.Message})
 		res.State = currentState(tr, runID)
