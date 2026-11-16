@@ -602,13 +602,13 @@
       "type": "http",
       "documentation": "BCS start (rtutil): POST /api/v2/cpes/{cpe_id}/radios/2.4g:select-best-channel; result chosen by CPE id",
       "method": "post",
-      "endpoint": "api/v2/cpes/:cpe_id/radios/:action",
+      "endpoint": "api/v2/cpes/:cpe_id/channel-selections",
       "responses": [
         {
           "uuid": "f80aeb80-dc86-4d0b-b2e9-b8f0ed206afa",
           "latency": 0,
           "statusCode": 202,
-          "label": "BCS start default -> job ok- (poll: done)",
+          "label": "BCS start default -> job ok- (poll: succeeded)",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -621,7 +621,7 @@
           "default": true,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 202,\n    \"message\": \"Channel change job queued successfully\",\n    \"data\": {\n        \"job_id\": \"ok-{{substr (header 'X-Request-ID' '') 0 30}}\",\n        \"request_id\": \"{{header 'X-Request-ID'}}\",\n        \"cid\": \"{{urlParam 'cpe_id'}}\",\n        \"band\": \"2.4g\",\n        \"status\": \"queued\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"ok-{{substr (header 'X-Request-ID' '') 0 30}}\",\n    \"request_id\": \"{{header 'X-Request-ID'}}\",\n    \"cid\": \"{{urlParam 'cpe_id'}}\",\n    \"band\": \"2.4g\",\n    \"status\": \"queued\",\n    \"created_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "4dd858ce-4158-46a1-973a-6c7b4b2f0dec",
@@ -648,7 +648,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 202,\n    \"message\": \"Channel change job queued successfully\",\n    \"data\": {\n        \"job_id\": \"fail-{{substr (header 'X-Request-ID' '') 0 30}}\",\n        \"request_id\": \"{{header 'X-Request-ID'}}\",\n        \"cid\": \"{{urlParam 'cpe_id'}}\",\n        \"band\": \"2.4g\",\n        \"status\": \"queued\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"fail-{{substr (header 'X-Request-ID' '') 0 30}}\",\n    \"request_id\": \"{{header 'X-Request-ID'}}\",\n    \"cid\": \"{{urlParam 'cpe_id'}}\",\n    \"band\": \"2.4g\",\n    \"status\": \"queued\",\n    \"created_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "ecdeb5c5-06c3-4ef1-b738-66a99f0a549d",
@@ -675,7 +675,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 202,\n    \"message\": \"Channel change job queued successfully\",\n    \"data\": {\n        \"job_id\": \"run-{{substr (header 'X-Request-ID' '') 0 30}}\",\n        \"request_id\": \"{{header 'X-Request-ID'}}\",\n        \"cid\": \"{{urlParam 'cpe_id'}}\",\n        \"band\": \"2.4g\",\n        \"status\": \"queued\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"run-{{substr (header 'X-Request-ID' '') 0 30}}\",\n    \"request_id\": \"{{header 'X-Request-ID'}}\",\n    \"cid\": \"{{urlParam 'cpe_id'}}\",\n    \"band\": \"2.4g\",\n    \"status\": \"queued\",\n    \"created_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "78e56e4c-9df9-4f32-bd1a-5014a41df0a6",
@@ -702,7 +702,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 401,\n    \"message\": \"invalid API key\"\n}"
+          "body": "{\n    \"error\": {\n        \"code\": \"unauthorized\",\n        \"message\": \"invalid API key\"\n    }\n}"
         },
         {
           "uuid": "fed57fb6-6230-4343-b12e-ba08038522ae",
@@ -729,7 +729,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 503,\n    \"message\": \"service unavailable\"\n}"
+          "body": "{\n    \"error\": {\n        \"code\": \"service_unavailable\",\n        \"message\": \"service unavailable\"\n    }\n}"
         }
       ],
       "responseMode": null,
@@ -760,13 +760,13 @@
           "default": true,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 404,\n    \"message\": \"job not found\"\n}"
+          "body": "{\n    \"error\": {\n        \"code\": \"not_found\",\n        \"message\": \"job not found\"\n    }\n}"
         },
         {
           "uuid": "555b4f0c-3c24-4aeb-a6e8-a55a5dbba047",
           "latency": 0,
           "statusCode": 200,
-          "label": "ok- -> done",
+          "label": "ok- -> succeeded",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -787,7 +787,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 200,\n    \"data\": {\n        \"job_id\": \"{{urlParam 'job_id'}}\",\n        \"status\": \"done\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"{{urlParam 'job_id'}}\",\n    \"cid\": \"\",\n    \"band\": \"2.4g\",\n    \"status\": \"succeeded\",\n    \"before_channel\": 11,\n    \"after_channel\": 6,\n    \"updated_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "31bc3263-11f9-4af4-b43d-a4162716d5f7",
@@ -814,7 +814,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 200,\n    \"data\": {\n        \"job_id\": \"{{urlParam 'job_id'}}\",\n        \"status\": \"failed\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"{{urlParam 'job_id'}}\",\n    \"cid\": \"\",\n    \"band\": \"2.4g\",\n    \"status\": \"failed\",\n    \"before_channel\": 11,\n    \"error\": {\n        \"code\": \"apply_failed\",\n        \"message\": \"CPE did not accept the new channel\"\n    },\n    \"updated_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "b53bfa10-e813-48a0-b1a4-0b4153dee610",
@@ -841,7 +841,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"code\": 200,\n    \"data\": {\n        \"job_id\": \"{{urlParam 'job_id'}}\",\n        \"status\": \"running\"\n    }\n}"
+          "body": "{\n    \"job_id\": \"{{urlParam 'job_id'}}\",\n    \"cid\": \"\",\n    \"band\": \"2.4g\",\n    \"status\": \"running\",\n    \"updated_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         }
       ],
       "responseMode": null,

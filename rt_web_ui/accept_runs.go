@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -48,13 +49,35 @@ func caseADM01(t *T) {
 	t.Check(n == 1, "Peppermint mock received %d BCS start request(s) for %s (1 expected)", n, r.CPEID)
 	evs := t.Events(run)
 	t.Check(countEvents(evs, "kafka_consumed") == 1, "%d kafka_consumed event(s) (one logical Kafka result)", countEvents(evs, "kafka_consumed"))
-	if r.BCSSuccess.Valid {
-		t.Check(r.BCSSuccess.Bool, "BCS outcome recorded separately: is_bcs_success = %v", r.BCSSuccess.Bool)
-	} else {
-		t.Warn("BCS outcome still pending — the BCS sweeper polls after BCS_RESULT_TIMEOUT_MINUTES=%d (OUT-04 waits for it)",
-			t.nocInt("BCS_RESULT_TIMEOUT_MINUTES", 5))
-	}
+	t.Check(r.State == "TICKET_COMPLETED" && !r.BCSSuccess.Valid,
+		"before the BCS result: RT done, BCS still open (%s, is_bcs_success %v)", r.State, nullBool(r.BCSSuccess))
+
+	t.Log("— CPEMS reports the BCS job succeeded (webhook)")
+	code, _ := t.SendBCSWebhook(r, bcsResult{Status: "succeeded", Before: 11, After: 6})
+	t.Check(code == http.StatusOK, "webhook accepted (HTTP %d)", code)
+	r = t.Run(run)
+	t.Check(r.BCSSuccess.Valid && r.BCSSuccess.Bool, "BCS confirmation recorded separately: is_bcs_success = %s · %q", nullBool(r.BCSSuccess), r.BCSMessage)
+	t.Check(r.BeforeChannel.Int64 == 11 && r.TargetChannel.Int64 == 6, "channel change stored: %d → %d", r.BeforeChannel.Int64, r.TargetChannel.Int64)
+	t.Check(r.State == "FULLY_COMPLETED", "run moved to FULLY_COMPLETED (%s)", r.State)
+
+	t.Log("— the same webhook again (CPEMS retry)")
+	code, _ = t.SendBCSWebhook(r, bcsResult{Status: "succeeded", Before: 11, After: 6})
+	evs = t.Events(run)
+	t.Check(code == http.StatusOK && countEvents(evs, "bcs_update_succeeded") == 1,
+		"duplicate answered 200 and recorded once (HTTP %d, %d bcs_update_succeeded event(s))", code, countEvents(evs, "bcs_update_succeeded"))
+	t.Check(t.CommentCount(tk, runMarker(run)) == 1, "still one automation comment")
 	t.Warn("service verification has no record — NOC verifies by hand this release (OUT-03)")
+}
+
+// nullBool prints a nullable flag as 1 / 0 / NULL.
+func nullBool(b sql.NullBool) string {
+	switch {
+	case !b.Valid:
+		return "NULL"
+	case b.Bool:
+		return "1"
+	}
+	return "0"
 }
 
 func caseADM02(t *T) {

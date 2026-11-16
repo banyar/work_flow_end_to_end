@@ -74,16 +74,19 @@ Remote resolved ဖြစ်ပြီး (`is_remote_resolved = 1`) rtutil က B
 
 | File (`cpe_id`) | BCS start (rtutil) | Job status poll (noc sweeper) | Report (BCS) | `pipeline_runs` |
 |---|---|---|---|---|
-| [`11_bcs_success.json`](tickets/11_bcs_success.json) (`CRIT11`) | 202 · `job_id: ok-…` | `done` | BCS OK | `is_bcs_success = 1` |
-| [`12_bcs_failed.json`](tickets/12_bcs_failed.json) (`CRIT12`) | 202 · `job_id: fail-…` | `failed` | BCS failed | `is_bcs_success = 0` · `failed (from status poll, no detail)` |
+| [`11_bcs_success.json`](tickets/11_bcs_success.json) (`CRIT11`) | 202 · `job_id: ok-…` | `succeeded` (channel 11 → 6) | BCS OK | `is_bcs_success = 1` · state `FULLY_COMPLETED` |
+| [`12_bcs_failed.json`](tickets/12_bcs_failed.json) (`CRIT12`) | 202 · `job_id: fail-…` | `failed` (`error.code: apply_failed`) | BCS failed | `is_bcs_success = 0` |
 | [`13_bcs_pending.json`](tickets/13_bcs_pending.json) (`CRIT13`) | 202 · `job_id: run-…` | `running` (နောက်တစ်ခါ ပြန် poll) | BCS pending | `is_bcs_success = NULL` |
 | [`14_bcs_rejected.json`](tickets/14_bcs_rejected.json) (`CRIT14`) | **401** (retry မလုပ်) | — (job မရှိ) | BCS failed | `is_bcs_success = 0` · event `bcs_update_failed` |
 | [`15_bcs_unavailable.json`](tickets/15_bcs_unavailable.json) (`CRIT15`) | **503** (၃ ကြိမ် retry) | — (job မရှိ) | BCS failed | `is_bcs_success = 0` · event `bcs_update_failed` |
 
 Mock route များ (port 3002၊ Node-RED mock နှင့် အတူတူ):
 
-- `POST /api/v2/cpes/:cpe_id/radios/2.4g:select-best-channel` — `job_id` = prefix (`ok-` / `fail-` / `run-`) + `X-Request-ID` (run_id) ၏ ရှေ့ ၃၀ လုံး (`ref_bcs_process_id` VARCHAR(36) ထဲ ဆံ့ရန်)။ အခြား CPE id များ = `ok-`။
-- `GET /api/v2/channel-selections/:job_id` — `job_id` prefix အလိုက် `done` / `failed` / `running`၊ မသိသော job = 404။
+Peppermint integration guide အတိုင်း (rtutil `430cbc9`၊ noc_automation `faa438f`) response သည် **flat job object** (`{"job_id": …, "status": …}`) ဖြစ်သည် — `{code, data}` မဟုတ်။
+
+- `POST /api/v2/cpes/:cpe_id/channel-selections` (body `{"band":"2.4g","callback_url":…}`) — 202 · `job_id` = prefix (`ok-` / `fail-` / `run-`) + `X-Request-ID` (run_id) ၏ ရှေ့ ၃၀ လုံး (`ref_bcs_process_id` VARCHAR(36) ထဲ ဆံ့ရန်)။ အခြား CPE id များ = `ok-`။
+- `GET /api/v2/channel-selections/:job_id` — `job_id` prefix အလိုက် `succeeded` / `failed` / `running`၊ မသိသော job = 404။
+- Mock က webhook မပို့ပါ။ Acceptance page ၏ **ADM-01** က CPEMS ကိုယ်စား webhook (`POST /api/v1/bcs/callback?token=<BCS_WEBHOOK_TOKEN>`, `status: succeeded`) ကို ပို့ပြီး `FULLY_COMPLETED` ဖြစ်မဖြစ်၊ ထပ်ပို့ရင် တစ်ခါပဲ မှတ်မမှတ် စစ်သည်။ noc `.env` ၏ `BCS_WEBHOOK_TOKEN` မထည့်ရင် API က webhook တိုင်းကို 503 ဖြင့် ငြင်းသည်။
 
 Config (mock သုံးရန်):
 

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -363,15 +364,17 @@ type runRow struct {
 	RunID, State, Reason, TargetQueue, BCSJob, BCSMessage, CPEID string
 	TicketID                                                     uint64
 	RemoteResolved, BCSSuccess                                   sql.NullBool
+	BeforeChannel, TargetChannel                                 sql.NullInt64
 	CreatedAt, UpdatedAt, CompletedAt                            sql.NullTime
 }
 
 func (r runRow) Done() bool { return r.CompletedAt.Valid }
 
-// TicketCompleted is the RT-updated success state (COMPLETED before
-// rtdatacore v1.1.21, TICKET_COMPLETED after).
+// TicketCompleted reports a run whose RT update succeeded: COMPLETED before
+// rtdatacore v1.1.21, TICKET_COMPLETED after, and FULLY_COMPLETED once a
+// succeeded BCS result arrives for it.
 func (r runRow) TicketCompleted() bool {
-	return r.State == "TICKET_COMPLETED" || r.State == "COMPLETED"
+	return r.State == "TICKET_COMPLETED" || r.State == "FULLY_COMPLETED" || r.State == "COMPLETED"
 }
 
 func (t *T) Run(runID string) runRow {
@@ -379,10 +382,11 @@ func (t *T) Run(runID string) runRow {
 	err := t.env.db.QueryRowContext(t.ctx, `
 		SELECT run_id, COALESCE(ticket_id, 0), COALESCE(current_state, ''), COALESCE(last_state_reason, ''),
 		       COALESCE(target_queue, ''), COALESCE(ref_bcs_process_id, ''), COALESCE(bcs_status_message, ''),
-		       COALESCE(cpe_id, ''), is_remote_resolved, is_bcs_success, created_at, updated_at, completed_at
+		       COALESCE(cpe_id, ''), is_remote_resolved, is_bcs_success, before_bcs_channel, target_bcs_channel,
+		       created_at, updated_at, completed_at
 		FROM pipeline_runs WHERE run_id = ?`, runID).Scan(
 		&r.RunID, &r.TicketID, &r.State, &r.Reason, &r.TargetQueue, &r.BCSJob, &r.BCSMessage, &r.CPEID,
-		&r.RemoteResolved, &r.BCSSuccess, &r.CreatedAt, &r.UpdatedAt, &r.CompletedAt)
+		&r.RemoteResolved, &r.BCSSuccess, &r.BeforeChannel, &r.TargetChannel, &r.CreatedAt, &r.UpdatedAt, &r.CompletedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		t.Fatal("run %s has no pipeline_runs row", runID)
 	}
@@ -479,6 +483,48 @@ func (t *T) Exec(query string, args ...any) int64 {
 }
 
 // ---------------------------------------------------------------------------
+// BCS webhook (what CPEMS posts when a channel-change job finishes)
+
+type bcsResult struct {
+	Status        string // succeeded or failed
+	Before, After uint16 // channels
+}
+
+// SendBCSWebhook posts a CPEMS BCS job result for the run's job to the
+// API's callback, authenticated with BCS_WEBHOOK_TOKEN the way CPEMS is
+// (the token query parameter of the callback_url rtutil hands it).
+func (t *T) SendBCSWebhook(r runRow, res bcsResult) (int, string) {
+	token := strings.TrimSpace(t.env.noc["BCS_WEBHOOK_TOKEN"])
+	if token == "" {
+		t.Skip("BCS_WEBHOOK_TOKEN is not set in %s — the API refuses every BCS webhook", t.env.nocEnv)
+	}
+	u, err := url.Parse(t.env.cfg.APIURL)
+	if err != nil {
+		t.Fatal("API URL %q: %v", t.env.cfg.APIURL, err)
+	}
+	u.Path, u.RawQuery = "/api/v1/bcs/callback", url.Values{"token": {token}}.Encode()
+	now := time.Now().UTC().Format(time.RFC3339)
+	body, _ := json.Marshal(map[string]any{
+		"event": "channel_selection." + res.Status, "job_id": r.BCSJob, "request_id": r.RunID,
+		"cid": r.CPEID, "band": "2.4g", "status": res.Status,
+		"before_channel": res.Before, "after_channel": res.After, "created_at": now, "updated_at": now,
+	})
+	ctx, cancel := context.WithTimeout(t.ctx, 15*time.Second)
+	defer cancel()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal("BCS webhook: %v", err)
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
+	msg := strings.TrimSpace(string(raw))
+	t.Log("BCS webhook %s for job %s → HTTP %d %s", res.Status, r.BCSJob, resp.StatusCode, msg)
+	return resp.StatusCode, msg
+}
+
+// ---------------------------------------------------------------------------
 // Criteria mock (Node-RED + Peppermint BCS)
 
 type mockCall struct {
@@ -524,11 +570,11 @@ func (t *T) MockCalls() []mockCall {
 }
 
 // BCSStarts counts the BCS channel-change requests the mock received for
-// cpeID since t0 (POST /api/v2/cpes/<cpe>/radios/<action>).
+// cpeID since t0 (POST /api/v2/cpes/<cpe>/channel-selections).
 func (t *T) BCSStarts(cpeID string, since time.Time) int {
 	n := 0
 	for _, c := range t.MockCalls() {
-		if strings.EqualFold(c.Method, http.MethodPost) && strings.HasPrefix(c.Path, "/api/v2/cpes/"+cpeID+"/radios/") && !c.At.Before(since) {
+		if strings.EqualFold(c.Method, http.MethodPost) && c.Path == "/api/v2/cpes/"+cpeID+"/channel-selections" && !c.At.Before(since) {
 			n++
 		}
 	}
