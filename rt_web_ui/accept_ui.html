@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceptance Cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Myanmar:wght@400;500;600&display=swap">
+<style>
+/* Same tokens as the criteria UI. Layout: header, group tabs, one case table
+   per group; a row opens to show the spec contract and the run timeline. */
+:root {
+  --bg: #f3f5f4; --panel: #ffffff; --fg: #17201d; --muted: #5d6b66; --line: #d9e0dd;
+  --accent: #0b6e5f; --accent-ink: #ffffff; --accent-soft: #e2f1ee;
+  --term-bg: #10181a; --term-fg: #d5e4df; --term-dim: #7f948e;
+  --ok: #1d7a3a; --ok-soft: #e3f3e8; --warn: #9a5b00; --warn-soft: #fbf0dc;
+  --bad: #b3261e; --bad-soft: #fbe6e4; --info: #2a5db0; --info-soft: #e5edfa;
+  --font-ui: "IBM Plex Sans", "Noto Sans Myanmar", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+    --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+    --term-bg: #090e0f; --term-fg: #cfe0da; --term-dim: #6c817b;
+    --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+    --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+  --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+  --term-bg: #090e0f; --term-fg: #cfe0da; --term-dim: #6c817b;
+  --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+  --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.55; padding: 24px 16px 48px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h1 small { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+header a { color: var(--accent); font-size: 13px; }
+.env { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.env b { color: var(--fg); font-weight: 500; }
+.note { background: var(--warn-soft); color: var(--warn); border-radius: var(--r); padding: 10px 14px; font-size: 13px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+
+.summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.summary > div { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; }
+.summary .k { font-size: 12px; color: var(--muted); }
+.summary .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { flex: none; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 99px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.tabs button .n { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-left: 6px; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tabs button[aria-selected="true"] .n { color: var(--accent-ink); opacity: 0.8; }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.bar .grow { flex: 1; }
+.bar label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.jobline { font-size: 12.5px; color: var(--muted); }
+
+.cases { width: 100%; border-collapse: collapse; }
+.cases th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.cases td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.cases tr.row { cursor: pointer; }
+.cases tr.row:hover td { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+.cases .id { font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+.cases .min { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; text-align: right; }
+.cases td.sel { width: 32px; }
+.cases .sub { color: var(--muted); }
+.cases tr.row.child td { background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.cases tr.detail td { background: var(--bg); padding: 14px 16px 16px 44px; }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.p-P { background: var(--info-soft); color: var(--info); } .p-U, .p-V { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.k-ok { background: var(--ok-soft); color: var(--ok); } .k-partial { background: var(--warn-soft); color: var(--warn); }
+.k-missing { background: var(--bad-soft); color: var(--bad); } .k-later { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.r-pass { background: var(--ok); color: #fff; } .r-fail { background: var(--bad); color: #fff; }
+.r-skip { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.r-running { background: var(--info-soft); color: var(--info); } .r-queued { background: var(--bg); color: var(--muted); border: 1px dashed var(--line); }
+.manual { font-size: 12px; color: var(--muted); }
+.title { min-width: 220px; }
+
+.spec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 20px; margin-bottom: 12px; }
+.spec h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 4px; font-weight: 600; }
+.spec p { margin: 0; font-size: 13px; }
+.spec .full { grid-column: 1 / -1; }
+@media (max-width: 760px) { .spec { grid-template-columns: minmax(0, 1fr); } .cases tr.detail td { padding-left: 16px; } }
+.timeline { background: var(--term-bg); color: var(--term-fg); font-family: var(--font-mono); font-size: 12px; border-radius: 6px; padding: 10px 12px; overflow-x: auto; max-height: 420px; overflow-y: auto; }
+.timeline div { white-space: pre-wrap; overflow-wrap: anywhere; }
+.timeline .at { color: var(--term-dim); margin-right: 8px; }
+.timeline .pass .m::before { content: "✔ "; color: #63c27d; }
+.timeline .fail .m { color: #f08b83; } .timeline .fail .m::before { content: "✘ "; }
+.timeline .warn .m { color: #e0a447; } .timeline .warn .m::before { content: "! "; }
+.refs { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-top: 8px; overflow-wrap: anywhere; }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Acceptance Cases <small>noc_remote_resolve_tdd_acceptance · 81</small></h1>
+    <a href="/">← Criteria runner</a>
+  </header>
+  <div class="env" id="env">Loading…</div>
+  <div class="note">Run လုပ်တိုင်း RT ticket အသစ် ဖန်တီးပြီး real stack (API · Kafka · rtutil · mock) ကို သုံးပါတယ်။ Fault case တွေက rtutil ကို kill/restart လုပ်ပြီး sweeper case တွေက synthetic row ထည့်ပါတယ် (ပြီးရင် ပြန်ဖျက်)။ Local / test environment မှာပဲ run ပါ။</div>
+
+  <div class="summary" id="summary"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+
+  <div class="panel">
+    <div class="bar">
+      <button class="btn primary" id="run-sel" disabled>Run selected</button>
+      <button class="btn" id="run-group">Run this group</button>
+      <button class="btn" id="cancel" hidden>Cancel</button>
+      <span class="jobline" id="jobline"></span>
+      <span class="grow"></span>
+      <label><input type="checkbox" id="only-run"> Runnable only</label>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="cases">
+        <thead><tr><th></th><th>ID</th><th>Gate</th><th class="title">အကြောင်း</th><th>Review</th><th>Result</th><th style="text-align:right">min</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const KNOWN = { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်' };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('accept.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('accept.' + k, JSON.stringify(v)); } catch {} },
+  };
+
+  const state = { groups: [], cases: [], tab: store.get('tab', 'ADM'), onlyRun: store.get('onlyRun', false),
+    selected: new Set(), open: new Set(), job: null, timer: null };
+
+  const results = () => {
+    const m = {};
+    for (const r of state.job?.results || []) m[r.id] = r;
+    return m;
+  };
+  const running = () => state.job?.status === 'running';
+
+  function renderSummary() {
+    const c = state.cases.filter(x => !x.parent), res = Object.values(results());
+    const n = f => c.filter(f).length;
+    const last = s => res.filter(r => r.status === s).length;
+    $('summary').innerHTML = [
+      ['Cases', c.length],
+      ['Runnable here', n(x => !x.skip)],
+      ['Review ✅ / 🟡 / ❌ / ⚪', `${n(x => x.known === 'ok')} / ${n(x => x.known === 'partial')} / ${n(x => x.known === 'missing')} / ${n(x => x.known === 'later')}`],
+      ['Last job pass / fail', res.length ? `${last('pass')} / ${last('fail')}` : '—'],
+      ['Last job skip', res.length ? last('skip') : '—'],
+    ].map(([k, v]) => `<div><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join('');
+  }
+
+  function renderTabs() {
+    $('tabs').innerHTML = state.groups.map(g => {
+      const cs = state.cases.filter(c => c.group === g.key && !c.parent);
+      const runnable = cs.filter(c => !c.skip).length;
+      return `<button role="tab" data-g="${esc(g.key)}" aria-selected="${g.key === state.tab}">${esc(g.title)}<span class="n">${runnable}/${cs.length}</span></button>`;
+    }).join('');
+  }
+
+  function timeline(r) {
+    if (!r || !r.steps?.length) return '';
+    return `<div class="timeline">${r.steps.map(s =>
+      `<div class="${esc(s.level)}"><span class="at">${esc(s.at)}</span><span class="m">${esc(s.msg)}</span></div>`).join('')}</div>`
+      + ((r.runs?.length || r.tickets?.length)
+        ? `<div class="refs">${r.tickets?.length ? 'RT tickets: ' + r.tickets.map(t => '#' + t).join(', ') + ' · ' : ''}${r.runs?.length ? 'run_id: ' + r.runs.join(', ') : ''}${r.seconds ? ' · ' + r.seconds + 's' : ''}</div>`
+        : '');
+  }
+
+  function renderRows() {
+    const res = results();
+    const list = state.cases.filter(c => c.group === state.tab && (!state.onlyRun || !c.skip));
+    if (!list.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty">No cases.</td></tr>'; return; }
+    $('rows').innerHTML = list.map(c => {
+      const r = res[c.id];
+      const result = r ? `<span class="pill r-${esc(r.status)}">${esc(r.status)}${r.status === 'running' ? ' ' + r.seconds + 's' : ''}</span>` : '';
+      const sel = c.skip ? '<span class="manual" title="Runs only by hand / elsewhere">—</span>'
+        : `<input type="checkbox" data-sel="${esc(c.id)}" ${state.selected.has(c.id) ? 'checked' : ''} aria-label="select ${esc(c.id)}">`;
+      let html = `<tr class="row${c.parent ? ' child' : ''}" data-id="${esc(c.id)}">
+        <td class="sel">${sel}</td>
+        <td class="id">${c.parent ? '<span class="sub">↳ </span>' : ''}${esc(c.id)}</td>
+        <td><span class="pill p-${esc(c.profile)}">${esc(c.gate)}</span></td>
+        <td class="title">${esc(c.title)}${c.skip ? '<div class="manual">skip · ' + esc(c.skip) + '</div>' : ''}</td>
+        <td><span class="pill k-${esc(c.known)}">${esc(KNOWN[c.known] || c.known)}</span></td>
+        <td>${result}</td>
+        <td class="min">${c.skip ? '' : '~' + c.minutes}</td></tr>`;
+      if (state.open.has(c.id)) {
+        html += `<tr class="detail"><td colspan="7">
+          <div class="spec">
+            <div><h3>Given and when</h3><p>${esc(c.given)}</p></div>
+            <div><h3>Expected result</h3><p>${esc(c.expected)}</p></div>
+            ${c.skip ? `<div class="full"><h3>ဘာကြောင့် ဒီကနေ မ run လဲ</h3><p>${esc(c.skip)}</p></div>` : ''}
+            ${c.covered ? `<div class="full"><h3>တခြားနေရာက test</h3><p>${esc(c.covered)}</p></div>` : ''}
+          </div>${timeline(r)}</td></tr>`;
+      }
+      return html;
+    }).join('');
+  }
+
+  function renderBar() {
+    const busy = running();
+    $('run-sel').disabled = busy || !state.selected.size;
+    $('run-sel').textContent = state.selected.size ? `Run selected (${state.selected.size})` : 'Run selected';
+    const group = state.cases.filter(c => c.group === state.tab && !c.skip && !c.parent);
+    $('run-group').disabled = busy || !group.length;
+    $('run-group').textContent = `Run this group (${group.length} · ~${group.reduce((a, c) => a + c.minutes, 0)} min)`;
+    $('cancel').hidden = !busy;
+    const j = state.job;
+    if (!j) { $('jobline').textContent = ''; return; }
+    const done = j.results.filter(r => !['queued', 'running'].includes(r.status)).length;
+    const cur = j.results.find(r => r.status === 'running');
+    $('jobline').textContent = busy
+      ? `Running ${done + 1}/${j.results.length}${cur ? ' · ' + cur.id : ''}`
+      : `Last job ${j.status} · ${done}/${j.results.length}`;
+  }
+
+  const render = () => { renderSummary(); renderTabs(); renderRows(); renderBar(); };
+
+  async function poll() {
+    clearTimeout(state.timer);
+    try {
+      const res = await fetch('api/accept/jobs/current', { cache: 'no-store' });
+      const data = await res.json();
+      const wasRunning = running();
+      state.job = data.job;
+      const cur = state.job?.results.find(r => r.status === 'running');
+      if (cur) state.open.add(cur.id); // follow the running case
+      renderSummary(); renderRows(); renderBar();
+      if (running() || wasRunning) state.timer = setTimeout(poll, 1500);
+    } catch (e) {
+      $('jobline').textContent = 'cannot reach the server: ' + e.message;
+      state.timer = setTimeout(poll, 5000);
+    }
+  }
+
+  async function start(ids) {
+    const res = await fetch('api/accept/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || res.status); return; }
+    state.job = data.job;
+    render();
+    poll();
+  }
+
+  $('tabs').addEventListener('click', e => {
+    const b = e.target.closest('button[data-g]');
+    if (!b) return;
+    state.tab = b.dataset.g; store.set('tab', state.tab);
+    render();
+  });
+  $('rows').addEventListener('click', e => {
+    const cb = e.target.closest('input[data-sel]');
+    if (cb) {
+      cb.checked ? state.selected.add(cb.dataset.sel) : state.selected.delete(cb.dataset.sel);
+      renderBar();
+      return;
+    }
+    if (e.target.closest('.timeline, .spec')) return;
+    const tr = e.target.closest('tr.row');
+    if (!tr) return;
+    state.open.has(tr.dataset.id) ? state.open.delete(tr.dataset.id) : state.open.add(tr.dataset.id);
+    renderRows();
+  });
+  $('only-run').checked = state.onlyRun;
+  $('only-run').addEventListener('change', e => { state.onlyRun = e.target.checked; store.set('onlyRun', state.onlyRun); renderRows(); });
+  $('run-sel').addEventListener('click', () => start(state.cases.filter(c => state.selected.has(c.id)).map(c => c.id)));
+  $('run-group').addEventListener('click', () => start(state.cases.filter(c => c.group === state.tab && !c.skip && !c.parent).map(c => c.id)));
+  $('cancel').addEventListener('click', async () => { await fetch('api/accept/jobs/current/cancel', { method: 'POST' }); poll(); });
+
+  (async () => {
+    const data = await (await fetch('api/accept/cases', { cache: 'no-store' })).json();
+    state.groups = data.groups; state.cases = data.cases;
+    if (!state.groups.some(g => g.key === state.tab)) state.tab = state.groups[0].key;
+    const e = data.env;
+    $('env').innerHTML = [['API', e.api], ['DB', e.db], ['RT', e.rt || '— (noc .env missing)'], ['mock', e.mock], ['report', e.report], ['noc env', e.noc_env]]
+      .map(([k, v]) => `<span>${k} <b>${esc(v)}</b></span>`).join('');
+    render();
+    poll();
+  })();
+})();
+</script>
+</body>
+</html>

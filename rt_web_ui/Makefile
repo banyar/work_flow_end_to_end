@@ -9,7 +9,15 @@
 #   make criteria-mock-up            # same mock in the background (no-op when already running)
 #   make criteria-mock-stop          # stop the mock container
 #   make send-criteria C=20_kept_olt_offline
-#   make criteria-ui                 # web UI on http://127.0.0.1:8090 (ticket id + criteria + cpe id)
+#   make criteria-ui                 # web UI on http://127.0.0.1:8091 (ticket id + criteria + cpe id)
+#                                    # acceptance cases (81, by group) on http://127.0.0.1:8091/accept
+#
+# Service logs (.run/<S>.log), one entry per line; rtdatacore's SQL is caller rtdb/gorm_logger.go.
+#   make logs S=noc_automation       # S = noc_automation | rtutil | criteria_ui | pipeline_report
+#   make logs S=rtutil F=1           # follow
+#   make logs S=noc_automation RUN=008057e3 SQL=hide
+#   make logs S=noc_automation SQL=only          # rtdatacore SQL only
+#   make logs S=noc_automation LEVEL=warn N=50
 #
 # Check which systems the flow depends on are not ready (read-only).
 #   make check
@@ -36,6 +44,8 @@ send:
 
 CRITERIA_DIR ?= criteria
 CRITERIA_MOCK_PORT ?= 3002
+# Bearer token of the mock's admin API; the acceptance page reads BCS calls from its request log.
+CRITERIA_MOCK_ADMIN_TOKEN ?= rt-web-ui-accept
 C ?=
 UI_ADDR ?= 127.0.0.1:8091
 NOC_ROOT ?= ../../NocAutomationCodeMerge
@@ -50,11 +60,18 @@ UP_ARGS = --env $(ENV) --noc-env $(NOC_ENV) --noc-dir $(NOC_DIR) --rtutil-dir $(
 	--ui-addr $(UI_ADDR) --criteria $(CRITERIA_DIR)/tickets --report-dir $(REPORT_DIR) \
 	--mode $(MODE) $(if $(RTUTIL_CONFIG),--rtutil-config $(RTUTIL_CONFIG))
 
+S ?= noc_automation
+N ?= 100
+.PHONY: logs
+logs:
+	@python3 -I logview.py $(S) -n $(N) $(if $(F),-f) $(if $(RUN),--run $(RUN)) $(if $(SQL),--sql $(SQL)) $(if $(LEVEL),--level $(LEVEL))
+
 .PHONY: criteria-mock
 criteria-mock:
 	docker run --rm --name node-red-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
-		mockoon/cli:9.9.0 --data /data/mock.json --port 3002
+		mockoon/cli:9.9.0 --data /data/mock.json --port 3002 \
+		--admin-api-token $(CRITERIA_MOCK_ADMIN_TOKEN) --max-transaction-logs 5000
 
 .PHONY: criteria-mock-up
 criteria-mock-up:
@@ -63,7 +80,8 @@ criteria-mock-up:
 	docker rm -f node-red-criteria-mock >/dev/null 2>&1 || true; \
 	docker run -d --rm --name node-red-criteria-mock -p 127.0.0.1:$(CRITERIA_MOCK_PORT):3002 \
 		-v $(abspath $(CRITERIA_DIR))/mockoon-criteria.json:/data/mock.json:ro \
-		mockoon/cli:9.9.0 --data /data/mock.json --port 3002 >/dev/null || exit 1; \
+		mockoon/cli:9.9.0 --data /data/mock.json --port 3002 \
+		--admin-api-token $(CRITERIA_MOCK_ADMIN_TOKEN) --max-transaction-logs 5000 >/dev/null || exit 1; \
 	for i in $$(seq 1 30); do \
 		if [ "$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:$(CRITERIA_MOCK_PORT)/api/v1/cpe/CRIT20)" = "200" ]; then \
 			echo "node-red-criteria-mock started on 127.0.0.1:$(CRITERIA_MOCK_PORT) (answering after $$i s)"; exit 0; fi; \
@@ -82,7 +100,8 @@ send-criteria:
 
 .PHONY: criteria-ui
 criteria-ui:
-	go run . serve --env $(ENV) --addr $(UI_ADDR) --criteria $(CRITERIA_DIR)/tickets
+	go run . serve --env $(ENV) --addr $(UI_ADDR) --criteria $(CRITERIA_DIR)/tickets \
+		--noc-env $(NOC_ENV) --mock-port $(CRITERIA_MOCK_PORT)
 
 # Build rt_web_ui into a temp file and run it, so go run's "exit status N" noise stays out.
 define run_tool

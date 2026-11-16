@@ -22,7 +22,7 @@ services:
   criteria-mock:
     image: mockoon/cli:9.9.0
     container_name: node-red-criteria-mock
-    command: ["--data", "/data/mock.json", "--port", "3002"]
+    command: ["--data", "/data/mock.json", "--port", "3002", "--admin-api-token", "${CRITERIA_MOCK_ADMIN_TOKEN:-rt-web-ui-accept}", "--max-transaction-logs", "5000"]
     ports:
       - "127.0.0.1:${CRITERIA_MOCK_PORT:-3002}:3002"
     volumes:

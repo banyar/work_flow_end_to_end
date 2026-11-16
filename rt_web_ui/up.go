@@ -91,8 +91,9 @@ func (o *upOptions) services(cfg Config, cfgErr error) []background {
 			args: []string{"--config", o.rtutilConfig, "ticket", "kafka-remote-resolve"}, stamp: o.rtutilConfig,
 			configs: []string{o.rtutilConfig}},
 		{name: "criteria_ui", srcDir: o.selfDir, pkg: ".", workDir: o.selfDir,
-			args:    []string{"serve", "--env", o.envPath, "--addr", o.uiAddr, "--criteria", o.criteriaDir},
-			configs: []string{o.envPath},
+			args: []string{"serve", "--env", o.envPath, "--addr", o.uiAddr, "--criteria", o.criteriaDir,
+				"--noc-env", o.nocEnvPath, "--mock-port", o.mockPort, "--run-dir", o.runDir},
+			configs: []string{o.envPath, o.nocEnvPath}, // the acceptance page reads RT_TOKEN etc. from the noc env
 			ready:   func(c context.Context) bool { return checkUI(c, o.uiAddr).Level == levelOK },
 			readyAs: "http://" + o.uiAddr + " answering"},
 		{name: "pipeline_report", srcDir: o.reportDir, pkg: ".", workDir: o.reportDir,
@@ -364,7 +365,8 @@ func (o *upOptions) startMock() (string, error) {
 	}
 	out, err := exec.CommandContext(ctx, "docker", "run", "-d", "--rm", "--name", mockContainer,
 		"-p", "127.0.0.1:"+o.mockPort+":3002", "-v", o.mockData+":/data/mock.json:ro",
-		mockImage, "--data", "/data/mock.json", "--port", "3002").CombinedOutput()
+		mockImage, "--data", "/data/mock.json", "--port", "3002",
+		"--admin-api-token", mockAdminToken(), "--max-transaction-logs", "5000").CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("docker run: %s", lastLine(out))
 	}

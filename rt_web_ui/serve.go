@@ -17,7 +17,9 @@ import (
 	"sync"
 	"time"
 
+	"git.frontiir.net/sa-dev/frontiirgopackages/pkg/frontlog"
 	"git.frontiir.net/sa-dev/rtdatacore/pkg/driven/rtdb"
+	"github.com/joho/godotenv"
 )
 
 // serve runs a small web UI for the report criteria samples: pick a ticket
@@ -67,6 +69,9 @@ func runServe(args []string, stdout, stderr io.Writer) int {
 	envPath := fs.String("env", ".env", "")
 	addr := fs.String("addr", defaultServeAddr, "")
 	dir := fs.String("criteria", defaultCriteriaDir, "")
+	nocEnvPath := fs.String("noc-env", defaultNOCEnv, "")
+	mockPort := fs.String("mock-port", defaultMockPort, "")
+	runDir := fs.String("run-dir", defaultRunDir, "")
 	fs.Usage = func() { fmt.Fprintln(stderr, usage) }
 	if err := fs.Parse(args); err != nil {
 		return 3
@@ -101,7 +106,38 @@ func runServe(args []string, stdout, stderr io.Writer) int {
 	mux.HandleFunc("GET /api/info", s.handleInfo)
 	mux.HandleFunc("POST /api/run", s.handleRun)
 
-	fmt.Fprintf(stdout, "criteria UI on http://%s (env %s, criteria %s)\n", *addr, *envPath, *dir)
+	// The acceptance page needs noc_automation's .env for RT REST2 and the
+	// sweeper / BCS settings; without it the page still lists the cases.
+	noc, err := godotenv.Read(*nocEnvPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "warning: %s: %v — acceptance cases that use RT or noc settings will skip\n", *nocEnvPath, err)
+		noc = map[string]string{}
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fail("%v", err)
+	}
+	selfDir, _ := os.Getwd()
+	mockToken := mockAdminToken()
+	// Acceptance steps are also written to frontlog.Logger (stdout, which
+	// make up sends to .run/criteria_ui.log). LOG_LEVEL as in noc_automation.
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+	if err := frontlog.InitLogger(frontlog.LogConfig{}, logLevel); err != nil {
+		return fail("LOG_LEVEL %q: %v", logLevel, err)
+	}
+	accept, err := newAcceptServer(&acceptEnv{
+		cfg: cfg, db: sqlDB, api: s.api, noc: noc, nocEnv: *nocEnvPath, dir: *dir,
+		mockPort: *mockPort, mockToken: mockToken, runDir: *runDir, selfDir: selfDir,
+	})
+	if err != nil {
+		return fail("acceptance cases: %v", err)
+	}
+	accept.routes(mux)
+
+	fmt.Fprintf(stdout, "criteria UI on http://%s (env %s, criteria %s) · acceptance cases on http://%s/accept\n", *addr, *envPath, *dir, *addr)
 	srv := &http.Server{Addr: *addr, Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	if err := srv.ListenAndServe(); err != nil {
 		return fail("%v", err)
