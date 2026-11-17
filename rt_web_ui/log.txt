@@ -11,3 +11,50 @@ tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/noc_automation
 tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/rtutil.log
 tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/pipeline_report.log
 
+
+make logs S=noc_automation RUN=3c1c4f38 SQL=hide
+make logs S=rtutil RUN=3c1c4f38
+make logs S=criteria_ui RUN=3c1c4f38
+
+
+BCS_API_BASE_URL=http://127.0.0.1:3002
+BCS_API_KEY=local-test            # mock က မစစ်လို့ ဘာထည့်ထည့် 
+
+
+BCS mock (127.0.0.1:3002) ကို စမ်းဖို့ curl တွေပါ။ အောက်က command တွေကို ကျွန်တော် အမှန်တကယ် run ကြည့်ပြီးပါပြီ၊ ပြထားတဲ့ result အတိုင်း ပြန်လာပါတယ်။
+
+Variable သတ်မှတ်ခြင်း
+
+B=http://127.0.0.1:3002        
+K=local-test                    
+RID=11111111-2222-3333-4444-555555555555   
+
+curl -s -w "\n[HTTP %{http_code}]\n" -X POST "$B/api/v2/cpes/CRIT11/channel-selections" \
+  -H "X-API-Key: $K" -H "X-Request-ID: $RID" -H 'Content-Type: application/json' \
+  -d '{"band":"2.4g","callback_url":"http://127.0.0.1:8080/api/v1/bcs/callback"}'
+
+CPE id	ရလဒ်
+CRIT11	202 · job_id: ok-…
+CRIT12	202 · job_id: fail-…
+CRIT13	202 · job_id: run-…
+CRIT14	401 · unauthorized (key ကို တကယ် မစစ်ပါ၊ ဒီ CPE id မှာ 401 ပြန်အောင် တမင်ထားတာပါ)
+CRIT15	503 · service_unavailable
+တခြား CPE id	202 · ok-…
+၂။ Job status poll — noc sweeper ခေါ်တဲ့ API
+Step ၁ က ပြန်လာတဲ့ job_id ကို ထည့်ပါ။
+
+
+curl -s -w "\n[HTTP %{http_code}]\n" "$B/api/v2/channel-selections/ok-11111111-2222-3333-4444-555555" -H "X-API-Key: $K"
+job_id ရှေ့က prefix	ရလဒ်
+ok-	succeeded · before_channel 11 → after_channel 6
+fail-	failed · error.code: apply_failed
+run-	running
+မသိတဲ့ id	404 not_found
+သိထားသင့်တာ
+job_id က prefix ကို X-Request-ID ရဲ့ ရှေ့ ၃၀ လုံးနဲ့ ပေါင်းထားတာပါ။ DB column ref_bcs_process_id က VARCHAR(36) ဖြစ်လို့ ဆံ့အောင် ဖြတ်ထားတာပါ။ ဒါကြောင့် ID အရှည်ကို ကိုယ်တိုင်ရိုက်မယ့်အစား step ၁ ရဲ့ response ထဲက job_id ကို copy ယူတာ ပိုလွယ်ပါတယ်။
+ဒီ mock က webhook ကို ကိုယ်တိုင် မပို့ပါဘူး။ callback_url ကို လက်ခံပေမယ့် အဲဒီကို ဘာမှ မခေါ်ပါဘူး။
+
+
+
+
+
