@@ -37,9 +37,11 @@ type acceptCase struct {
 	Profile  string `json:"profile"` // P, U or V
 	Given    string `json:"given"`
 	Expected string `json:"expected"`
-	Title    string `json:"title"`            // Burmese summary
-	Known    string `json:"known"`            // status in the review table: ok, partial, missing, later
-	Skip     string `json:"skip"`             // why it cannot run from rt_web_ui ("" = runnable)
+	Title    string `json:"title"`    // Burmese summary
+	TitleEn  string `json:"title_en"` // English summary (language toggle)
+	Known    string `json:"known"`    // status in the review table: ok, partial, missing, later
+	Skip     string `json:"skip"`     // why it cannot run from rt_web_ui ("" = runnable)
+	SkipEn   string `json:"skip_en,omitempty"`
 	Covered  string `json:"covered"`          // tests elsewhere that cover it
 	Minutes  int    `json:"minutes"`          // rough run time
 	Parent   string `json:"parent,omitempty"` // spec case a sub-case runs one part of
@@ -194,6 +196,7 @@ func loadAcceptCases() ([]acceptCase, error) {
 		if c.run == nil && c.Skip == "" {
 			return nil, fmt.Errorf("case %s has neither a runner nor a skip reason", id)
 		}
+		c.TitleEn, c.SkipEn = en(c.Title), en(c.Skip)
 		out = append(out, c)
 		out = append(out, subCases(c)...)
 	}
@@ -217,7 +220,7 @@ func subCases(c acceptCase) []acceptCase {
 	out := make([]acceptCase, 0, len(specGates))
 	for _, g := range specGates {
 		sub := c
-		sub.ID, sub.Parent, sub.Title, sub.Minutes = c.ID+g.sub, c.ID, g.title, 1
+		sub.ID, sub.Parent, sub.Title, sub.TitleEn, sub.Minutes = c.ID+g.sub, c.ID, g.title, en(g.title), 1
 		sub.Given = fmt.Sprintf("ADM-03 part: submit only the %q sample (%s), which fails this one gate.", g.title, g.label())
 		sub.run = gateRunner(g)
 		out = append(out, sub)

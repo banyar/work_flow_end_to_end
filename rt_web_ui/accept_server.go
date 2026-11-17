@@ -68,6 +68,7 @@ func (s *acceptServer) routes(mux *http.ServeMux) {
 		w.Write(acceptUI)
 	})
 	mux.HandleFunc("GET /api/accept/cases", s.handleCases)
+	mux.HandleFunc("GET /api/accept/cases/{id}/requirements", s.handleRequirements)
 	mux.HandleFunc("POST /api/accept/jobs", s.handleStart)
 	mux.HandleFunc("GET /api/accept/jobs/current", s.handleJob)
 	mux.HandleFunc("POST /api/accept/jobs/current/cancel", s.handleCancel)
@@ -75,7 +76,7 @@ func (s *acceptServer) routes(mux *http.ServeMux) {
 
 func (s *acceptServer) handleCases(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"groups": acceptGroups, "cases": s.list,
+		"groups": groupsWithEn(), "cases": s.list,
 		"env": map[string]string{
 			"api": s.env.cfg.APIURL, "db": fmt.Sprintf("%s:%s/%s", s.env.cfg.DB.Host, s.env.cfg.DB.Port, s.env.cfg.DB.Name),
 			"rt": s.env.noc["RT_BASE_URL"], "noc_env": s.env.nocEnv, "mock": "127.0.0.1:" + s.env.mockPort,

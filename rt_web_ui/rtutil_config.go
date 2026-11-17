@@ -30,7 +30,7 @@ var rtutilRootCauseFields = []string{"Suspected Area of Issue", "Root Cause Cate
 
 // rtutilRequiredKeys are what the Kafka consumer needs; listed when a mode's file is missing.
 const rtutilRequiredKeys = "rt.database.{host,port,name,username,password}, rt.api.{base_url,token}, " +
-	"rt.ticket.rootcauses (5 custom field IDs), kafka.config.consumer.{brokers,topic,group_id,username,password}, kafka.config.cpems_api.base_url"
+	"rt.ticket.rootcauses (5 custom field IDs), kafka.config.consumer.{brokers,topic,group_id,username,password}, cpems_api.base_url"
 
 func modeNames() string {
 	names := make([]string, 0, len(rtutilConfigFiles))

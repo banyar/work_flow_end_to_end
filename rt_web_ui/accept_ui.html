@@ -44,6 +44,10 @@ header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content:
 h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 h1 small { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
 header a { color: var(--accent); font-size: 13px; }
+.head-right { display: flex; align-items: center; gap: 14px; }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; padding: 2px; background: var(--panel); }
+.lang button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; padding: 3px 12px; border-radius: 99px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .env { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .env b { color: var(--fg); font-weight: 500; }
 .note { background: var(--warn-soft); color: var(--warn); border-radius: var(--r); padding: 10px 14px; font-size: 13px; }
@@ -103,16 +107,45 @@ header a { color: var(--accent); font-size: 13px; }
 .timeline .warn .m { color: #e0a447; } .timeline .warn .m::before { content: "! "; }
 .refs { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-top: 8px; overflow-wrap: anywhere; }
 .empty { padding: 28px; text-align: center; color: var(--muted); }
+
+/* Requirements popup */
+.req-btn { margin-top: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--accent); border-radius: 99px; padding: 1px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.req-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+dialog.req { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg); padding: 0; width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
+.req-head { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); }
+.req-head h2 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; }
+.req-head h2 small { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-bottom: 2px; }
+.req-body { padding: 14px 18px 18px; display: grid; gap: 12px; }
+.req-note { background: var(--info-soft); color: var(--info); border-radius: var(--r); padding: 9px 12px; font-size: 13px; }
+.req-ready { font-weight: 600; font-size: 13px; }
+.req-ready.ok { color: var(--ok); } .req-ready.bad { color: var(--bad); }
+.req-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.req-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.req-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.req-table td.n { font-family: var(--font-mono); color: var(--muted); width: 28px; }
+.req-table .name { font-weight: 500; }
+.req-table .opt { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.req-table .det { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.req-table .fix { font-size: 12px; color: var(--warn); }
+.st { font-weight: 600; white-space: nowrap; }
+.st-ok { color: var(--ok); } .st-warn { color: var(--warn); } .st-fail { color: var(--bad); } .st-skip { color: var(--muted); }
+@media (max-width: 760px) { .req-table th:nth-child(3), .req-table td:nth-child(3) { display: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Acceptance Cases <small>noc_remote_resolve_tdd_acceptance · 81</small></h1>
-    <a href="/">← Criteria runner</a>
+    <div class="head-right">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="my" aria-pressed="true">မြန်မာ</button><button data-lang="en" aria-pressed="false">English</button>
+      </div>
+      <a href="/">← Criteria runner</a>
+    </div>
   </header>
   <div class="env" id="env">Loading…</div>
-  <div class="note">Run လုပ်တိုင်း RT ticket အသစ် ဖန်တီးပြီး real stack (API · Kafka · rtutil · mock) ကို သုံးပါတယ်။ Fault case တွေက rtutil ကို kill/restart လုပ်ပြီး sweeper case တွေက synthetic row ထည့်ပါတယ် (ပြီးရင် ပြန်ဖျက်)။ Local / test environment မှာပဲ run ပါ။</div>
+  <div class="note" id="note"></div>
 
   <div class="summary" id="summary"></div>
   <div class="tabs" id="tabs" role="tablist"></div>
@@ -128,18 +161,49 @@ header a { color: var(--accent); font-size: 13px; }
     </div>
     <div style="overflow-x:auto">
       <table class="cases">
-        <thead><tr><th></th><th>ID</th><th>Gate</th><th class="title">အကြောင်း</th><th>Review</th><th>Result</th><th style="text-align:right">min</th></tr></thead>
+        <thead><tr><th></th><th>ID</th><th>Gate</th><th class="title" id="th-title"></th><th>Review</th><th>Result</th><th style="text-align:right">min</th></tr></thead>
         <tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
+<dialog class="req" id="req" aria-labelledby="req-title">
+  <div class="req-head">
+    <h2 id="req-title"></h2>
+    <button class="btn" id="req-recheck"></button>
+    <button class="btn" id="req-close" aria-label="Close">✕</button>
+  </div>
+  <div class="req-body" id="req-body"></div>
+</dialog>
+
 <script>
 (() => {
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const KNOWN = { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်' };
+  // Language toggle: UI text from I18N; case / group / requirement text from
+  // the server's *_en fields (L picks the field for the current language).
+  const I18N = {
+    my: {
+      note: 'Run လုပ်တိုင်း RT ticket အသစ် ဖန်တီးပြီး real stack (API · Kafka · rtutil · mock) ကို သုံးပါတယ်။ Fault case တွေက rtutil ကို kill/restart လုပ်ပြီး sweeper case တွေက synthetic row ထည့်ပါတယ် (ပြီးရင် ပြန်ဖျက်)။ Local / test environment မှာပဲ run ပါ။',
+      thTitle: 'အကြောင်း', known: { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်' },
+      whySkip: 'ဘာကြောင့် ဒီကနေ မ run လဲ', covered: 'တခြားနေရာက test',
+      reqBtn: 'လိုအပ်ချက်', recheck: 'ပြန်စစ်', reqTitle: t => `${t} အတွက် လိုအပ်ချက်များ`, checking: 'စစ်နေပါတယ်…',
+      ready: '✔ လိုအပ်တာ အကုန် ready ဖြစ်နေပါပြီ', notReady: '✘ Ready မဖြစ်သေးတာ ရှိပါတယ် — အောက်က → အတိုင်း ပြင်ပြီး ပြန်စစ်ပါ',
+      cols: ['#', 'လိုအပ်ချက်', 'ဘာအတွက်လဲ', 'အခြေအနေ'], cantCheck: 'စစ်လို့ မရပါ',
+    },
+    en: {
+      note: 'Every run creates a new RT ticket and uses the real stack (API · Kafka · rtutil · mock). Fault cases kill and restart rtutil; sweeper cases insert synthetic rows (deleted afterwards). Run only in a local / test environment.',
+      thTitle: 'Case', known: { ok: '✅ Covered', partial: '🟡 Partial', missing: '❌ Missing', later: '⚪ Not this release' },
+      whySkip: 'Why it does not run from here', covered: 'Tests elsewhere',
+      reqBtn: 'Requirements', recheck: 'Recheck', reqTitle: t => `Requirements for ${t}`, checking: 'Checking…',
+      ready: '✔ Everything the case needs is ready', notReady: '✘ Something is not ready — fix it as shown by → and recheck',
+      cols: ['#', 'Requirement', 'What it is for', 'Status'], cantCheck: 'Could not check',
+    },
+  };
+  let lang = (() => { try { return localStorage.getItem('accept.lang') === 'en' ? 'en' : 'my'; } catch { return 'my'; } })();
+  const T = () => I18N[lang];
+  const L = (o, f) => (lang === 'en' && o?.[f + '_en']) || o?.[f] || '';
   const store = {
     get(k, d) { try { const v = localStorage.getItem('accept.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem('accept.' + k, JSON.stringify(v)); } catch {} },
@@ -172,7 +236,7 @@ header a { color: var(--accent); font-size: 13px; }
     $('tabs').innerHTML = state.groups.map(g => {
       const cs = state.cases.filter(c => c.group === g.key && !c.parent);
       const runnable = cs.filter(c => !c.skip).length;
-      return `<button role="tab" data-g="${esc(g.key)}" aria-selected="${g.key === state.tab}">${esc(g.title)}<span class="n">${runnable}/${cs.length}</span></button>`;
+      return `<button role="tab" data-g="${esc(g.key)}" aria-selected="${g.key === state.tab}">${esc(L(g, 'title'))}<span class="n">${runnable}/${cs.length}</span></button>`;
     }).join('');
   }
 
@@ -198,8 +262,8 @@ header a { color: var(--accent); font-size: 13px; }
         <td class="sel">${sel}</td>
         <td class="id">${c.parent ? '<span class="sub">↳ </span>' : ''}${esc(c.id)}</td>
         <td><span class="pill p-${esc(c.profile)}">${esc(c.gate)}</span></td>
-        <td class="title">${esc(c.title)}${c.skip ? '<div class="manual">skip · ' + esc(c.skip) + '</div>' : ''}</td>
-        <td><span class="pill k-${esc(c.known)}">${esc(KNOWN[c.known] || c.known)}</span></td>
+        <td class="title">${esc(L(c, 'title'))}${c.skip ? '<div class="manual">skip · ' + esc(L(c, 'skip')) + '</div>' : `<div><button class="req-btn" data-req="${esc(c.id)}">${esc(T().reqBtn)}</button></div>`}</td>
+        <td><span class="pill k-${esc(c.known)}">${esc(T().known[c.known] || c.known)}</span></td>
         <td>${result}</td>
         <td class="min">${c.skip ? '' : '~' + c.minutes}</td></tr>`;
       if (state.open.has(c.id)) {
@@ -207,8 +271,8 @@ header a { color: var(--accent); font-size: 13px; }
           <div class="spec">
             <div><h3>Given and when</h3><p>${esc(c.given)}</p></div>
             <div><h3>Expected result</h3><p>${esc(c.expected)}</p></div>
-            ${c.skip ? `<div class="full"><h3>ဘာကြောင့် ဒီကနေ မ run လဲ</h3><p>${esc(c.skip)}</p></div>` : ''}
-            ${c.covered ? `<div class="full"><h3>တခြားနေရာက test</h3><p>${esc(c.covered)}</p></div>` : ''}
+            ${c.skip ? `<div class="full"><h3>${esc(T().whySkip)}</h3><p>${esc(L(c, 'skip'))}</p></div>` : ''}
+            ${c.covered ? `<div class="full"><h3>${esc(T().covered)}</h3><p>${esc(c.covered)}</p></div>` : ''}
           </div>${timeline(r)}</td></tr>`;
       }
       return html;
@@ -266,7 +330,72 @@ header a { color: var(--accent); font-size: 13px; }
     state.tab = b.dataset.g; store.set('tab', state.tab);
     render();
   });
+  // Requirements popup: what the case needs, why, and live status from the
+  // same checks as `make check`.
+  const MARK = { ok: '✔ ready', warn: '! warning', fail: '✘ not ready', skip: '— skipped' };
+  // req holds the popup's state: the case id and the last answer (or error),
+  // so a language switch re-renders it without checking again.
+  const req = { id: null, data: null, error: null };
+  function renderReq() {
+    if (!req.id) return;
+    const c = state.cases.find(x => x.id === req.id) || {};
+    $('req-title').innerHTML = `<small>${esc(req.id)}</small>${esc(T().reqTitle(L(c, 'title')))}`;
+    const d = req.data;
+    if (req.error) { $('req-body').innerHTML = `<div class="empty">${esc(T().cantCheck)}: ${esc(req.error)}</div>`; return; }
+    if (!d) { $('req-body').innerHTML = `<div class="empty">${esc(T().checking)}</div>`; return; }
+    const rows = d.items.map((it, i) => `<tr>
+      <td class="n">${i + 1}</td>
+      <td><div class="name">${esc(it.name)}${it.optional ? '<span class="opt">(optional)</span>' : ''}</div></td>
+      <td>${esc(L(it, 'why'))}</td>
+      <td><div class="st st-${esc(it.level)}">${esc(MARK[it.level] || it.level)}</div>
+        <div class="det">${esc(it.detail)}</div>${it.fix && it.level !== 'ok' ? `<div class="fix">→ ${esc(L(it, 'fix'))}</div>` : ''}</td></tr>`).join('');
+    const note = L(d, 'note');
+    $('req-body').innerHTML = (note ? `<div class="req-note">${esc(note)}</div>` : '')
+      + `<div class="req-ready ${d.ready ? 'ok' : 'bad'}">${esc(d.ready ? T().ready : T().notReady)}</div>`
+      + `<div style="overflow-x:auto"><table class="req-table"><thead><tr>${T().cols.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  async function openReq(id) {
+    Object.assign(req, { id, data: null, error: null });
+    renderReq();
+    if (!$('req').open) $('req').showModal();
+    try {
+      const res = await fetch(`api/accept/cases/${encodeURIComponent(id)}/requirements`, { cache: 'no-store' });
+      const d = await res.json();
+      if (req.id !== id) return;
+      if (!res.ok) throw new Error(d.error || res.status);
+      req.data = d;
+    } catch (err) {
+      if (req.id !== id) return;
+      req.error = err.message;
+    }
+    renderReq();
+  }
+  $('req-close').addEventListener('click', () => $('req').close());
+  $('req-recheck').addEventListener('click', () => req.id && openReq(req.id));
+
+  // Static text, the toggle's state and <html lang> for the current language.
+  function applyLang() {
+    document.documentElement.lang = lang;
+    $('note').textContent = T().note;
+    $('th-title').textContent = T().thTitle;
+    $('req-recheck').textContent = T().recheck;
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  }
+  document.querySelector('.lang').addEventListener('click', e => {
+    const b = e.target.closest('button[data-lang]');
+    if (!b || b.dataset.lang === lang) return;
+    lang = b.dataset.lang;
+    try { localStorage.setItem('accept.lang', lang); } catch {}
+    applyLang();
+    if (state.cases.length) render();
+    renderReq();
+  });
+  applyLang();
+  $('req').addEventListener('click', e => { if (e.target === $('req')) $('req').close(); });
+
   $('rows').addEventListener('click', e => {
+    const rb = e.target.closest('button[data-req]');
+    if (rb) { openReq(rb.dataset.req); return; }
     const cb = e.target.closest('input[data-sel]');
     if (cb) {
       cb.checked ? state.selected.add(cb.dataset.sel) : state.selected.delete(cb.dataset.sel);
