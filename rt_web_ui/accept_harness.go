@@ -440,6 +440,51 @@ func (t *T) Events(runID string) []eventRow {
 	return out
 }
 
+// Components as each system writes them into pipeline_run_events. The
+// acceptance checks count an event only when the system that owns the step
+// wrote it, so a pass is that system's own record, not rt_web_ui's.
+const (
+	compAPI        = "remote_resolve_service" // noc_automation RT External API
+	compRtutil     = "rtutil_consumer"        // rtutil Kafka consumer
+	compWebhook    = "bcs_webhook"            // noc_automation BCS callback
+	compBCSSweeper = "bcs_result_sweeper"     // noc_automation BCS poll
+)
+
+// systemNames labels a component in step messages.
+var systemNames = map[string]string{
+	compAPI: "RT External API", compRtutil: "rtutil", compWebhook: "API BCS webhook", compBCSSweeper: "BCS sweeper",
+}
+
+// countBy counts events named name that component wrote.
+func countBy(evs []eventRow, component, name string) int {
+	n := 0
+	for _, e := range evs {
+		if e.Component == component && e.Event == name {
+			n++
+		}
+	}
+	return n
+}
+
+// countComponent counts every event component wrote.
+func countComponent(evs []eventRow, component string) int {
+	n := 0
+	for _, e := range evs {
+		if e.Component == component {
+			n++
+		}
+	}
+	return n
+}
+
+// Proved checks that component itself recorded each step for the run.
+func (t *T) Proved(evs []eventRow, component string, steps ...string) {
+	for _, s := range steps {
+		n := countBy(evs, component, s)
+		t.Check(n >= 1, "%s recorded %s itself (%s · %d event(s))", systemNames[component], s, component, n)
+	}
+}
+
 func countEvents(evs []eventRow, name string) int {
 	n := 0
 	for _, e := range evs {
@@ -538,7 +583,8 @@ type mockCall struct {
 func (t *T) MockCalls() []mockCall {
 	ctx, cancel := context.WithTimeout(t.ctx, 10*time.Second)
 	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "http://127.0.0.1:"+t.env.mockPort+"/mockoon-admin/logs", nil)
+	// The admin API pages its log (10 entries by default): ask for all of it.
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "http://127.0.0.1:"+t.env.mockPort+"/mockoon-admin/logs?limit=5000", nil)
 	req.Header.Set("Authorization", "Bearer "+t.env.mockToken)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

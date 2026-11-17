@@ -28,10 +28,26 @@ func start(t *T, criteria string, sets ...string) (uint64, string, time.Time) {
 // automation comment with this run's marker exists.
 func checkCompletedOnce(t *T, tk uint64, r runRow) {
 	t.Check(r.TicketCompleted(), "run ended %s (TICKET_COMPLETED expected) %s", r.State, r.Reason)
+	proveChain(t, r)
 	rt := t.Ticket(tk)
 	t.Check(r.TargetQueue != "" && rt.Queue == r.TargetQueue, "RT queue %q = run target_queue %q", rt.Queue, r.TargetQueue)
 	n := t.CommentCount(tk, runMarker(r.RunID))
 	t.Check(n == 1, "RT has %d automation comment(s) with this run's marker (1 expected)", n)
+}
+
+// proveChain checks each system's own record of a run that went all the
+// way: the API fetched the CPE, evaluated and published; rtutil consumed the
+// Kafka message (so Kafka carried it) and updated RT; for a remote-resolved
+// run rtutil also started BCS. Only events the owning component wrote count.
+func proveChain(t *T, r runRow) {
+	evs := t.Events(r.RunID)
+	t.Proved(evs, compAPI, "api_received", "node_red_fetch_started", "workflow_evaluated", "kafka_published")
+	t.Proved(evs, compRtutil, "kafka_consumed", "rt_status_updated", "rt_comment_added", "rt_updated")
+	if r.RemoteResolved.Valid && r.RemoteResolved.Bool {
+		t.Proved(evs, compRtutil, "bcs_update_started")
+		n := countBy(evs, compRtutil, "bcs_job_queued") + countBy(evs, compRtutil, "bcs_update_failed")
+		t.Check(n >= 1, "rtutil recorded the BCS answer itself (bcs_job_queued / bcs_update_failed · %d event(s))", n)
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -48,7 +64,7 @@ func caseADM01(t *T) {
 	n := t.BCSStarts(r.CPEID, t0)
 	t.Check(n == 1, "Peppermint mock received %d BCS start request(s) for %s (1 expected)", n, r.CPEID)
 	evs := t.Events(run)
-	t.Check(countEvents(evs, "kafka_consumed") == 1, "%d kafka_consumed event(s) (one logical Kafka result)", countEvents(evs, "kafka_consumed"))
+	t.Check(countBy(evs, compRtutil, "kafka_consumed") == 1, "rtutil consumed %d Kafka message(s) for the run (one logical Kafka result)", countBy(evs, compRtutil, "kafka_consumed"))
 	t.Check(r.State == "TICKET_COMPLETED" && !r.BCSSuccess.Valid,
 		"before the BCS result: RT done, BCS still open (%s, is_bcs_success %v)", r.State, nullBool(r.BCSSuccess))
 
@@ -63,8 +79,8 @@ func caseADM01(t *T) {
 	t.Log("— the same webhook again (CPEMS retry)")
 	code, _ = t.SendBCSWebhook(r, bcsResult{Status: "succeeded", Before: 11, After: 6})
 	evs = t.Events(run)
-	t.Check(code == http.StatusOK && countEvents(evs, "bcs_update_succeeded") == 1,
-		"duplicate answered 200 and recorded once (HTTP %d, %d bcs_update_succeeded event(s))", code, countEvents(evs, "bcs_update_succeeded"))
+	t.Check(code == http.StatusOK && countBy(evs, compWebhook, "bcs_update_succeeded") == 1,
+		"duplicate answered 200 and the API webhook recorded it once (HTTP %d, %d bcs_update_succeeded by %s)", code, countBy(evs, compWebhook, "bcs_update_succeeded"), compWebhook)
 	t.Check(t.CommentCount(tk, runMarker(run)) == 1, "still one automation comment")
 	t.Warn("service verification has no record — NOC verifies by hand this release (OUT-03)")
 }
@@ -120,8 +136,9 @@ func (g gateCase) label() string {
 	return g.criteria + " + " + strings.Join(g.sets, " ")
 }
 
-// checkGate runs one invalid gate on both sides: rt_web_ui's gates (what
-// the RT side does before calling the API) and the API on a fresh ticket.
+// checkGate runs one invalid gate. Pass / fail comes from the API's own
+// record only; rt_web_ui's gate verdict (what the RT side would do before
+// calling the API) is logged for comparison and never decides the result.
 func checkGate(t *T, g gateCase) {
 	p, err := readPayload(filepath.Join(t.env.dir, g.criteria+".json"))
 	if err != nil {
@@ -133,7 +150,7 @@ func checkGate(t *T, g gateCase) {
 		}
 	}
 	got := CheckEligibility(t.env.cfg, p)
-	t.Check(got != nil && got.Event == g.event, "RT side: %s → gate %s (%s expected)", g.label(), gateEvent(got), g.event)
+	t.Log("info only — rt_web_ui's own gate would say %s for %s (not part of the result)", gateEvent(got), g.label())
 	apiRejects(t, g.criteria, g.sets...)
 }
 
@@ -171,7 +188,17 @@ func apiRejects(t *T, sample string, sets ...string) {
 			return
 		}
 		t.Check(r.State == "NOT_ELIGIBLE" && r.Reason != "", "%s: %s · reason %q", criteria, r.State, r.Reason)
-		t.Check(countEvents(t.Events(a.RunID), "kafka_consumed") == 0, "%s: nothing reached Kafka / rtutil", criteria)
+		evs := t.Events(a.RunID)
+		ne := 0
+		for _, e := range evs {
+			if e.Component == compAPI && e.To == "NOT_ELIGIBLE" {
+				ne++
+			}
+		}
+		t.Check(ne == 1, "%s: the API itself recorded NOT_ELIGIBLE (%d event(s) by %s)", criteria, ne, compAPI)
+		t.Check(countBy(evs, compAPI, "node_red_fetch_started") == 0, "%s: no Node-RED call (API recorded no node_red_fetch_started)", criteria)
+		t.Check(countBy(evs, compAPI, "kafka_published") == 0, "%s: nothing published to Kafka (API recorded no kafka_published)", criteria)
+		t.Check(countComponent(evs, compRtutil) == 0, "%s: rtutil never touched the run (%d rtutil event(s))", criteria, countComponent(evs, compRtutil))
 	}
 	rt := t.Ticket(tk)
 	t.Check(rt.Queue == t.env.cfg.NOCQueue && rt.Status == "new", "%s: RT ticket #%d untouched (%s / %s)", criteria, tk, rt.Queue, rt.Status)
@@ -205,7 +232,7 @@ func caseADM04(t *T) {
 		p.Set(s)
 	}
 	g := CheckEligibility(t.env.cfg, p)
-	t.Check(g != nil && g.Event == EventNotInNOCQueue, "two failed rules → first gate in documented order wins (%s)", gateEvent(g))
+	t.Log("info only — rt_web_ui's own gate order would pick %s (not part of the result; the API decides below)", gateEvent(g))
 
 	tk := t.NewTicket("two rules")
 	var reasons []string
@@ -228,7 +255,9 @@ func caseADM04(t *T) {
 	}
 	r := t.WaitRun(a.RunID, time.Minute, "finished", runRow.Done)
 	t.Check(!r.TicketCompleted() && r.Reason != "", "malformed cpe_id → %s · reason %q", r.State, r.Reason)
-	t.Check(countEvents(t.Events(a.RunID), "kafka_consumed") == 0, "malformed cpe_id never reached rtutil")
+	evs := t.Events(a.RunID)
+	t.Check(countBy(evs, compAPI, "kafka_published") == 0 && countComponent(evs, compRtutil) == 0,
+		"malformed cpe_id never reached Kafka / rtutil (API kafka_published %d, rtutil events %d)", countBy(evs, compAPI, "kafka_published"), countComponent(evs, compRtutil))
 }
 
 func caseADM07(t *T) {
@@ -329,7 +358,9 @@ func caseADM11(t *T) {
 	r := t.WaitRun(run, 2*time.Minute, "finished", runRow.Done)
 	t.Check(r.State == "CPE_NOT_FOUND", "confirmed missing CPE → %s", r.State)
 	evs := t.Events(run)
-	t.Check(countEvents(evs, "kafka_consumed") == 0, "no evaluated result published")
+	t.Proved(evs, compAPI, "api_received", "node_red_fetch_started")
+	t.Check(countBy(evs, compAPI, "kafka_published") == 0 && countComponent(evs, compRtutil) == 0,
+		"no evaluated result published (API kafka_published %d, rtutil events %d)", countBy(evs, compAPI, "kafka_published"), countComponent(evs, compRtutil))
 	t.Check(t.BCSStarts(r.CPEID, t0) == 0, "no BCS request")
 	t.Warn("Node-RED timeout path is exercised by OPS-01 (mock stopped)")
 }
@@ -533,21 +564,29 @@ func reportHas(ctx context.Context, base, c, runID string) (bool, error) {
 }
 
 func caseOUT04(t *T) {
+	if strings.TrimSpace(t.env.noc["BCS_API_BASE_URL"]) == "" {
+		t.Skip("BCS_API_BASE_URL is empty in %s — the BCS sweeper has nothing to poll", t.env.nocEnv)
+	}
 	_, run, t0 := start(t, "11_bcs_success")
-	t.WaitDone(run)
-	t.Log("the mock sends no webhook; waiting for the BCS sweeper's poll")
-	r := waitBCSResult(t, run)
-	t.Check(r.BCSSuccess.Bool, "poll recorded success against job %s", r.BCSJob)
+	r := t.WaitDone(run)
+	t.Check(r.State == "TICKET_COMPLETED" && r.BCSJob != "" && !r.BCSSuccess.Valid,
+		"RT done, BCS job %q queued, result still open (%s, is_bcs_success %s)", r.BCSJob, r.State, nullBool(r.BCSSuccess))
+	done := time.Now()
+	t.Log("no webhook is sent (lost); waiting for the BCS sweeper to poll after BCS_RESULT_TIMEOUT_MINUTES=%d",
+		t.nocInt("BCS_RESULT_TIMEOUT_MINUTES", 5))
+	r = waitBCSResult(t, run)
+	t.Log("result arrived %s after the RT update", time.Since(done).Round(time.Second))
+	t.Check(r.BCSSuccess.Bool, "poll recorded success against the original job %s · %q", r.BCSJob, r.BCSMessage)
 	polls := 0
 	for _, c := range t.MockCalls() {
-		if strings.EqualFold(c.Method, http.MethodGet) && strings.HasSuffix(c.Path, "/"+r.BCSJob) && !c.At.Before(t0) {
+		if strings.EqualFold(c.Method, http.MethodGet) && c.Path == "/api/v2/channel-selections/"+r.BCSJob && !c.At.Before(t0) {
 			polls++
 		}
 	}
-	t.Check(polls >= 1, "Peppermint mock was polled %d time(s) for the original job", polls)
-	n := countEvents(t.Events(run), "bcs_update_succeeded")
-	t.Check(n == 1, "%d bcs_update_succeeded event(s) (1 expected)", n)
-	t.Check(t.Run(run).TicketCompleted(), "run stays ticket-completed")
+	t.Check(polls >= 1, "Peppermint mock was polled %d time(s) for job %s", polls, r.BCSJob)
+	n := countBy(t.Events(run), compBCSSweeper, "bcs_update_succeeded")
+	t.Check(n == 1, "the BCS sweeper recorded the result itself: %d bcs_update_succeeded by %s (1 expected)", n, compBCSSweeper)
+	t.Check(r.State == "FULLY_COMPLETED", "run moved to FULLY_COMPLETED, RT's terminal state kept (%s)", r.State)
 }
 
 func caseOUT06(t *T) {
@@ -565,8 +604,8 @@ func caseOUT06(t *T) {
 		t.Sleep(15 * time.Second)
 	}
 	r := t.Run(run)
-	t.Check(countEvents(evs, "bcs_result_gave_up") == 1, "give-up recorded as bcs_result_gave_up (unknown), not bcs_update_failed (%d / %d)",
-		countEvents(evs, "bcs_result_gave_up"), countEvents(evs, "bcs_update_failed"))
+	t.Check(countBy(evs, compBCSSweeper, "bcs_result_gave_up") == 1, "the BCS sweeper recorded the give-up itself as bcs_result_gave_up (unknown), not bcs_update_failed (%d / %d)",
+		countBy(evs, compBCSSweeper, "bcs_result_gave_up"), countEvents(evs, "bcs_update_failed"))
 	t.Check(!r.BCSSuccess.Valid, "outcome stays unknown (is_bcs_success NULL), not a confirmed failure")
 	t.Check(r.TicketCompleted(), "run stays ticket-completed")
 	t.Warn("late authoritative callback after give-up is not sent by the mock — not covered")
