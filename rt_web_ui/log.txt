@@ -9,3 +9,5 @@ rtutil tail -f 	rt_web_ui/.run/rtutil.log
 tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/criteria_ui.log
 tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/noc_automation.log
 tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/rtutil.log
+tail -f ~/FrontiirProjects/RT/work_flow_end_to_end/rt_web_ui/.run/pipeline_report.log
+
