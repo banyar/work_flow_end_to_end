@@ -83,7 +83,7 @@ var caseDefs = map[string]caseDef{
 	"ADM-06": {title: "Commit မတိုင်ခင် fail", known: kOK, skip: "DB transaction ကို ကြားမှာ fail ဖြစ်အောင် လုပ်ဖို့ API ထဲ hook လို", covered: "CreateWithEvent_RollsBack…, CreateRunFailureIs500"},
 	"ADM-07": {title: "တစ်ပြိုင်နက် request ၂ ခု", known: kOK, run: caseADM07, minutes: 1},
 	"ADM-08": {title: "Stable request ID (တူ ID၊ content ကွဲ)", known: kNA, skip: skipNoRequestID},
-	"ADM-09": {title: "၂၄ နာရီ boundary + ALREADY_PROCESSED", known: kMissing, run: caseADM09, minutes: 2},
+	"ADM-09": {title: "၂၄ နာရီ boundary + ALREADY_PROCESSED", known: kOK, run: caseADM09, minutes: 2},
 	"ADM-10": {title: "Authorized reprocess", known: kMissing, skip: "Reprocess feature မရှိသေး"},
 	"ADM-11": {title: "CPE fetch: OK · not found · timeout (CRIT30/40/42)", known: kOK, run: caseADM11, minutes: 3},
 	"ADM-12": {title: "Kafka payload မမှန်", known: kPartial, skip: "Kafka topic ထဲ message တိုက်ရိုက် ထည့်ဖို့ producer လို (rt_web_ui မှာ Kafka client မရှိ)"},

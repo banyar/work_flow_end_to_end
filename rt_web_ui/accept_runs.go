@@ -323,25 +323,22 @@ func caseADM09(t *T) {
 	a = t.Submit("30_transferred_ca1_broken", tk)
 	if !t.Check(a.RunID != "", "just after 24 h: admitted — an ALREADY_PROCESSED record must not extend the window (run_id %q)", a.RunID) {
 		blockedBy(t, tk)
-	}
-	if a.RunID != "" {
-		return
-	}
 
-	t.Log("move the ALREADY_PROCESSED records past 24 h too")
-	// Go's clock, not the DB's NOW(): pipeline_runs holds the API's local
-	// time (loc=Local) and the DB session runs in UTC.
-	past := time.Now().Add(-25 * time.Hour)
-	t.Exec(`UPDATE pipeline_runs SET created_at = ?, updated_at = ?, completed_at = ?
+		t.Log("move the ALREADY_PROCESSED records past 24 h too")
+		// Go's clock, not the DB's NOW(): pipeline_runs holds the API's local
+		// time (loc=Local) and the DB session runs in UTC.
+		past := time.Now().Add(-25 * time.Hour)
+		t.Exec(`UPDATE pipeline_runs SET created_at = ?, updated_at = ?, completed_at = ?
 		WHERE ticket_id = ? AND current_state = 'ALREADY_PROCESSED'`, past, past, past, tk)
-	a = t.Submit("30_transferred_ca1_broken", tk)
-	t.Check(a.RunID != "", "with every record past 24 h the ticket is admitted (run_id %q)", a.RunID)
+		a = t.Submit("30_transferred_ca1_broken", tk)
+		t.Check(a.RunID != "", "with every record past 24 h the ticket is admitted (run_id %q)", a.RunID)
+	}
 
 	tk2 := t.NewTicket("cooldown not eligible")
 	seedRun(t, tk2, "NOT_ELIGIBLE", time.Hour)
 	a = t.Submit("30_transferred_ca1_broken", tk2)
 	t.Check(a.RunID != "", "a NOT_ELIGIBLE attempt 1 h ago does not start the cooldown (run_id %q)", a.RunID)
-	t.Warn("the cutoff second itself is not tested here (needs a controllable clock); the unit tests check only the 24 h look-back and the SQL text, not which states are left out")
+	t.Warn("the cutoff second itself is not tested here (needs a controllable clock); rtdatacore's unit test checks the query's >= and the states it leaves out")
 }
 
 // blockedBy logs which run turned the ticket away: the newest

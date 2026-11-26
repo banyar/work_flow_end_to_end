@@ -206,7 +206,7 @@ var caseFlows = map[string][]flowGroup{
 	"ADM-09": {
 		testGroup(st("(1) Ticket အတွက် ၂၃ နာရီ ၅၈ မိနစ်က ပြီးခဲ့တဲ့ TICKET_COMPLETED run ကို DB ထဲ ထည့် (seed) ပြီး ticket ကို ပို့ပါတယ်။", "(1) Seeds a TICKET_COMPLETED run that finished 23 h 58 min ago and submits the ticket.", "", ""),
 			st("(2) အဲဒီ run ကို ၂၄ နာရီ ၂ မိနစ်ဆီ နောက်ရွှေ့ပြီး ထပ်ပို့ပါတယ်။ (1) က ရေးခဲ့တဲ့ ALREADY_PROCESSED record ကတော့ အသစ်အတိုင်း ကျန်ပါတယ်။", "(2) Moves that run back to 24 h 2 min and submits again; the ALREADY_PROCESSED record from (1) stays recent.", "", ""),
-			st("(3) (2) admit မဖြစ်ရင် ဘယ် run က တားလဲ ပြပြီး ALREADY_PROCESSED record တွေကိုပါ ၂၅ နာရီဆီ ရွှေ့ပြီး ထပ်ပို့ပါတယ်။", "(3) If (2) is not admitted, shows which run blocked it, moves the ALREADY_PROCESSED records back 25 h and submits again.", "", ""),
+			st("(3) (2) admit မဖြစ်ရင်ပဲ: ဘယ် run က တားလဲ ပြပြီး ALREADY_PROCESSED record တွေကိုပါ ၂၅ နာရီဆီ ရွှေ့ပြီး ထပ်ပို့ပါတယ်။", "(3) Only if (2) is not admitted: shows which run blocked it, moves the ALREADY_PROCESSED records back 25 h and submits again.", "", ""),
 			st("(4) Ticket အသစ်မှာ ၁ နာရီက NOT_ELIGIBLE run ကို seed လုပ်ပြီး ပို့ပါတယ်။", "(4) On a new ticket, seeds a NOT_ELIGIBLE run from 1 h ago and submits.", "", "")),
 		apiGroup(st("CheckTicket က run_id မထုတ်ခင် completed_at ≥ now − 24h ဖြစ်တဲ့ NOT_ELIGIBLE မဟုတ်တဲ့ run ကို ရှာပါတယ်။ တွေ့ရင် 202 run_id မပါဘဲ ပြန်ပြီး ALREADY_PROCESSED run (completed_at = now) တစ်ခု မှတ်ပါတယ်။",
 			"Before making a run_id, CheckTicket looks for a run other than NOT_ELIGIBLE with completed_at ≥ now − 24h. If found, it answers 202 without a run_id and records one ALREADY_PROCESSED run (completed_at = now).", "already_processed", refCheckTicket),
@@ -214,8 +214,8 @@ var caseFlows = map[string][]flowGroup{
 				"The window counts from when the run finished (completed_at); with ≥, exactly 24 h is still inside (window = main.json already_processed · 24 hours).", "", refProcessedQ),
 			st("လိုအပ်ချက်: တကယ့် run ၂၄ နာရီ ကျော်ရင် admit ဖြစ်ရမယ်။ ALREADY_PROCESSED record က window ကို မရှည်စေရဘူး။ NOT_ELIGIBLE run က cooldown မစရဘူး။",
 				"Requirement: once the real run is past 24 h the ticket is admitted; an ALREADY_PROCESSED record must not extend the window; a NOT_ELIGIBLE run does not start the cooldown.", "", ""),
-			st("⚠ လက်ရှိ code: query က NOT_ELIGIBLE တစ်ခုပဲ ချန်လို့ ALREADY_PROCESSED record ကိုယ်တိုင် (completed_at = now) က window အသစ် စပါတယ်။ ဒါကြောင့် (2) fail ပါတယ် (review ❌ မရှိ)။ ပြင်ရန်: NOT IN ('NOT_ELIGIBLE','ALREADY_PROCESSED')။",
-				"⚠ Current code: the query leaves out only NOT_ELIGIBLE, so the ALREADY_PROCESSED record itself (completed_at = now) starts a new window and (2) fails (review ❌ missing). Fix: NOT IN ('NOT_ELIGIBLE','ALREADY_PROCESSED').", "", refProcessedQ)),
+			st("Query က NOT_ELIGIBLE နဲ့ ALREADY_PROCESSED နှစ်ခုစလုံးကို ချန်ပါတယ်။ နှစ်ခုစလုံး ticket ပေါ်မှာ ဘာမှ မလုပ်ခဲ့လို့ပါ။ ALREADY_PROCESSED ကို ရေတွက်ရင် request တိုင်းက window အသစ် စပြီး ticket က ဘယ်တော့မှ ပြန်မ run တော့ပါဘူး။",
+				"The query leaves out both NOT_ELIGIBLE and ALREADY_PROCESSED, since neither did any work on the ticket. Counting ALREADY_PROCESSED would let every request start a new window, so the ticket would never run again.", "", refProcessedQ)),
 	},
 	"ADM-11": {
 		testGroup(st("Test RT ticket ၃ ခု ဖန်တီးပြီး (a) 30_transferred_ca1_broken (CRIT30)၊ (b) 40_cpe_not_found (CRIT40)၊ (c) 42_node_red_timeout (CRIT42) ကို API ဆီ တိုက်ရိုက် POST လုပ်ပါတယ်။ (a) မှာ mock ရဲ့ CRIT30 အဖြေကို ကိုယ်တိုင် ဖတ်ပြီး API သိမ်းထားတာနဲ့ တိုက်စစ်ပါတယ်။",
