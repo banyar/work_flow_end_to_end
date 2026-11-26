@@ -1,9 +1,9 @@
-// Command rt_web_ui plays the RT Web UI part of the NOC automation
-// (final.html section 1, steps 1-5): it checks a NOC ticket against the
-// eligibility gates, sends its JSON to the RT External API and records the
-// run's state and events in pipeline_runs / pipeline_run_events.
+// Command rt_web_ui plays the RT Web UI part of the NOC automation: it sends
+// a NOC ticket's JSON to the RT External API the way the RT extension does
+// and shows the API's answer. The API checks the ticket, creates the run and
+// makes its run_id; rt_web_ui writes nothing to pipeline_runs.
 //
-//	go run ./rt_web_ui send --file ticket.json [--env .env] [--run-id UUID] [--set key=value ...]
+//	go run ./rt_web_ui send --file ticket.json [--env .env] [--set key=value ...]
 //	go run ./rt_web_ui serve [--env .env] [--addr 127.0.0.1:8090] [--criteria criteria/tickets]
 //	go run ./rt_web_ui check [--env .env] [--noc-env <file>] [--mock-port 3002]
 //	go run ./rt_web_ui up|down [--env .env] [--noc-env <file>] [--rtutil-dir <dir>] ...
@@ -12,7 +12,8 @@
 // check reports which systems the flow depends on are not ready (see check.go);
 // up starts the ones that are down and down stops what up started (see up.go).
 //
-// Exit codes: 0 accepted, 1 not eligible, 2 rejected or unreachable,
+// Exit codes: 0 accepted, 1 not eligible or not started (active run /
+// cooldown), 2 rejected or unreachable,
 // 3 usage / configuration / database error.
 package main
 
@@ -24,7 +25,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 
 	"git.frontiir.net/sa-dev/rtdatacore/pkg/driven/rtdb"
@@ -33,14 +33,13 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--run-id <uuid>] [--set key=value ...]
+const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--set key=value ...]
        rt_web_ui serve [--env <file>] [--addr <host:port>] [--criteria <dir>]
        rt_web_ui check [--env <file>] [--noc-env <file>] [--mock-port <port>]
        rt_web_ui up|down [--env <file>] [--noc-env <file>] [--noc-dir <dir>] [--rtutil-dir <dir>] [--mock-port <port>] [--run-dir <dir>]
 
   --file    ticket JSON as the RT Web UI sends it ("-" = stdin)
   --env     config file (default .env); noc_automation/.env works as-is
-  --run-id  use this run_id instead of a new UUID
   --set     override a field, e.g. --set queue=... or --set custom_fields.service_type=MNet (repeatable)
   --addr      serve: listen address (default 127.0.0.1:8090)
   --criteria  serve: folder of criteria ticket JSON files (default criteria/tickets)
@@ -53,8 +52,6 @@ const usage = `usage: rt_web_ui send --file <ticket.json|-> [--env <file>] [--ru
   --report-dir check/up: pipeline_report folder (default ../../pipeline_report)
   --mode      check/up: local|sit|qa — rtutil config .rtutil_local.json|.rtutil.json|.rtutil_qa.json (default local)
   --rtutil-config check/up: rtutil config file, overrides --mode`
-
-var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 type setFlags []string
 
@@ -86,7 +83,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	file := fs.String("file", "", "")
 	envPath := fs.String("env", ".env", "")
-	runID := fs.String("run-id", "", "")
 	var sets setFlags
 	fs.Var(&sets, "set", "")
 	fs.Usage = func() { fmt.Fprintln(stderr, usage) }
@@ -112,11 +108,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return fail("%v", err)
 		}
 	}
-	if *runID == "" {
-		*runID = newRunID()
-	} else if !uuidPattern.MatchString(*runID) {
-		return fail("--run-id %q is not a UUID", *runID)
-	}
 
 	cfg, err := LoadConfig(*envPath)
 	if err != nil {
@@ -133,12 +124,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return fail("%v", err)
 	}
 
-	tracker := NewRepoTracker(rtdb.NewPipelineRunRepository(db))
+	runs := NewRunReader(rtdb.NewPipelineRunRepository(db))
 	api := NewAPIClient(cfg.APIURL, cfg.APIToken, cfg.APITimeout)
 
-	res, err := Process(context.Background(), cfg, payload, *runID, tracker, api)
+	res, err := Process(context.Background(), payload, runs, api)
 	if err != nil {
-		return fail("run %s: %v", *runID, err)
+		return fail("%v", err)
 	}
 
 	fmt.Fprintf(stdout, "%s — ticket %d, run_id %s, state %s\n", res.Message, res.TicketID, res.RunID, res.State)
@@ -148,7 +139,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch res.Outcome {
 	case OutcomeAccepted:
 		return 0
-	case OutcomeNotEligible:
+	case OutcomeNotEligible, OutcomeSkipped:
 		return 1
 	default:
 		return 2

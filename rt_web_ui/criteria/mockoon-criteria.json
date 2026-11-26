@@ -591,6 +591,33 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"data\": null,\n    \"errors\": [\n        {\n            \"field\": \"cpe_id\",\n            \"error_code\": 4002\n        }\n    ]\n}"
+        },
+        {
+          "uuid": "0a9cc277-29f8-55f1-8480-be16858a154f",
+          "body": "{\n    \"data\": {\n        \"cpe\": {\n            \"cid\": \"CRIT42\",\n            \"status\": \"Up\"\n        },\n        \"ca1\": {\n            \"name\": \"CA1-YKNX07ZYNY-GB\",\n            \"status\": \"Broken\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\"\n        },\n        \"olt\": {\n            \"name\": \"OVF-PYRX01AYNY\",\n            \"mac_address\": \"C4-70-0B-DF-DE-E3\",\n            \"management_ip\": \"172.24.206.130\",\n            \"operational_status\": \"unmanaged\",\n            \"status\": \"Online\",\n            \"last_seen\": \"2026-08-12T04:40:52.261Z\"\n        },\n        \"onu\": {\n            \"rx_power\": -27,\n            \"tx_power\": 0.5,\n            \"bias\": 5,\n            \"voltage\": 3.4,\n            \"temperature\": 53.0,\n            \"is_swap_onu\": false,\n            \"is_low_dbm\": false,\n            \"is_epc_outage\": false,\n            \"24h_onu_usage_gb\": 1.5,\n            \"is_usage_over_gb\": true,\n            \"gpon_name\": \"0/7\",\n            \"hostname\": \"YKNC07ZYNY-GB7-P7-LCF029166\",\n            \"serial\": \"FO2F15009949\",\n            \"phase_state\": \"Working\",\n            \"signal\": -23.566,\n            \"last_seen\": \"2026-08-12T04:11:25.741Z\",\n            \"uptime\": \"19131\",\n            \"is_onu_on_off\": false,\n            \"is_bip8_error\": false,\n            \"is_port_loss\": false,\n            \"profile\": {\n                \"id\": 29,\n                \"name\": \"INFRA3\",\n                \"line_profile_name\": \"MN_FR-SLA_25.00Mbps\",\n                \"is_line_profile_mismatch\": false\n            }\n        },\n        \"pole_name\": \"YKNC07ZYNY-GB7-P7\",\n        \"uplink\": {\n            \"name\": \"CA2-YKNC07ZYNY-GB7\",\n            \"status\": \"OK\",\n            \"last_seen\": \"2026-08-12T04:11:37.506Z\",\n            \"box\": {\n                \"type\": \"Gen2\",\n                \"status\": \"OBOB-B\"\n            }\n        }\n    },\n    \"errors\": []\n}\n",
+          "latency": 35000,
+          "statusCode": 200,
+          "label": "42_node_red_timeout",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "cpe_id",
+              "value": "CRIT42",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,
@@ -608,7 +635,7 @@
           "uuid": "f80aeb80-dc86-4d0b-b2e9-b8f0ed206afa",
           "latency": 0,
           "statusCode": 202,
-          "label": "BCS start default -> job ok- (poll: succeeded)",
+          "label": "BCS start default -> job ok- (poll: succeeded_new_channel)",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -766,7 +793,7 @@
           "uuid": "555b4f0c-3c24-4aeb-a6e8-a55a5dbba047",
           "latency": 0,
           "statusCode": 200,
-          "label": "ok- -> succeeded",
+          "label": "ok- -> succeeded_new_channel",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -787,7 +814,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"job_id\": \"{{urlParam 'job_id'}}\",\n    \"cid\": \"\",\n    \"band\": \"2.4g\",\n    \"status\": \"succeeded\",\n    \"before_channel\": 11,\n    \"after_channel\": 6,\n    \"updated_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
+          "body": "{\n    \"job_id\": \"{{urlParam 'job_id'}}\",\n    \"cid\": \"\",\n    \"band\": \"2.4g\",\n    \"status\": \"succeeded_new_channel\",\n    \"before_channel\": 11,\n    \"after_channel\": 6,\n    \"updated_at\": \"{{now 'yyyy-MM-dd'}}T{{now 'HH:mm:ssXXX'}}\"\n}"
         },
         {
           "uuid": "31bc3263-11f9-4af4-b43d-a4162716d5f7",

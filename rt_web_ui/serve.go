@@ -44,7 +44,6 @@ type runRequest struct {
 	TicketID string `json:"ticket_id"`
 	Criteria string `json:"criteria"`
 	CPEID    string `json:"cpe_id"` // "" keeps the criteria file's cpe_id (CRITxx for the mock)
-	RunID    string `json:"run_id"` // "" generates a new UUID
 }
 
 type runResponse struct {
@@ -58,7 +57,7 @@ type criteriaServer struct {
 	cfg     Config
 	envPath string
 	dir     string
-	tracker Tracker
+	runs    RunReader
 	api     Submitter
 	mu      sync.Mutex // one run at a time, like running make by hand
 }
@@ -98,7 +97,7 @@ func runServe(args []string, stdout, stderr io.Writer) int {
 		cfg:     cfg,
 		envPath: *envPath,
 		dir:     *dir,
-		tracker: NewRepoTracker(rtdb.NewPipelineRunRepository(db)),
+		runs:    NewRunReader(rtdb.NewPipelineRunRepository(db)),
 		api:     NewAPIClient(cfg.APIURL, cfg.APIToken, cfg.APITimeout),
 	}
 	mux := http.NewServeMux()
@@ -179,7 +178,7 @@ func (s *criteriaServer) handleRun(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, runResponse{Error: "invalid request JSON: " + err.Error()})
 		return
 	}
-	p, runID, err := s.prepare(req)
+	p, err := s.prepare(req)
 	if err != nil {
 		writeJSON(w, http.StatusBadRequest, runResponse{Criteria: req.Criteria, Error: err.Error()})
 		return
@@ -187,10 +186,10 @@ func (s *criteriaServer) handleRun(w http.ResponseWriter, r *http.Request) {
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	res, err := Process(r.Context(), s.cfg, p, runID, s.tracker, s.api)
+	res, err := Process(r.Context(), p, s.runs, s.api)
 	out := runResponse{Result: res, Criteria: req.Criteria, CPEID: p.CustomField("cpe_id")}
 	if err != nil {
-		out.Error = fmt.Sprintf("run %s: %v", runID, err)
+		out.Error = err.Error()
 		writeJSON(w, http.StatusInternalServerError, out)
 		return
 	}
@@ -198,37 +197,31 @@ func (s *criteriaServer) handleRun(w http.ResponseWriter, r *http.Request) {
 }
 
 // prepare validates req and builds the payload from the criteria file.
-func (s *criteriaServer) prepare(req runRequest) (*Payload, string, error) {
+func (s *criteriaServer) prepare(req runRequest) (*Payload, error) {
 	ticket := strings.TrimSpace(req.TicketID)
 	if id, err := strconv.ParseUint(ticket, 10, 64); err != nil || id == 0 {
-		return nil, "", fmt.Errorf("ticket_id must be a positive number, got %q", req.TicketID)
+		return nil, fmt.Errorf("ticket_id must be a positive number, got %q", req.TicketID)
 	}
 	if !criteriaNamePattern.MatchString(req.Criteria) {
-		return nil, "", fmt.Errorf("criteria %q is not a criteria file name", req.Criteria)
+		return nil, fmt.Errorf("criteria %q is not a criteria file name", req.Criteria)
 	}
 	cpe := strings.TrimSpace(req.CPEID)
 	if cpe != "" && !cpeIDPattern.MatchString(cpe) {
-		return nil, "", fmt.Errorf("cpe_id %q may only contain letters, digits, '.', '_' and '-'", req.CPEID)
-	}
-	runID := strings.TrimSpace(req.RunID)
-	if runID == "" {
-		runID = newRunID()
-	} else if !uuidPattern.MatchString(runID) {
-		return nil, "", fmt.Errorf("run_id %q is not a UUID", req.RunID)
+		return nil, fmt.Errorf("cpe_id %q may only contain letters, digits, '.', '_' and '-'", req.CPEID)
 	}
 
 	p, err := readPayload(filepath.Join(s.dir, req.Criteria+".json"))
 	if errors.Is(err, os.ErrNotExist) {
-		return nil, "", fmt.Errorf("no criteria file %s.json in %s", req.Criteria, s.dir)
+		return nil, fmt.Errorf("no criteria file %s.json in %s", req.Criteria, s.dir)
 	}
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	p.Set("id=" + ticket)
 	if cpe != "" {
 		p.Set("custom_fields.cpe_id=" + cpe)
 	}
-	return p, runID, nil
+	return p, nil
 }
 
 func (s *criteriaServer) criteriaNames() ([]string, error) {

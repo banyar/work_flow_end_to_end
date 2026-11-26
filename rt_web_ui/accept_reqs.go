@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Requirements popup on the acceptance page: what a case needs from the
@@ -184,11 +186,11 @@ func reqBCSMock(why string) reqDef {
 				Status string `json:"status"`
 			}
 			json.NewDecoder(resp.Body).Decode(&body)
-			if resp.StatusCode != http.StatusOK || body.Status != "succeeded" {
+			if resp.StatusCode != http.StatusOK || body.Status != "succeeded_new_channel" {
 				r.Level, r.Detail = levelFail, fmt.Sprintf("job status HTTP %d status=%q", resp.StatusCode, body.Status)
 				return r
 			}
-			r.Level, r.Detail = levelOK, "GET /api/v2/channel-selections/ok-… → succeeded"
+			r.Level, r.Detail = levelOK, "GET /api/v2/channel-selections/ok-… → succeeded_new_channel"
 			return r
 		}}
 }
@@ -321,6 +323,35 @@ func reqNocNotTrue(key, why string) reqDef {
 }
 
 // reqNocEnv: the case reads timeout values from noc_automation's .env.
+// reqMockSlow checks that the mock answers cpe slower than noc's
+// NODE_RED_TIMEOUT without waiting for it: no answer within a few seconds
+// means the slow route is loaded; a quick answer means the mock was started
+// from an older mockoon-criteria.json.
+func reqMockSlow(cpe, why string) reqDef {
+	return reqDef{name: "Mock CPE " + cpe + " → slow (35 s)", why: why,
+		check: func(ctx context.Context, e *acceptEnv) checkResult {
+			r := checkResult{Name: cpe}
+			if t, err := strconv.Atoi(strings.TrimSpace(e.noc["NODE_RED_TIMEOUT"])); err == nil && t >= 35 {
+				r.Level, r.Detail, r.Fix = levelFail, fmt.Sprintf("NODE_RED_TIMEOUT=%d s — the 35 s mock would not time out", t), "noc .env NODE_RED_TIMEOUT ကို 35 အောက် ထားပါ"
+				return r
+			}
+			ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+			req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "http://127.0.0.1:"+e.mockPort+"/api/v1/cpe/"+cpe, nil)
+			resp, err := http.DefaultClient.Do(req)
+			switch {
+			case err == nil:
+				resp.Body.Close()
+				r.Level, r.Detail, r.Fix = levelFail, fmt.Sprintf("answered at once (HTTP %d) — the mock has no slow %s route", resp.StatusCode, cpe), "make criteria-mock-stop criteria-mock-up"
+			case errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded):
+				r.Level, r.Detail = levelOK, "no answer within 2 s (slow route loaded)"
+			default:
+				r.Level, r.Detail, r.Fix = levelFail, "mock not answering", "make criteria-mock-up"
+			}
+			return r
+		}}
+}
+
 func reqNocEnv(why string) reqDef {
 	return reqDef{name: "noc_automation .env", why: why,
 		check: func(_ context.Context, e *acceptEnv) checkResult {
@@ -386,13 +417,16 @@ func caseRequirements(id, mockPort string) caseReqs {
 			)}
 	case "ADM-03", "ADM-03a", "ADM-03b", "ADM-03c", "ADM-03d", "ADM-03e", "ADM-04", "V2-01":
 		return caseReqs{note: noteGate, reqs: admit()}
-	case "ADM-07", "ADM-08", "ADM-09", "V2-02":
+	case "ADM-07", "ADM-09", "V2-02":
 		return caseReqs{note: noteAdmit, reqs: admit()}
 	case "ADM-11":
 		return caseReqs{
-			note: "CRIT40 ကို Node-RED က 404 ပြန်လို့ CPE_NOT_FOUND ဖြစ်ရပါမယ်။ Kafka မပို့လို့ Kafka၊ rtutil မလိုပါ။",
-			reqs: append(admit(), reqNodeRed(),
-				reqMockCPE("CRIT40", "", "", http.StatusNotFound, "CPE_NOT_FOUND ဖြစ်ဖို့"), reqMockAdmin(bcsNotCalled)),
+			note: "(a) CRIT30 run က Kafka နဲ့ rtutil ကို ဖြတ်သွားလို့ နှစ်ခုလုံး လိုပါတယ်။ (b) CRIT40 ကို Node-RED က 404 ပြန်ရပါမယ်။ (c) CRIT42 ကို mock က NODE_RED_TIMEOUT ထက် နှေးပြီးမှ ဖြေရပါမယ်။",
+			reqs: chain(
+				reqMockCPE("CRIT30", "ca1.status", "Broken", 0, "(a) fetch အောင်မြင်ပြီး evidence သိမ်းဖို့"),
+				reqMockCPE("CRIT40", "", "", http.StatusNotFound, "(b) CPE_NOT_FOUND ဖြစ်ဖို့"),
+				reqMockSlow("CRIT42", "(c) Node-RED timeout ဖြစ်ဖို့"),
+				reqMockAdmin(bcsNotCalled)),
 		}
 	case "ACT-02", "RCV-02":
 		return caseReqs{
@@ -487,5 +521,5 @@ func (s *acceptServer) handleRequirements(w http.ResponseWriter, r *http.Request
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"id": c.ID, "title": c.Title, "title_en": c.TitleEn,
-		"note": note, "note_en": en(note), "items": items, "ready": ready})
+		"note": note, "note_en": en(note), "items": items, "ready": ready, "flow": caseFlows[c.ID]})
 }

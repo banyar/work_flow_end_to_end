@@ -1,7 +1,6 @@
-# Send a ticket JSON through the RT Web UI flow (section 1, step 1-5).
+# Send a ticket JSON to the RT External API the way the RT extension does.
 #   make send
 #   make send FILE=ticket.json
-#   make send RUN_ID=<uuid>
 #   make send ARGS='--set id=97 --set custom_fields.service_type="MNet Plus"'
 #
 # Report criteria samples (see criteria/README.md).
@@ -35,12 +34,11 @@
 #   make docker-down
 FILE ?= ticket_valid.json
 ENV ?= .env
-RUN_ID ?=
 ARGS ?=
 
 .PHONY: send
 send:
-	go run . send --file $(FILE) --env $(ENV) $(if $(RUN_ID),--run-id $(RUN_ID)) $(ARGS)
+	go run . send --file $(FILE) --env $(ENV) $(ARGS)
 
 CRITERIA_DIR ?= criteria
 CRITERIA_MOCK_PORT ?= 3002

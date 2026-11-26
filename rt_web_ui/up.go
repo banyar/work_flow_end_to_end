@@ -114,6 +114,12 @@ func runUp(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 3
 	}
+	unlock, err := lockUpDown(o.runDir, "up")
+	if err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 2
+	}
+	defer unlock()
 
 	fmt.Fprintf(stdout, "rt_web_ui up   MODE=%s\n  noc_automation %s\n  rtutil         %s\n  rtutil config  %s\n  run folder     %s\n\n",
 		o.mode, o.nocDir, o.rtutilDir, o.rtutilConfig, o.runDir)
@@ -186,7 +192,57 @@ func runUp(args []string, stdout, stderr io.Writer) int {
 	if failed > 0 && code == 0 {
 		code = 1
 	}
+
+	// Everything up manages must still be running now: a warning in the check
+	// above (e.g. the mock stopped by a make down that ran at the same time)
+	// would otherwise end make up with exit 0.
+	var gone []string
+	for _, s := range steps {
+		if r := probe(s.check); r.Level != levelOK && r.Level != levelSkip {
+			gone = append(gone, s.name)
+			fmt.Fprintf(stdout, " ✘ %-17s not running at the end of make up: %s\n", s.name, r.Detail)
+			if fix := upFix[s.name]; fix != "" {
+				fmt.Fprintf(stdout, "   %-17s → %s\n", "", fix)
+			}
+		}
+	}
+	if len(gone) > 0 {
+		fmt.Fprintf(stdout, "\nmake up did not finish: %s not running. Run the fix above (or make up again) and make check.\n", strings.Join(gone, ", "))
+		code = 1
+	}
 	return code
+}
+
+// upFix is what to run when a system make up manages is down at the end.
+var upFix = map[string]string{
+	"Node-RED mock":   "make criteria-mock-up  (stopped again right after it started? another make down may have run at the same time)",
+	"noc_automation":  "make logs S=noc_automation",
+	"rtutil consumer": "make logs S=rtutil",
+	"Criteria UI":     "make logs S=criteria_ui",
+	"pipeline_report": "make logs S=pipeline_report",
+	"MySQL":           "docker start <mysql container> · make check",
+	"RT REST2":        "make up again · make check",
+}
+
+// lockUpDown makes make up and make down take turns: run at the same time
+// (two terminals, or a second "make down && make up" before the first ended),
+// a down can stop what an up just started, as happened to the criteria mock.
+// The lock is an flock on runDir/updown.lock, released when the process ends.
+func lockUpDown(runDir, what string) (func(), error) {
+	path := filepath.Join(runDir, "updown.lock")
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o644)
+	if err != nil {
+		return nil, fmt.Errorf("lock %s: %w", path, err)
+	}
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		holder, _ := os.ReadFile(path)
+		f.Close()
+		return nil, fmt.Errorf("another make up / make down is running (%s) — wait for it to finish, then run make %s again",
+			strings.TrimSpace(string(holder)), what)
+	}
+	f.Truncate(0)
+	fmt.Fprintf(f, "make %s · pid %d · since %s", what, os.Getpid(), time.Now().Format("15:04:05"))
+	return func() { syscall.Flock(int(f.Fd()), syscall.LOCK_UN); f.Close() }, nil
 }
 
 func runDown(args []string, stdout, stderr io.Writer) int {
@@ -198,6 +254,12 @@ func runDown(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 3
 	}
+	unlock, err := lockUpDown(o.runDir, "down")
+	if err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 2
+	}
+	defer unlock()
 	fmt.Fprintln(stdout, "rt_web_ui down (only what make up started)")
 	for _, b := range o.services(Config{}, nil) {
 		if detail := o.stopBackground(b); detail != "" {

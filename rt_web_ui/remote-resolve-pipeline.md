@@ -1,5 +1,7 @@
 # Remote Resolve Pipeline
 
+> **ပြောင်းလဲချက် (2026-11-25):** `rt_web_ui` က run ကို ကိုယ်တိုင် မဖွင့်တော့ပါ၊ `run_id` လည်း မထုတ်/မပို့တော့ပါ။ RT extension လိုပဲ ticket ကို API (`POST /api/v1/noc-automation/remote-resolve`) သို့ တိုက်ရိုက် ပို့ပြီး API က run ဖန်တီး၍ `run_id` ပြန်ပေးသည်။ ဒီ document ထဲက `rt_web_ui` ၏ `""` / `SUBMITTED_TO_API` / `payload_submitted` / `api_accepted` / `api_rejected` / `api_unreachable` နှင့် `--run-id` အကြောင်း အပိုင်းများသည် design အဟောင်း ဖြစ်သည် — လက်ရှိ ပုံစံကို [README.md](README.md) တွင် ကြည့်ပါ။
+
 ဒီ document သည် NOC queue ticket တစ်ခုကို RT Web UI (`rt_web_ui`) က စစ်ဆေး၍ RT External API (`noc_automation`) သို့ ပို့ချိန်မှစ၍ Node-RED data fetch, workflow decision, Kafka publish, retry process နှင့် RTUtil (`remote-resolved-queue-transfer`) ဘက်မှ Kafka consume, CPEMS/BCS call, RT ticket update အထိ end-to-end flow ကို ရှင်းပြထားသည်။
 
 ## အဓိက ရည်ရွယ်ချက်
@@ -56,7 +58,7 @@ Section 1 gates --fail--> NOT_ELIGIBLE (terminal, "No Process")
   v
 SUBMITTED_TO_API
   |
-  |  POST /api/v1/cpe/remote-resolve  (payload ထဲတွင် run_id ပါ)
+  |  POST /api/v1/noc-automation/remote-resolve (payload ထဲတွင် run_id ပါ)
   |-- connection error / timeout --> API_UNREACHABLE (terminal)
   v
 [noc_automation] validate  --invalid--> HTTP 400 --> API_REJECTED (terminal)
@@ -109,7 +111,7 @@ Comment POST --> COMPLETED (terminal)
 ### 0.1 Run ပုံ
 
 ```bash
-go run ./rt_web_ui send --file ticket.json --env noc_automation/.env [--run-id <uuid>] [--set key=value ...]
+go run ./rt_web_ui send --file ticket.json --env noc_automation/.env [--set key=value ...]
 cd rt_web_ui && make send                         # FILE=ticket_valid.json, ENV=.env (rt_web_ui/.env)
 make send FILE=not_eligible.json                  # gate fail sample
 make send ARGS='--set custom_fields.service_type="MNet Plus" --set custom_fields.opi_site_code='   # --set ကို အကြိမ်ကြိမ် သုံးနိုင်
@@ -126,7 +128,7 @@ make send ENV=../../NocAutomationCodeMerge/noc_automation/.env   # noc_automatio
 
 | Config key | Default | အဓိပ္ပာယ် |
 |---|---|---|
-| `RT_WEB_UI_API_URL` | `http://localhost:${DOMAIN_PORT}/api/v1/cpe/remote-resolve` | RT External API |
+| `RT_WEB_UI_API_URL` | `http://localhost:${DOMAIN_PORT}/api/v1/noc-automation/remote-resolve` | RT External API |
 | `RT_WEB_UI_API_TOKEN` | `DEFAULT_TOKEN` | Bearer token |
 | `RT_WEB_UI_API_TIMEOUT` | `30s` | API call timeout |
 | `RT_WEB_UI_NOC_QUEUE` | `Network Operation Center (NOC)` | Gate 1 |
@@ -210,7 +212,7 @@ API က request ကို validate လုပ်သည် —
 
 API သည် ထို `run_id` ၏ run ကို `RECEIVED` သို့ ရောက်စေပြီး (rt_web_ui ဖွင့်ထားသော run ကို ဆက်ယူ သို့မဟုတ် row အသစ် ဖန်တီး — Stage 0.3) HTTP 200 response ထဲတွင် တူညီသော `run_id` ကို ပြန်ပေးသည်။ `run_id` ကို caller ကိုယ်တိုင် ထုတ်သဖြင့် request မပို့မီကတည်းက **သိပြီးသား** ဖြစ်သည် (response ကို စောင့်စရာမလို)။ rt_web_ui ကို သုံးပါက row သည် API မခေါ်မီကတည်းက ရှိပြီး (gate fail / API error run များပါ) run state ကို query လုပ်ရန် API endpoint မရှိသေးပါ — ယခုအချိန်တွင် DB (`pipeline_runs` / `pipeline_run_events`) မှ `run_id` ဖြင့် တိုက်ရိုက် ကြည့်ရသည်။
 
-Code — route `POST /api/v1/cpe/remote-resolve` (`frontiir/api/cpe_lookup_routes.go`) → `RemoteResolveController.RemoteResolve` (`frontiir/api/controllers/remote_resolve_controller.go`) → `helpers.CreatePipelineRun` (`frontiir/helpers/remote_resolve_helper.go`) → rtdatacore `PipelineRunRepository.AttachSubmittedRun`၊ row မရှိလျှင် `PipelineRunRepository.Create`။ Response struct သည် `models.RemoteResolveAcceptedResponse` (`frontiir/api/models/remote_resolve.go`)။
+Code — route `POST /api/v1/noc-automation/remote-resolve` (`frontiir/api/noc_automation_routes.go`) → `RemoteResolveController.RemoteResolve` (`frontiir/api/controllers/remote_resolve_controller.go`) → `helpers.CreatePipelineRun` (`frontiir/helpers/remote_resolve_helper.go`) → rtdatacore `PipelineRunRepository.AttachSubmittedRun`၊ row မရှိလျှင် `PipelineRunRepository.Create`။ Response struct သည် `models.RemoteResolveAcceptedResponse` (`frontiir/api/models/remote_resolve.go`)။
 
 - `pipeline_runs.run_id` တွင် unique index ရှိသည်။ **`run_id` တူ request ထပ်ပို့ပါက** (run သည် `SUBMITTED_TO_API` မဟုတ်တော့) HTTP **409** "run_id already in use" ပြန်ကာ processing မစပါ။ ဆိုလိုသည်မှာ `run_id` အလိုက် duplicate guard ဖြစ်သည် (ticket အလိုက် မဟုတ်ပါ — ticket တူ `run_id` မတူ request ၂ ခုသည် run ၂ ခု ဖြစ်ဆဲ)။ Retry လုပ်လိုပါက RT Web UI က `run_id` အသစ်ဖြင့် ပို့ရမည်။
 - Row ဖန်တီးပြီးလျှင် HTTP 202 (Accepted) ကို ချက်ချင်းပြန်ပြီး ကျန်အဆင့်များကို background goroutine ဖြင့် ဆက်လုပ်သည်။

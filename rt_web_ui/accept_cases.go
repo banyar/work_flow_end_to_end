@@ -39,7 +39,7 @@ type acceptCase struct {
 	Expected string `json:"expected"`
 	Title    string `json:"title"`    // Burmese summary
 	TitleEn  string `json:"title_en"` // English summary (language toggle)
-	Known    string `json:"known"`    // status in the review table: ok, partial, missing, later
+	Known    string `json:"known"`    // status in the review table: ok, partial, missing, later, na
 	Skip     string `json:"skip"`     // why it cannot run from rt_web_ui ("" = runnable)
 	SkipEn   string `json:"skip_en,omitempty"`
 	Covered  string `json:"covered"`          // tests elsewhere that cover it
@@ -61,14 +61,16 @@ const (
 	kPartial = "partial" // 🟡
 	kMissing = "missing" // ❌
 	kLater   = "later"   // ⚪ not this release
+	kNA      = "na"      // ➖ does not apply to this design
 )
 
 // Skip reasons shared by many cases.
 const (
-	skipFault   = "API / rtutil ထဲက checkpoint တစ်ခုမှာ crash (သို့) barrier လိုတယ် — အပြင်ကနေ အချိန်ကိုက် မလုပ်နိုင်"
-	skipU       = "U profile: retry worker / relay ကို ဒီ release မှာ ပိတ်ထား"
-	skipV       = "V profile: Redis importer နဲ့ fault injection လို"
-	skipContact = "Peppermint / RT အစစ်ရဲ့ contract — staging မှာပဲ စစ်လို့ရ"
+	skipFault       = "API / rtutil ထဲက checkpoint တစ်ခုမှာ crash (သို့) barrier လိုတယ် — အပြင်ကနေ အချိန်ကိုက် မလုပ်နိုင်"
+	skipU           = "U profile: retry worker / relay ကို ဒီ release မှာ ပိတ်ထား"
+	skipV           = "V profile: Redis importer နဲ့ fault injection လို"
+	skipNoRequestID = "Design မှာ client က request ID မပို့ပါ — run_id ကို RT External API ကပဲ ထုတ်ပါတယ်။ Duplicate ကို ticket ID အလိုက် active-run lock (ADM-07) နဲ့ cooldown (ADM-09) က ကာကွယ်ပါတယ်"
+	skipContact     = "Peppermint / RT အစစ်ရဲ့ contract — staging မှာပဲ စစ်လို့ရ"
 )
 
 var caseDefs = map[string]caseDef{
@@ -80,10 +82,10 @@ var caseDefs = map[string]caseDef{
 	"ADM-05": {title: "Commit ပြီး crash → retry", known: kPartial, skip: skipFault + " (202 မပြန်ခင် API ကို kill)", covered: "noc_automation: active-ticket lock tests"},
 	"ADM-06": {title: "Commit မတိုင်ခင် fail", known: kOK, skip: "DB transaction ကို ကြားမှာ fail ဖြစ်အောင် လုပ်ဖို့ API ထဲ hook လို", covered: "CreateWithEvent_RollsBack…, CreateRunFailureIs500"},
 	"ADM-07": {title: "တစ်ပြိုင်နက် request ၂ ခု", known: kOK, run: caseADM07, minutes: 1},
-	"ADM-08": {title: "Stable request ID (တူ ID၊ content ကွဲ)", known: kMissing, run: caseADM08, minutes: 1},
+	"ADM-08": {title: "Stable request ID (တူ ID၊ content ကွဲ)", known: kNA, skip: skipNoRequestID},
 	"ADM-09": {title: "၂၄ နာရီ boundary + ALREADY_PROCESSED", known: kMissing, run: caseADM09, minutes: 2},
 	"ADM-10": {title: "Authorized reprocess", known: kMissing, skip: "Reprocess feature မရှိသေး"},
-	"ADM-11": {title: "CPE_NOT_FOUND (CRIT40)", known: kPartial, run: caseADM11, minutes: 1},
+	"ADM-11": {title: "CPE fetch: OK · not found · timeout (CRIT30/40/42)", known: kOK, run: caseADM11, minutes: 3},
 	"ADM-12": {title: "Kafka payload မမှန်", known: kPartial, skip: "Kafka topic ထဲ message တိုက်ရိုက် ထည့်ဖို့ producer လို (rt_web_ui မှာ Kafka client မရှိ)"},
 
 	// 2. MariaDB / Kafka / restart

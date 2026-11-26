@@ -214,8 +214,42 @@ func checkAPI(ctx context.Context, cfg Config, cfgErr error) checkResult {
 		r.Level, r.Detail, r.Fix = levelFail, fmt.Sprintf("%s — HTTP %d", health, status), "noc_automation log ကို စစ်ပါ"
 	default:
 		r.Level, r.Detail = levelOK, health+" — 200"
+		routeCheck(ctx, cfg.APIURL, &r)
 	}
 	return r
+}
+
+// routeCheck makes sure RT_WEB_UI_API_URL is a route the API serves: a 200
+// /healthcheck says nothing about the path, and a moved route answers 404 to
+// every ticket. It POSTs an empty JSON body without credentials, so the API
+// answers 401 / 400 before any handler writes anything; only 404 / 405 mean
+// the path is wrong.
+func routeCheck(ctx context.Context, apiURL string, r *checkResult) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, strings.NewReader("{}"))
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return // the health check already answered; leave it OK
+	}
+	resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusMethodNotAllowed {
+		r.Level = levelFail
+		r.Detail = fmt.Sprintf("POST %s — HTTP %d: the API has no such route", apiURL, resp.StatusCode)
+		r.Fix = "RT_WEB_UI_API_URL ကို http://localhost:<DOMAIN_PORT>/api/v1/noc-automation/remote-resolve လို့ ပြင်ပါ (noc_automation ef06050 က route ကို ရွှေ့ထားသည်)"
+		return
+	}
+	r.Detail += fmt.Sprintf(" · POST %s → %d (route exists)", urlPath(apiURL), resp.StatusCode)
+}
+
+// urlPath shortens an API URL to its path for check details.
+func urlPath(raw string) string {
+	if p, err := url.Parse(raw); err == nil && p.Path != "" {
+		return p.Path
+	}
+	return raw
 }
 
 func checkDocker(ctx context.Context) checkResult {

@@ -129,6 +129,7 @@ td.mono { font-family: var(--font-mono); }
 .pill.other { color: var(--muted); background: var(--bg); border: 1px solid var(--line); }
 .pill.ACCEPTED { color: var(--ok); background: var(--ok-soft); }
 .pill.NOT_ELIGIBLE { color: var(--bad); background: var(--bad-soft); }
+.pill.SKIPPED { color: var(--muted); background: var(--bg); border: 1px solid var(--line); }
 .pill.REJECTED, .pill.UNREACHABLE, .pill.ERROR { color: var(--bad); background: var(--bad-soft); }
 </style>
 </head>
@@ -382,9 +383,9 @@ async function run(e) {
     out = { error: "Server ကို ချိတ်မရပါ: " + err.message };
   }
   const outcome = out.error ? "ERROR" : out.outcome;
-  const color = outcome === "ACCEPTED" ? "g" : outcome === "NOT_ELIGIBLE" ? "y" : "r";
+  const color = outcome === "ACCEPTED" ? "g" : outcome === "NOT_ELIGIBLE" || outcome === "SKIPPED" ? "y" : "r";
   if (out.error) term.innerHTML += `<span class="r">error: ${esc(out.error)}</span>\n`;
-  if (out.outcome) term.innerHTML += `<span class="${color}">${esc(out.message)} — ticket ${esc(out.ticket_id)}, run_id ${esc(out.run_id)}, state ${esc(out.state)}</span>\n`;
+  if (out.outcome) term.innerHTML += `<span class="${color}">${esc(out.message)} — ticket ${esc(out.ticket_id)}, run_id ${esc(out.run_id || "— (API did not start a run)")}, state ${esc(out.state || "—")}</span>\n`;
   term.innerHTML += `\n<span class="dim">${esc(JSON.stringify(out, null, 2))}</span>`;
   term.scrollTop = 0;
 

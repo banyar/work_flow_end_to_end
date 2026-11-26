@@ -66,14 +66,15 @@ func (p *Payload) CustomField(key string) string {
 }
 
 // Body is the request sent to the RT External API: the payload as given,
-// with id as a string (the API's model is a string) and run_id set.
-func (p *Payload) Body(ticketID uint64, runID string) ([]byte, error) {
+// with id as a string (the API's model is a string). It carries no run_id:
+// the API makes the run_id and returns it.
+func (p *Payload) Body(ticketID uint64) ([]byte, error) {
 	out := make(map[string]any, len(p.fields)+1)
 	for k, v := range p.fields {
 		out[k] = v
 	}
 	out["id"] = strconv.FormatUint(ticketID, 10)
-	out["run_id"] = runID
+	delete(out, "run_id") // a sample file's run_id must not reach the API
 	return json.Marshal(out)
 }
 

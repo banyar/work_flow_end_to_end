@@ -69,7 +69,7 @@ func caseADM01(t *T) {
 		"before the BCS result: RT done, BCS still open (%s, is_bcs_success %v)", r.State, nullBool(r.BCSSuccess))
 
 	t.Log("— CPEMS reports the BCS job succeeded (webhook)")
-	code, _ := t.SendBCSWebhook(r, bcsResult{Status: "succeeded", Before: 11, After: 6})
+	code, _ := t.SendBCSWebhook(r, bcsResult{Status: "succeeded_new_channel", Before: 11, After: 6})
 	t.Check(code == http.StatusOK, "webhook accepted (HTTP %d)", code)
 	r = t.Run(run)
 	t.Check(r.BCSSuccess.Valid && r.BCSSuccess.Bool, "BCS confirmation recorded separately: is_bcs_success = %s · %q", nullBool(r.BCSSuccess), r.BCSMessage)
@@ -77,7 +77,7 @@ func caseADM01(t *T) {
 	t.Check(r.State == "FULLY_COMPLETED", "run moved to FULLY_COMPLETED (%s)", r.State)
 
 	t.Log("— the same webhook again (CPEMS retry)")
-	code, _ = t.SendBCSWebhook(r, bcsResult{Status: "succeeded", Before: 11, After: 6})
+	code, _ = t.SendBCSWebhook(r, bcsResult{Status: "succeeded_new_channel", Before: 11, After: 6})
 	evs = t.Events(run)
 	t.Check(code == http.StatusOK && countBy(evs, compWebhook, "bcs_update_succeeded") == 1,
 		"duplicate answered 200 and the API webhook recorded it once (HTTP %d, %d bcs_update_succeeded by %s)", code, countBy(evs, compWebhook, "bcs_update_succeeded"), compWebhook)
@@ -290,20 +290,6 @@ func caseADM07(t *T) {
 	t.Warn("the losing request gets 202 without run_id — the same answer as cooldown (see V2-02)")
 }
 
-func caseADM08(t *T) {
-	reqID := newRunID()
-	tkA := t.NewTicket("request id A")
-	a1 := t.Submit("30_transferred_ca1_broken", tkA, "run_id="+reqID)
-	t.Check(a1.RunID == reqID, "API keeps the caller's stable request ID (sent %s, got %q)", reqID[:8], a1.RunID)
-
-	tkB := t.NewTicket("request id B")
-	t0 := time.Now()
-	a2 := t.Submit("31_transferred_ca1_low_signal", tkB, "run_id="+reqID)
-	runs := t.RunsForTicket(tkB, t0)
-	t.Check(a2.RunID == "" && len(runs) == 0,
-		"same request ID with different content → explicit conflict, no new run (HTTP %d, run_id %q, %d run(s))", a2.Status, a2.RunID, len(runs))
-}
-
 // seedRun inserts a finished run for the case's own ticket, with times moved
 // back by ago, and deletes it when the case ends.
 func seedRun(t *T, tk uint64, state string, ago time.Duration) string {
@@ -322,7 +308,7 @@ func caseADM09(t *T) {
 	seedRun(t, tk, "TICKET_COMPLETED", window-2*time.Minute)
 
 	a := t.Submit("30_transferred_ca1_broken", tk)
-	t.Check(a.RunID == "", "just before 24 h: suppressed (run_id %q)", a.RunID)
+	t.Suppressed(a, "just before 24 h")
 	var processed []string
 	for _, r := range t.RunsForTicket(tk, time.Now().Add(-time.Minute)) {
 		if r.State == "ALREADY_PROCESSED" {
@@ -335,14 +321,19 @@ func caseADM09(t *T) {
 	t.Exec(`UPDATE pipeline_runs SET created_at = created_at - INTERVAL 4 MINUTE, completed_at = completed_at - INTERVAL 4 MINUTE,
 		updated_at = updated_at - INTERVAL 4 MINUTE WHERE ticket_id = ? AND current_state = 'TICKET_COMPLETED'`, tk)
 	a = t.Submit("30_transferred_ca1_broken", tk)
-	t.Check(a.RunID != "", "just after 24 h: admitted — an ALREADY_PROCESSED record must not extend the window (run_id %q)", a.RunID)
+	if !t.Check(a.RunID != "", "just after 24 h: admitted — an ALREADY_PROCESSED record must not extend the window (run_id %q)", a.RunID) {
+		blockedBy(t, tk)
+	}
 	if a.RunID != "" {
 		return
 	}
 
 	t.Log("move the ALREADY_PROCESSED records past 24 h too")
-	t.Exec(`UPDATE pipeline_runs SET created_at = NOW() - INTERVAL 25 HOUR, completed_at = NOW() - INTERVAL 25 HOUR
-		WHERE ticket_id = ? AND current_state = 'ALREADY_PROCESSED'`, tk)
+	// Go's clock, not the DB's NOW(): pipeline_runs holds the API's local
+	// time (loc=Local) and the DB session runs in UTC.
+	past := time.Now().Add(-25 * time.Hour)
+	t.Exec(`UPDATE pipeline_runs SET created_at = ?, updated_at = ?, completed_at = ?
+		WHERE ticket_id = ? AND current_state = 'ALREADY_PROCESSED'`, past, past, past, tk)
 	a = t.Submit("30_transferred_ca1_broken", tk)
 	t.Check(a.RunID != "", "with every record past 24 h the ticket is admitted (run_id %q)", a.RunID)
 
@@ -350,19 +341,118 @@ func caseADM09(t *T) {
 	seedRun(t, tk2, "NOT_ELIGIBLE", time.Hour)
 	a = t.Submit("30_transferred_ca1_broken", tk2)
 	t.Check(a.RunID != "", "a NOT_ELIGIBLE attempt 1 h ago does not start the cooldown (run_id %q)", a.RunID)
-	t.Warn("the exact cutoff instant needs a controllable clock — covered only by unit tests")
+	t.Warn("the cutoff second itself is not tested here (needs a controllable clock); the unit tests check only the 24 h look-back and the SQL text, not which states are left out")
+}
+
+// blockedBy logs which run turned the ticket away: the newest
+// ALREADY_PROCESSED record names it in "… by run <id>;".
+func blockedBy(t *T, tk uint64) {
+	var reason string
+	t.env.db.QueryRowContext(t.ctx, `SELECT COALESCE(last_state_reason, '') FROM pipeline_runs
+		WHERE ticket_id = ? AND current_state = 'ALREADY_PROCESSED' ORDER BY id DESC LIMIT 1`, tk).Scan(&reason)
+	_, after, ok := strings.Cut(reason, "by run ")
+	if !ok {
+		return
+	}
+	id := strings.TrimSuffix(strings.TrimSpace(after), ";")
+	r := t.Run(id)
+	why := "the real run"
+	if r.State == "ALREADY_PROCESSED" {
+		why = "an ALREADY_PROCESSED record restarted the 24 h window (rtdatacore FindProcessedRunSince leaves out only NOT_ELIGIBLE)"
+	}
+	t.Log("turned away by run %s… in state %s — %s", id[:min(8, len(id))], r.State, why)
 }
 
 func caseADM11(t *T) {
+	t.Log("— (a) CRIT30: the fetch works → the evaluated result and its evidence are stored")
+	mock := mockCPE(t, "CRIT30")
+	_, run, _ := start(t, "30_transferred_ca1_broken")
+	r := t.WaitRun(run, 2*time.Minute, "past the workflow", func(r runRow) bool {
+		return r.Done() || (r.State != "" && r.State != "RECEIVED" && r.State != "FETCHING_CPE_STATUS")
+	})
+	t.Check(r.State != "CPE_NOT_FOUND" && r.State != "FAILED_PERMANENT", "fetch succeeded → run moved on (%s)", r.State)
+	var nodeRedCA1, decisionQueue, ca1, olt string
+	t.env.db.QueryRowContext(t.ctx, `
+		SELECT COALESCE(JSON_UNQUOTE(JSON_EXTRACT(e.detail, '$.node_red_response.data.ca1.name')), ''),
+		       COALESCE(JSON_UNQUOTE(JSON_EXTRACT(e.detail, '$.workflow_decision.target_queue')), ''),
+		       COALESCE(p.ca1, ''), COALESCE(p.olt_hostname, '')
+		FROM pipeline_run_events e JOIN pipeline_runs p ON p.run_id = e.run_id
+		WHERE e.run_id = ? AND e.event = 'workflow_evaluated' AND e.component = ?
+		ORDER BY e.id LIMIT 1`, run, compAPI).Scan(&nodeRedCA1, &decisionQueue, &ca1, &olt)
+	t.Check(nodeRedCA1 != "" && nodeRedCA1 == mock.CA1,
+		"evidence: workflow_evaluated detail keeps the Node-RED response (ca1 %q, mock %q)", nodeRedCA1, mock.CA1)
+	t.Check(decisionQueue != "", "evaluated result: workflow_evaluated detail keeps the decision (target_queue %q)", decisionQueue)
+	t.Check(ca1 == mock.CA1 && olt == mock.OLT,
+		"evidence columns: pipeline_runs ca1 %q / olt_hostname %q = mock %q / %q", ca1, olt, mock.CA1, mock.OLT)
+
+	t.Log("— (b) CRIT40: Node-RED confirms the CPE does not exist")
 	_, run, t0 := start(t, "40_cpe_not_found")
-	r := t.WaitRun(run, 2*time.Minute, "finished", runRow.Done)
+	r = t.WaitRun(run, 2*time.Minute, "finished", runRow.Done)
 	t.Check(r.State == "CPE_NOT_FOUND", "confirmed missing CPE → %s", r.State)
 	evs := t.Events(run)
 	t.Proved(evs, compAPI, "api_received", "node_red_fetch_started")
-	t.Check(countBy(evs, compAPI, "kafka_published") == 0 && countComponent(evs, compRtutil) == 0,
-		"no evaluated result published (API kafka_published %d, rtutil events %d)", countBy(evs, compAPI, "kafka_published"), countComponent(evs, compRtutil))
+	noResult(t, evs)
 	t.Check(t.BCSStarts(r.CPEID, t0) == 0, "no BCS request")
-	t.Warn("Node-RED timeout path is exercised by OPS-01 (mock stopped)")
+
+	t.Log("— (c) CRIT42: Node-RED answers after 35 s, past NODE_RED_TIMEOUT")
+	timeout := t.nocInt("NODE_RED_TIMEOUT", 30)
+	tries := t.nocInt("NODE_RED_MAX_RETRIES", 3)
+	if timeout >= 35 {
+		t.Skip("NODE_RED_TIMEOUT=%d s in %s — the CRIT42 mock answers after 35 s, so it would not time out", timeout, t.env.nocEnv)
+	}
+	_, run, t0 = start(t, "42_node_red_timeout")
+	wait := time.Duration(tries*timeout)*time.Second + time.Duration(tries)*time.Duration(t.nocInt("NODE_RED_RETRY_DELAY_MS", 1000))*time.Millisecond + 30*time.Second
+	t.Log("%d tries × %d s timeout — waiting up to %s", tries, timeout, wait.Round(time.Second))
+	var retries int
+	if t.nocBool("RETRY_WORKER_ENABLED") {
+		r = t.WaitRun(run, wait, "retry scheduled", func(r runRow) bool { return r.Done() || r.State == "CPE_FETCH_RETRY_SCHEDULED" })
+		t.Check(r.State == "CPE_FETCH_RETRY_SCHEDULED", "timeout → retry path: %s", r.State)
+		t.env.db.QueryRowContext(t.ctx, `SELECT COUNT(*) FROM retry_jobs WHERE run_id = ?`, run).Scan(&retries)
+		t.Check(retries == 1, "%d retry job(s) queued (1 with retries on)", retries)
+	} else {
+		r = t.WaitRun(run, wait, "finished", runRow.Done)
+		t.Check(r.State == "FAILED_PERMANENT", "timeout with retries off → manual-check state %s", r.State)
+		t.env.db.QueryRowContext(t.ctx, `SELECT COUNT(*) FROM retry_jobs WHERE run_id = ?`, run).Scan(&retries)
+		t.Check(retries == 0, "%d retry job(s) queued (0 with RETRY_WORKER_ENABLED=false)", retries)
+	}
+	lower := strings.ToLower(r.Reason)
+	t.Check(strings.Contains(lower, "timeout") || strings.Contains(lower, "deadline"),
+		"reason says the Node-RED call timed out: %q", r.Reason)
+	evs = t.Events(run)
+	t.Proved(evs, compAPI, "api_received", "node_red_fetch_started")
+	noResult(t, evs)
+	t.Check(t.BCSStarts(r.CPEID, t0) == 0, "no BCS request")
+	t.Warn("a transient timeout that recovers on a later try is not exercised (the mock answers the same way every time)")
+}
+
+// noResult checks that a failed lookup published no evaluated result: no
+// workflow_evaluated or kafka_published by the API and nothing from rtutil.
+func noResult(t *T, evs []eventRow) {
+	t.Check(countBy(evs, compAPI, "workflow_evaluated") == 0 && countBy(evs, compAPI, "kafka_published") == 0 && countComponent(evs, compRtutil) == 0,
+		"no evaluated result published (API workflow_evaluated %d, kafka_published %d, rtutil events %d)",
+		countBy(evs, compAPI, "workflow_evaluated"), countBy(evs, compAPI, "kafka_published"), countComponent(evs, compRtutil))
+}
+
+// mockCPE reads what the Node-RED mock answers for cpe, to compare with what
+// the API stored.
+func mockCPE(t *T, cpe string) (out struct{ CA1, OLT string }) {
+	ctx, cancel := context.WithTimeout(t.ctx, 10*time.Second)
+	defer cancel()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "http://127.0.0.1:"+t.env.mockPort+"/api/v1/cpe/"+cpe, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Skip("Node-RED mock not answering for %s: %v — make criteria-mock-up", cpe, err)
+	}
+	defer resp.Body.Close()
+	var body struct {
+		Data struct {
+			CA1 struct{ Name string } `json:"ca1"`
+			OLT struct{ Name string } `json:"olt"`
+		} `json:"data"`
+	}
+	json.NewDecoder(resp.Body).Decode(&body)
+	out.CA1, out.OLT = body.Data.CA1.Name, body.Data.OLT.Name
+	return out
 }
 
 // ---------------------------------------------------------------------------
@@ -732,12 +822,12 @@ func caseV202(t *T) {
 	first := t.Submit("30_transferred_ca1_broken", tk)
 	t.Check(first.Status == http.StatusAccepted && first.RunID != "", "admitted: 202 with run_id")
 	active := t.Submit("30_transferred_ca1_broken", tk)
-	t.Check(active.RunID == "", "active run: no new run")
+	t.Suppressed(active, "active run")
 
 	tk2 := t.NewTicket("dispositions cooldown")
 	seedRun(t, tk2, "TICKET_COMPLETED", time.Hour)
 	cool := t.Submit("30_transferred_ca1_broken", tk2)
-	t.Check(cool.RunID == "", "cooldown: suppressed")
+	t.Suppressed(cool, "cooldown")
 
 	t.Check(active.Status != cool.Status || active.Message != cool.Message,
 		"client can tell active-run from cooldown (%d %q vs %d %q)", active.Status, active.Message, cool.Status, cool.Message)

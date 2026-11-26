@@ -119,7 +119,7 @@ func LoadConfig(envPath string) (Config, error) {
 	}
 	if cfg.APIURL == "" {
 		if port := get("DOMAIN_PORT", ""); port != "" {
-			cfg.APIURL = fmt.Sprintf("http://localhost:%s/api/v1/cpe/remote-resolve", port)
+			cfg.APIURL = fmt.Sprintf("http://localhost:%s/api/v1/noc-automation/remote-resolve", port)
 		}
 	}
 	if raw := get("RT_WEB_UI_API_TIMEOUT", ""); raw != "" {

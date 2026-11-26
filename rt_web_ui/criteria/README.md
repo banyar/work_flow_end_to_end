@@ -65,6 +65,7 @@ Workflow engine (noc_automation) ကို ဤ file များဖြင့် 
 |---|---|---|---|---|
 | [`40_cpe_not_found.json`](tickets/40_cpe_not_found.json) (`CRIT40`) | Manual check · Failed | Node-RED တွင် CPE မရှိ | `CPE_NOT_FOUND` (retry မလုပ်) | HTTP **404** · `error_code` 4003 ([`cpe_status/40_cpe_not_found.json`](cpe_status/40_cpe_not_found.json)) |
 | [`41_invalid_request.json`](tickets/41_invalid_request.json) (`CRIT41`) | Manual check · Failed | Node-RED က request ကို ငြင်း | `FAILED_PERMANENT` · `cpe_invalid_request` (retry မလုပ်) | HTTP **400** · `error_code` 4002 ([`cpe_status/41_invalid_request.json`](cpe_status/41_invalid_request.json)) |
+| [`42_node_red_timeout.json`](tickets/42_node_red_timeout.json) (`CRIT42`) | Manual check · Failed | Node-RED ဖြေတာ နှေး (timeout) | `NODE_RED_MAX_RETRIES` (3) ကြိမ် × `NODE_RED_TIMEOUT` (30 s) ပြီး `FAILED_PERMANENT` · `cpe_fetch_failed_retry_disabled` (~1.5 မိနစ်၊ `RETRY_WORKER_ENABLED=false`) | HTTP 200 ကို **35 s latency** နဲ့ (body = CRIT30)၊ API က မစောင့်နိုင်ဘဲ timeout |
 
 noc_automation သည် Node-RED မှ 404 ရလျှင် `CPE_NOT_FOUND`၊ 400 ရလျှင် `FAILED_PERMANENT` (`cpe_invalid_request`) သို့ ချက်ချင်း ရွှေ့သည် (အခြား error / timeout ဆိုလျှင် retry လုပ်ပြီး ကုန်ဆုံးမှ `FAILED_PERMANENT`)။ `cpe_id` တွင် `-` စသည် ပါလျှင် (ဥပမာ UI တွင် `CRIT-41` ရိုက်) Node-RED ကို မခေါ်ဘဲ `cpe_invalid_request` ဖြစ်သည်။ Mock ကို ပြင်ပြီးလျှင် `docker restart node-red-criteria-mock` လုပ်ပါ (hot-reload မလုပ်)။
 
@@ -74,7 +75,7 @@ Remote resolved ဖြစ်ပြီး (`is_remote_resolved = 1`) rtutil က B
 
 | File (`cpe_id`) | BCS start (rtutil) | Job status poll (noc sweeper) | Report (BCS) | `pipeline_runs` |
 |---|---|---|---|---|
-| [`11_bcs_success.json`](tickets/11_bcs_success.json) (`CRIT11`) | 202 · `job_id: ok-…` | `succeeded` (channel 11 → 6) | BCS OK | `is_bcs_success = 1` · state `FULLY_COMPLETED` |
+| [`11_bcs_success.json`](tickets/11_bcs_success.json) (`CRIT11`) | 202 · `job_id: ok-…` | `succeeded_new_channel` (channel 11 → 6) | BCS OK | `is_bcs_success = 1` · state `FULLY_COMPLETED` |
 | [`12_bcs_failed.json`](tickets/12_bcs_failed.json) (`CRIT12`) | 202 · `job_id: fail-…` | `failed` (`error.code: apply_failed`) | BCS failed | `is_bcs_success = 0` |
 | [`13_bcs_pending.json`](tickets/13_bcs_pending.json) (`CRIT13`) | 202 · `job_id: run-…` | `running` (နောက်တစ်ခါ ပြန် poll) | BCS pending | `is_bcs_success = NULL` |
 | [`14_bcs_rejected.json`](tickets/14_bcs_rejected.json) (`CRIT14`) | **401** (retry မလုပ်) | — (job မရှိ) | BCS failed | `is_bcs_success = 0` · event `bcs_update_failed` |
@@ -85,8 +86,8 @@ Mock route များ (port 3002၊ Node-RED mock နှင့် အတူတ
 Peppermint integration guide အတိုင်း (rtutil `430cbc9`၊ noc_automation `faa438f`) response သည် **flat job object** (`{"job_id": …, "status": …}`) ဖြစ်သည် — `{code, data}` မဟုတ်။
 
 - `POST /api/v2/cpes/:cpe_id/channel-selections` (body `{"band":"2.4g","callback_url":…}`) — 202 · `job_id` = prefix (`ok-` / `fail-` / `run-`) + `X-Request-ID` (run_id) ၏ ရှေ့ ၃၀ လုံး (`ref_bcs_process_id` VARCHAR(36) ထဲ ဆံ့ရန်)။ အခြား CPE id များ = `ok-`။
-- `GET /api/v2/channel-selections/:job_id` — `job_id` prefix အလိုက် `succeeded` / `failed` / `running`၊ မသိသော job = 404။
-- Mock က webhook မပို့ပါ။ Acceptance page ၏ **ADM-01** က CPEMS ကိုယ်စား webhook (`POST /api/v1/bcs/callback?token=<BCS_WEBHOOK_TOKEN>`, `status: succeeded`) ကို ပို့ပြီး `FULLY_COMPLETED` ဖြစ်မဖြစ်၊ ထပ်ပို့ရင် တစ်ခါပဲ မှတ်မမှတ် စစ်သည်။ noc `.env` ၏ `BCS_WEBHOOK_TOKEN` မထည့်ရင် API က webhook တိုင်းကို 503 ဖြင့် ငြင်းသည်။
+- `GET /api/v2/channel-selections/:job_id` — `job_id` prefix အလိုက် `succeeded_new_channel` / `failed` / `running`၊ မသိသော job = 404။
+- Mock က webhook မပို့ပါ။ Acceptance page ၏ **ADM-01** က CPEMS ကိုယ်စား webhook (`POST /api/v1/bcs/callback`, header `Authorization: Bearer <BCS_WEBHOOK_TOKEN>`, `status: succeeded_new_channel`) ကို ပို့ပြီး `FULLY_COMPLETED` ဖြစ်မဖြစ်၊ ထပ်ပို့ရင် တစ်ခါပဲ မှတ်မမှတ် စစ်သည်။ noc `.env` ၏ `BCS_WEBHOOK_TOKEN` မထည့်ရင် API က webhook တိုင်းကို 503 ဖြင့် ငြင်းသည်။
 
 Config (mock သုံးရန်):
 
@@ -99,7 +100,7 @@ BCS_RESULT_TIMEOUT_MINUTES=1      # run ၁ မိနစ်ကျော်မှ
 BCS_SWEEP_INTERVAL_MS=15000
 ```
 
-rtutil နှင့် noc_automation ကို restart လုပ်ပါ။ Poll သည် run ဖွင့်ပြီး `BCS_RESULT_TIMEOUT_MINUTES` ကျော်မှ ဖြစ်သဖြင့် `11` / `12` ၏ result သည် ~၁–၂ မိနစ်ကြာမှ ပေါ်သည်။ `before_bcs_channel` / `target_bcs_channel` ကို webhook (`POST /api/v1/bcs/callback?token=<BCS_WEBHOOK_TOKEN>`) တစ်ခုတည်းက ရေးသဖြင့် poll ဖြင့် မဖြစ်ပါ။
+rtutil နှင့် noc_automation ကို restart လုပ်ပါ။ Poll သည် run ဖွင့်ပြီး `BCS_RESULT_TIMEOUT_MINUTES` ကျော်မှ ဖြစ်သဖြင့် `11` / `12` ၏ result သည် ~၁–၂ မိနစ်ကြာမှ ပေါ်သည်။ `before_bcs_channel` / `target_bcs_channel` ကို webhook (`POST /api/v1/bcs/callback`, `Authorization: Bearer <BCS_WEBHOOK_TOKEN>`) တစ်ခုတည်းက ရေးသဖြင့် poll ဖြင့် မဖြစ်ပါ။
 
 ### ဤ folder တွင် မပါသော criteria (JSON ဖြင့် မဖြစ်စေနိုင်)
 

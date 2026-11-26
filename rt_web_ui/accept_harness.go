@@ -305,22 +305,55 @@ func (t *T) Submit(criteria string, ticketID uint64, sets ...string) admission {
 		t.Fatal("criteria %s: %v", criteria, err)
 	}
 	p.Set(fmt.Sprintf("id=%d", ticketID))
+	t.fillFromRT(p, ticketID) // before sets: a case's own --set still wins
 	for _, s := range sets {
 		if err := p.Set(s); err != nil {
 			t.Fatal("criteria %s: --set %s: %v", criteria, s, err)
 		}
 	}
-	callerRunID := newRunID()
-	for _, s := range sets {
-		if v, ok := strings.CutPrefix(s, "run_id="); ok {
-			callerRunID = v
-		}
-	}
-	body, err := p.Body(ticketID, callerRunID)
+	body, err := p.Body(ticketID)
 	if err != nil {
 		t.Fatal("criteria %s: %v", criteria, err)
 	}
 	return t.post(body, fmt.Sprintf("%s (#%d, cpe %s)", criteria, ticketID, p.CustomField("cpe_id")))
+}
+
+// rtTicketNoField is the RT custom field RT fills on create, e.g.
+// "Nov26-TKT-2851373"; the payload carries it as custom_fields.ticket_no.
+const rtTicketNoField = "Ticket No."
+
+// fillFromRT replaces the sample file's ticket data with the new RT
+// ticket's own: created / started / resolved as RT stores them
+// ("YYYY-MM-DD HH:MM:SS", UTC) and custom_fields.ticket_no from RT's
+// "Ticket No." field. The rest of the sample (cpe_id, service type, ...) is
+// kept, since those are what each case controls.
+func (t *T) fillFromRT(p *Payload, ticketID uint64) {
+	var created, started, resolved string
+	err := t.env.db.QueryRowContext(t.ctx, `
+		SELECT DATE_FORMAT(Created, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(Started, '%Y-%m-%d %H:%i:%s'),
+		       DATE_FORMAT(Resolved, '%Y-%m-%d %H:%i:%s')
+		FROM Tickets WHERE id = ?`, ticketID).Scan(&created, &started, &resolved)
+	if err != nil {
+		t.Fatal("read RT ticket #%d: %v", ticketID, err)
+	}
+	p.Set("created=" + created)
+	p.Set("started=" + started)
+	p.Set("resolved=" + resolved)
+
+	var ticketNo string
+	err = t.env.db.QueryRowContext(t.ctx, `
+		SELECT o.Content FROM ObjectCustomFieldValues o JOIN CustomFields cf ON cf.id = o.CustomField
+		WHERE o.ObjectType = 'RT::Ticket' AND o.ObjectId = ? AND o.Disabled = 0 AND cf.Name = ?
+		ORDER BY o.id DESC LIMIT 1`, ticketID, rtTicketNoField).Scan(&ticketNo)
+	switch {
+	case err == nil && ticketNo != "":
+		p.Set("custom_fields.ticket_no=" + ticketNo)
+	case err == nil || errors.Is(err, sql.ErrNoRows):
+		t.Warn("RT ticket #%d has no %q value — custom_fields.ticket_no stays %q from the sample", ticketID, rtTicketNoField, p.CustomField("ticket_no"))
+	default:
+		t.Fatal("read %q of RT ticket #%d: %v", rtTicketNoField, ticketID, err)
+	}
+	t.Log("ticket data from RT #%d: created %s · ticket_no %s", ticketID, created, p.CustomField("ticket_no"))
 }
 
 func (t *T) post(body []byte, what string) admission {
@@ -329,6 +362,9 @@ func (t *T) post(body []byte, what string) admission {
 		t.Skip("POST %s: API unreachable (%v) — start noc_automation (make up)", what, err)
 	}
 	a := admission{Status: resp.StatusCode, RunID: resp.RunID, Message: resp.Message}
+	if a.Status == http.StatusNotFound || a.Status == http.StatusMethodNotAllowed {
+		t.Fatal("POST %s → HTTP %d: the API has no route %s — set RT_WEB_UI_API_URL to …/api/v1/noc-automation/remote-resolve", what, a.Status, t.env.cfg.APIURL)
+	}
 	if a.Status == http.StatusServiceUnavailable {
 		t.Skip("API answered 503 %q — noc_automation's Kafka / workflow config is not ready (KAFKA_BROKERS in %s)", a.Message, t.env.nocEnv)
 	}
@@ -347,6 +383,14 @@ func (t *T) RequireAPI() {
 	if r := checkAPI(ctx, t.env.cfg, nil); r.Level != levelOK {
 		t.Skip("noc_automation is not running (%s) — start it with make up", r.Detail)
 	}
+}
+
+// Suppressed checks a request the API turned away without a run (cooldown
+// or active run): the same 202 as an admission, but no run_id. Any other
+// status is not a suppression, even without a run_id.
+func (t *T) Suppressed(a admission, what string) bool {
+	return t.Check(a.Status == http.StatusAccepted && a.RunID == "",
+		"%s: suppressed — 202 without run_id (HTTP %d run_id %q)", what, a.Status, a.RunID)
 }
 
 // Admitted fails the case unless the API answered 202 with a run_id.
@@ -531,15 +575,19 @@ func (t *T) Exec(query string, args ...any) int64 {
 // BCS webhook (what CPEMS posts when a channel-change job finishes)
 
 type bcsResult struct {
-	Status        string // succeeded or failed
+	Status        string // succeeded_new_channel, succeeded_same_channel, failed, skipped or unconfirmed
 	Before, After uint16 // channels
 }
 
 // SendBCSWebhook posts a CPEMS BCS job result for the run's job to the
-// API's callback, authenticated with BCS_WEBHOOK_TOKEN the way CPEMS is
-// (the token query parameter of the callback_url rtutil hands it).
+// API's callback, authenticated the way Peppermint is: "Authorization:
+// Bearer <token>", where the token equals noc's BCS_WEBHOOK_TOKEN (which may
+// itself be written "Bearer <token>", the old way).
 func (t *T) SendBCSWebhook(r runRow, res bcsResult) (int, string) {
 	token := strings.TrimSpace(t.env.noc["BCS_WEBHOOK_TOKEN"])
+	if scheme, rest, ok := strings.Cut(token, " "); ok && strings.EqualFold(scheme, "Bearer") {
+		token = strings.TrimSpace(rest)
+	}
 	if token == "" {
 		t.Skip("BCS_WEBHOOK_TOKEN is not set in %s — the API refuses every BCS webhook", t.env.nocEnv)
 	}
@@ -547,7 +595,7 @@ func (t *T) SendBCSWebhook(r runRow, res bcsResult) (int, string) {
 	if err != nil {
 		t.Fatal("API URL %q: %v", t.env.cfg.APIURL, err)
 	}
-	u.Path, u.RawQuery = "/api/v1/bcs/callback", url.Values{"token": {token}}.Encode()
+	u.Path, u.RawQuery = "/api/v1/bcs/callback", ""
 	now := time.Now().UTC().Format(time.RFC3339)
 	body, _ := json.Marshal(map[string]any{
 		"event": "channel_selection." + res.Status, "job_id": r.BCSJob, "request_id": r.RunID,
@@ -558,6 +606,7 @@ func (t *T) SendBCSWebhook(r runRow, res bcsResult) (int, string) {
 	defer cancel()
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token) // as Peppermint sends it
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal("BCS webhook: %v", err)
