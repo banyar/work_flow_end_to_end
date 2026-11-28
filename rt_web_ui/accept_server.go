@@ -62,6 +62,13 @@ func newAcceptServer(env *acceptEnv) (*acceptServer, error) {
 	if err != nil {
 		return nil, err
 	}
+	links, err := loadAcceptACs(list)
+	if err != nil {
+		return nil, err
+	}
+	for i := range list {
+		list[i].ACs = links.Cases[list[i].ID]
+	}
 	s := &acceptServer{env: env, list: list, cases: map[string]acceptCase{}}
 	for _, c := range list {
 		s.cases[c.ID] = c

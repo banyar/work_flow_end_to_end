@@ -31,22 +31,23 @@ var acceptGroups = []acceptGroup{
 }
 
 type acceptCase struct {
-	ID       string `json:"id"`
-	Group    string `json:"group"`
-	Gate     string `json:"gate"`    // "P / integration" …
-	Profile  string `json:"profile"` // P, U or V
-	Given    string `json:"given"`
-	Expected string `json:"expected"`
-	Title    string `json:"title"`    // Burmese summary
-	TitleEn  string `json:"title_en"` // English summary (language toggle)
-	Known    string `json:"known"`    // status in the review table: ok, partial, missing, later, na
-	Skip     string `json:"skip"`     // why it cannot run from rt_web_ui ("" = runnable)
-	SkipEn   string `json:"skip_en,omitempty"`
-	Gap      string `json:"gap,omitempty"` // why the review status is not ✅: what the release still lacks
-	GapEn    string `json:"gap_en,omitempty"`
-	Covered  string `json:"covered"`          // tests elsewhere that cover it
-	Minutes  int    `json:"minutes"`          // rough run time
-	Parent   string `json:"parent,omitempty"` // spec case a sub-case runs one part of
+	ID       string   `json:"id"`
+	Group    string   `json:"group"`
+	Gate     string   `json:"gate"`    // "P / integration" …
+	Profile  string   `json:"profile"` // P, U or V
+	Given    string   `json:"given"`
+	Expected string   `json:"expected"`
+	Title    string   `json:"title"`    // Burmese summary
+	TitleEn  string   `json:"title_en"` // English summary (language toggle)
+	Known    string   `json:"known"`    // status in the review table: ok, partial, missing, later, na
+	Skip     string   `json:"skip"`     // why it cannot run from rt_web_ui ("" = runnable)
+	SkipEn   string   `json:"skip_en,omitempty"`
+	Gap      string   `json:"gap,omitempty"` // why the review status is not ✅: what the release still lacks
+	GapEn    string   `json:"gap_en,omitempty"`
+	Covered  string   `json:"covered"`          // tests elsewhere that cover it
+	Minutes  int      `json:"minutes"`          // rough run time
+	Parent   string   `json:"parent,omitempty"` // spec case a sub-case runs one part of
+	ACs      []caseAC `json:"acs"`              // Story ACs it checks, with their unit tests (accept_acs.go)
 	run      func(*T)
 }
 

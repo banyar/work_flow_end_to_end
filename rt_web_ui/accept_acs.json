@@ -1,0 +1,5358 @@
+{
+ "generated": "2026-11-28 16:16",
+ "cases": {
+  "ADM-01": [
+   {
+    "ac": "AC32",
+    "story": "S2",
+    "title": "Remote Resolve default",
+    "mm": "ဘာ rule မှ မကိုက်ရင် Remote Resolve — Customer Support ဆီ ရွှေ့၊ resolved၊ Remote Resolve field တွေနဲ့ comment ရေး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRules_RemoteResolveDefault",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 327,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC38",
+    "story": "S9",
+    "title": "Event delivery",
+    "mm": "ရွေးလိုက်တဲ့ action ကို နောက်အဆင့်အတွက် publish လုပ်တယ်၊ ၃ ကြိမ်အထိ ကြိုးစားတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewProducerDSN_DeliverySettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service_test.go",
+      "line": 16,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-02": [
+   {
+    "ac": "AC13",
+    "story": "S6",
+    "title": "CA1 or uplink broken",
+    "mm": "CA1 ဒါမှမဟုတ် uplink ပြတ်နေရင် Passive-Infra ဆီ ရွှေ့ပြီး automation က နောက်ထပ် ဘာမှ မလုပ်တော့ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRules_NetworkRules/AC13 CA1 broken",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 187,
+      "state": "pass"
+     },
+     {
+      "name": "TestRules_NetworkRules/AC13 uplink broken",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 187,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC36",
+    "story": "S2",
+    "title": "Status per rule",
+    "mm": "Rule တစ်ခုစီက သူ့အတွက် သတ်မှတ်ထားတဲ့ status ကို ထားတယ် (ဒါမှမဟုတ် မပြောင်းဘူး)။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "checkRoute (TestRules_NetworkRules / CategoryRules)",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 172,
+      "state": "unknown"
+     },
+     {
+      "name": "TestRules_RemoteResolveDefault",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 326,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_NodeRedJobFailedSetsNodeRedError",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 28,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_StatusPerDecision",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 135,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_RemoteResolveSkipsClosedStatuses",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 187,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_QueueMovedBySomeone",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 218,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC49",
+    "story": "S11",
+    "title": "Daily report",
+    "mm": "Daily report က automation ရလဒ်တွေကို ပြတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewWindow",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 10,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewSummaryResponseSuccessSplit",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 117,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_SummaryTotals",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QuerySummary",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 41,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03": [
+   {
+    "ac": "AC01",
+    "story": "S1",
+    "title": "Eligible service types",
+    "mm": "NOC queue ထဲက MNet၊ MNet Plus၊ G2 Net၊ G2 Plus customer ticket ကို အလိုလို process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleServiceTypes",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 240,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/service_type not eligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC02",
+    "story": "S1",
+    "title": "OPI exclusion",
+    "mm": "OPI customer ticket ကို automation က မလုပ်ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/opi_site_code has a value",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_DisabledRuleIsSkipped",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 237,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC03",
+    "story": "S1",
+    "title": "Required identifiers",
+    "mm": "CPE ID ဒါမှမဟုတ် Local Service ID မပါရင် မလုပ်ဘူး၊ အကြောင်းရင်းကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC04",
+    "story": "S1",
+    "title": "Eligible ticket status",
+    "mm": "Status က new / in progress / reopen (config) ဖြစ်မှ လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleTicketStatuses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 226,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/status resolved",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03a": [
+   {
+    "ac": "AC03",
+    "story": "S1",
+    "title": "Required identifiers",
+    "mm": "CPE ID ဒါမှမဟုတ် Local Service ID မပါရင် မလုပ်ဘူး၊ အကြောင်းရင်းကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03b": [
+   {
+    "ac": "AC03",
+    "story": "S1",
+    "title": "Required identifiers",
+    "mm": "CPE ID ဒါမှမဟုတ် Local Service ID မပါရင် မလုပ်ဘူး၊ အကြောင်းရင်းကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03c": [
+   {
+    "ac": "AC02",
+    "story": "S1",
+    "title": "OPI exclusion",
+    "mm": "OPI customer ticket ကို automation က မလုပ်ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/opi_site_code has a value",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_DisabledRuleIsSkipped",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 237,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03d": [
+   {
+    "ac": "AC01",
+    "story": "S1",
+    "title": "Eligible service types",
+    "mm": "NOC queue ထဲက MNet၊ MNet Plus၊ G2 Net၊ G2 Plus customer ticket ကို အလိုလို process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleServiceTypes",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 240,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/service_type not eligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-03e": [
+   {
+    "ac": "AC04",
+    "story": "S1",
+    "title": "Eligible ticket status",
+    "mm": "Status က new / in progress / reopen (config) ဖြစ်မှ လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleTicketStatuses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 226,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/status resolved",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-04": [
+   {
+    "ac": "AC03",
+    "story": "S1",
+    "title": "Required identifiers",
+    "mm": "CPE ID ဒါမှမဟုတ် Local Service ID မပါရင် မလုပ်ဘူး၊ အကြောင်းရင်းကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-05": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-06": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC45",
+    "story": "S9",
+    "title": "Failure record fields",
+    "mm": "Fail ဖြစ်တဲ့ step ကို ticket၊ CPE၊ queue၊ message၊ အချိန် field တွေနဲ့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 139,
+      "state": "pass"
+     },
+     {
+      "name": "TestCreateRun_CutsReportColumnsToFit",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_create_run_test.go",
+      "line": 50,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_TransitionStateIf",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 34,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-07": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-08": [],
+  "ADM-09": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC06",
+    "story": "S3",
+    "title": "Duplicate after 24 hours",
+    "mm": "၂၄ နာရီ ကျော်ပြီးမှ ပြန်ရောက်ရင် ပြန် process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_ProcessedAgainAfter24Hours",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 376,
+      "state": "pass"
+     },
+     {
+      "name": "TestCheckTicket_EligibleTicketPasses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 258,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince_NotFound",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 452,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC07",
+    "story": "S3",
+    "title": "Skip is recorded",
+    "mm": "Duplicate လို့ ကျော်ရင် အကြောင်းရင်းနဲ့ cache အချက်အလက်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestCheckTicket_AlreadyProcessedInsertFailureStillSkips",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 312,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_AlreadyProcessed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 212,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-10": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC06",
+    "story": "S3",
+    "title": "Duplicate after 24 hours",
+    "mm": "၂၄ နာရီ ကျော်ပြီးမှ ပြန်ရောက်ရင် ပြန် process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_ProcessedAgainAfter24Hours",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 376,
+      "state": "pass"
+     },
+     {
+      "name": "TestCheckTicket_EligibleTicketPasses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 258,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince_NotFound",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 452,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-11": [
+   {
+    "ac": "AC08",
+    "story": "S2",
+    "title": "CPE data retrieved",
+    "mm": "CPE ID မှန်ရင် CPE နဲ့ network data ကို အလိုလို ယူတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_DecodesEverySection",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 79,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 147,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_RetriesUntilAnAnswer",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 159,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 175,
+      "state": "pass"
+     },
+     {
+      "name": "TestNormalizeNodeRedResponse",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+      "line": 13,
+      "state": "pass"
+     },
+     {
+      "name": "TestNormalizeNodeRedResponse_EmptyInput",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestNormalizeNodeRedResponse_SingleTag",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+      "line": 94,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedLimit",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 82,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedSleepFreesSlot",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 115,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 157,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC09",
+    "story": "S4",
+    "title": "Timeout and attempts",
+    "mm": "CPE data request fail ဖြစ်ရင် ဒါမှမဟုတ် ၃၀ စက္ကန့် ကျော်ရင် စုစုပေါင်း ၃ ကြိမ် ကြိုးစားတယ် (exponential backoff မရှိ)။ Fail ဖြစ်တဲ့ request ကို နောက်မှ ပြန်လုပ်ဖို့ မသိမ်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewNodeRedClient_DeployedAttemptSettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 19,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_TimeoutIsRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 44,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_SameWaitBetweenAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 77,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 171,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 143,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedSleepFreesSlot",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 115,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewNodeRedClient_InvalidConfig",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/node_red_client_test.go",
+      "line": 29,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 157,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC10",
+    "story": "S4",
+    "title": "Manual Check",
+    "mm": "၃ ကြိမ်လုံး fail ရင် Manual Check လို့ မှတ်ပြီး log လုပ်တယ်။ RT ထဲမှာ (status၊ queue၊ comment) ဘာမှ မပြောင်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed/manual_check",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC46",
+    "story": "S4",
+    "title": "API failure logged",
+    "mm": "API fail၊ timeout ဒါမှမဟုတ် response မမှန်ရင် API name၊ အကြောင်းရင်း၊ detail၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_FailureSaysWhatFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 22,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 174,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ADM-12": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-01": [
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-02": [
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC45",
+    "story": "S9",
+    "title": "Failure record fields",
+    "mm": "Fail ဖြစ်တဲ့ step ကို ticket၊ CPE၊ queue၊ message၊ အချိန် field တွေနဲ့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 139,
+      "state": "pass"
+     },
+     {
+      "name": "TestCreateRun_CutsReportColumnsToFit",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_create_run_test.go",
+      "line": 50,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_TransitionStateIf",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 34,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-03": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC38",
+    "story": "S9",
+    "title": "Event delivery",
+    "mm": "ရွေးလိုက်တဲ့ action ကို နောက်အဆင့်အတွက် publish လုပ်တယ်၊ ၃ ကြိမ်အထိ ကြိုးစားတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewProducerDSN_DeliverySettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service_test.go",
+      "line": 16,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-04": [
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-05": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-06": [
+   {
+    "ac": "AC38",
+    "story": "S9",
+    "title": "Event delivery",
+    "mm": "ရွေးလိုက်တဲ့ action ကို နောက်အဆင့်အတွက် publish လုပ်တယ်၊ ၃ ကြိမ်အထိ ကြိုးစားတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewProducerDSN_DeliverySettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service_test.go",
+      "line": 16,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC47",
+    "story": "S9",
+    "title": "Kafka failure logged",
+    "mm": "Kafka ပို့မရရင် topic၊ အကြောင်းရင်း၊ detail၊ retry အကြိမ်ရေ၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProduce_FailureSaysTopicAndAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-07": [
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-08": [
+   {
+    "ac": "AC38",
+    "story": "S9",
+    "title": "Event delivery",
+    "mm": "ရွေးလိုက်တဲ့ action ကို နောက်အဆင့်အတွက် publish လုပ်တယ်၊ ၃ ကြိမ်အထိ ကြိုးစားတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewProducerDSN_DeliverySettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service_test.go",
+      "line": 16,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "PUB-09": [
+   {
+    "ac": "AC38",
+    "story": "S9",
+    "title": "Event delivery",
+    "mm": "ရွေးလိုက်တဲ့ action ကို နောက်အဆင့်အတွက် publish လုပ်တယ်၊ ၃ ကြိမ်အထိ ကြိုးစားတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewProducerDSN_DeliverySettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service_test.go",
+      "line": 16,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC47",
+    "story": "S9",
+    "title": "Kafka failure logged",
+    "mm": "Kafka ပို့မရရင် topic၊ အကြောင်းရင်း၊ detail၊ retry အကြိမ်ရေ၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProduce_FailureSaysTopicAndAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "RCV-01": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "RCV-02": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "RCV-03": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "RCV-04": [],
+  "RCV-05": [
+   {
+    "ac": "AC10",
+    "story": "S4",
+    "title": "Manual Check",
+    "mm": "၃ ကြိမ်လုံး fail ရင် Manual Check လို့ မှတ်ပြီး log လုပ်တယ်။ RT ထဲမှာ (status၊ queue၊ comment) ဘာမှ မပြောင်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed/manual_check",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC50",
+    "story": "S11",
+    "title": "Manual Check visible",
+    "mm": "Manual Check လို့ မှတ်ထားတဲ့ ticket တွေကို NOC user တွေ report မှာ ရှာနိုင်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewSummaryResponseManualCheck",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 98,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseConditions",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 140,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "RCV-06": [],
+  "RCV-07": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC45",
+    "story": "S9",
+    "title": "Failure record fields",
+    "mm": "Fail ဖြစ်တဲ့ step ကို ticket၊ CPE၊ queue၊ message၊ အချိန် field တွေနဲ့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 139,
+      "state": "pass"
+     },
+     {
+      "name": "TestCreateRun_CutsReportColumnsToFit",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_create_run_test.go",
+      "line": 50,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_TransitionStateIf",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 34,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-01": [
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-02": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-03": [
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-04": [
+   {
+    "ac": "AC36",
+    "story": "S2",
+    "title": "Status per rule",
+    "mm": "Rule တစ်ခုစီက သူ့အတွက် သတ်မှတ်ထားတဲ့ status ကို ထားတယ် (ဒါမှမဟုတ် မပြောင်းဘူး)။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "checkRoute (TestRules_NetworkRules / CategoryRules)",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 172,
+      "state": "unknown"
+     },
+     {
+      "name": "TestRules_RemoteResolveDefault",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 326,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_NodeRedJobFailedSetsNodeRedError",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 28,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_StatusPerDecision",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 135,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_RemoteResolveSkipsClosedStatuses",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 187,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_QueueMovedBySomeone",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 218,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-05": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-06": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-07": [
+   {
+    "ac": "AC36",
+    "story": "S2",
+    "title": "Status per rule",
+    "mm": "Rule တစ်ခုစီက သူ့အတွက် သတ်မှတ်ထားတဲ့ status ကို ထားတယ် (ဒါမှမဟုတ် မပြောင်းဘူး)။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "checkRoute (TestRules_NetworkRules / CategoryRules)",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 172,
+      "state": "unknown"
+     },
+     {
+      "name": "TestRules_RemoteResolveDefault",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+      "line": 326,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_NodeRedJobFailedSetsNodeRedError",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 28,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_StatusPerDecision",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 135,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_RemoteResolveSkipsClosedStatuses",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 187,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_QueueMovedBySomeone",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 218,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-08": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-09": [
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC46",
+    "story": "S4",
+    "title": "API failure logged",
+    "mm": "API fail၊ timeout ဒါမှမဟုတ် response မမှန်ရင် API name၊ အကြောင်းရင်း၊ detail၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_FailureSaysWhatFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 22,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 174,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-10": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "ACT-11": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-01": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-02": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-03": [
+   {
+    "ac": "AC37",
+    "story": "S2",
+    "title": "RT ticket updated",
+    "mm": "ရွေးလိုက်တဲ့ action အတိုင်း RT မှာ queue၊ field နဲ့ comment ကို update လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckQueue",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 5,
+      "state": "pass"
+     },
+     {
+      "name": "TestCommentMarker",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+      "line": 36,
+      "state": "pass"
+     },
+     {
+      "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+      "line": 11,
+      "state": "pass"
+     },
+     {
+      "name": "TestConfig_MapsEveryNocCustomField",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 76,
+      "state": "pass"
+     },
+     {
+      "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+      "line": 97,
+      "state": "pass"
+     },
+     {
+      "name": "TestProcessTicket_AddsDecisionComment",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 321,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC41",
+    "story": "S10",
+    "title": "BCS triggered",
+    "mm": "ဆုံးဖြတ်ချက်က Remote Resolve ဆိုရင် CPE အတွက် 2.4 GHz channel optimization (BCS) ကို စတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProcessTicket_BCSOnlyForRemoteResolve",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+      "line": 405,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_Accepted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 47,
+      "state": "pass"
+     },
+     {
+      "name": "TestStartBestChannelSelection_RetriesExhausted",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+      "line": 120,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC50",
+    "story": "S11",
+    "title": "Manual Check visible",
+    "mm": "Manual Check လို့ မှတ်ထားတဲ့ ticket တွေကို NOC user တွေ report မှာ ရှာနိုင်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewSummaryResponseManualCheck",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 98,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseConditions",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 140,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-04": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-05": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC06",
+    "story": "S3",
+    "title": "Duplicate after 24 hours",
+    "mm": "၂၄ နာရီ ကျော်ပြီးမှ ပြန်ရောက်ရင် ပြန် process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_ProcessedAgainAfter24Hours",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 376,
+      "state": "pass"
+     },
+     {
+      "name": "TestCheckTicket_EligibleTicketPasses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 258,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince_NotFound",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 452,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-06": [
+   {
+    "ac": "AC10",
+    "story": "S4",
+    "title": "Manual Check",
+    "mm": "၃ ကြိမ်လုံး fail ရင် Manual Check လို့ မှတ်ပြီး log လုပ်တယ်။ RT ထဲမှာ (status၊ queue၊ comment) ဘာမှ မပြောင်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed/manual_check",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC50",
+    "story": "S11",
+    "title": "Manual Check visible",
+    "mm": "Manual Check လို့ မှတ်ထားတဲ့ ticket တွေကို NOC user တွေ report မှာ ရှာနိုင်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewSummaryResponseManualCheck",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 98,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseConditions",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 140,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "STALE-07": [],
+  "OUT-01": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC49",
+    "story": "S11",
+    "title": "Daily report",
+    "mm": "Daily report က automation ရလဒ်တွေကို ပြတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewWindow",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 10,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewSummaryResponseSuccessSplit",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 117,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_SummaryTotals",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QuerySummary",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 41,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-02": [
+   {
+    "ac": "AC43",
+    "story": "S10",
+    "title": "Overall result",
+    "mm": "ပြီးဆုံးတဲ့ state ၂ မျိုး — RT update ပြီးရင် TICKET_COMPLETED၊ RT update ပြီး BCS ပါ အောင်ရင် FULLY_COMPLETED။ BCS fail/skip ဖြစ်ရင် TICKET_COMPLETED မှာပဲ ရပ်ပြီး RT ကို ထပ်မ update ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 120,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_RecordBCSResult",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 208,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-03": [],
+  "OUT-04": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-05": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-06": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-07": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-08": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OUT-09": [],
+  "OPS-01": [
+   {
+    "ac": "AC09",
+    "story": "S4",
+    "title": "Timeout and attempts",
+    "mm": "CPE data request fail ဖြစ်ရင် ဒါမှမဟုတ် ၃၀ စက္ကန့် ကျော်ရင် စုစုပေါင်း ၃ ကြိမ် ကြိုးစားတယ် (exponential backoff မရှိ)။ Fail ဖြစ်တဲ့ request ကို နောက်မှ ပြန်လုပ်ဖို့ မသိမ်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewNodeRedClient_DeployedAttemptSettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 19,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_TimeoutIsRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 44,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_SameWaitBetweenAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 77,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 171,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 143,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedSleepFreesSlot",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 115,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewNodeRedClient_InvalidConfig",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/node_red_client_test.go",
+      "line": 29,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 157,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC10",
+    "story": "S4",
+    "title": "Manual Check",
+    "mm": "၃ ကြိမ်လုံး fail ရင် Manual Check လို့ မှတ်ပြီး log လုပ်တယ်။ RT ထဲမှာ (status၊ queue၊ comment) ဘာမှ မပြောင်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed/manual_check",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 141,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC46",
+    "story": "S4",
+    "title": "API failure logged",
+    "mm": "API fail၊ timeout ဒါမှမဟုတ် response မမှန်ရင် API name၊ အကြောင်းရင်း၊ detail၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_FailureSaysWhatFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 22,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 174,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC47",
+    "story": "S9",
+    "title": "Kafka failure logged",
+    "mm": "Kafka ပို့မရရင် topic၊ အကြောင်းရင်း၊ detail၊ retry အကြိမ်ရေ၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestProduce_FailureSaysTopicAndAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-02": [
+   {
+    "ac": "AC09",
+    "story": "S4",
+    "title": "Timeout and attempts",
+    "mm": "CPE data request fail ဖြစ်ရင် ဒါမှမဟုတ် ၃၀ စက္ကန့် ကျော်ရင် စုစုပေါင်း ၃ ကြိမ် ကြိုးစားတယ် (exponential backoff မရှိ)။ Fail ဖြစ်တဲ့ request ကို နောက်မှ ပြန်လုပ်ဖို့ မသိမ်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewNodeRedClient_DeployedAttemptSettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 19,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_TimeoutIsRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 44,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_SameWaitBetweenAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 77,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 171,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 143,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedSleepFreesSlot",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 115,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewNodeRedClient_InvalidConfig",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/node_red_client_test.go",
+      "line": 29,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 157,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-03": [
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-04": [
+   {
+    "ac": "AC09",
+    "story": "S4",
+    "title": "Timeout and attempts",
+    "mm": "CPE data request fail ဖြစ်ရင် ဒါမှမဟုတ် ၃၀ စက္ကန့် ကျော်ရင် စုစုပေါင်း ၃ ကြိမ် ကြိုးစားတယ် (exponential backoff မရှိ)။ Fail ဖြစ်တဲ့ request ကို နောက်မှ ပြန်လုပ်ဖို့ မသိမ်းဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewNodeRedClient_DeployedAttemptSettings",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 19,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_TimeoutIsRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 44,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_SameWaitBetweenAttempts",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_retry_test.go",
+      "line": 77,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 171,
+      "state": "pass"
+     },
+     {
+      "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+      "line": 143,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FetchFailureClosesRunWithoutSavingIt",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 46,
+      "state": "pass"
+     },
+     {
+      "name": "TestNodeRedSleepFreesSlot",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+      "line": 115,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewNodeRedClient_InvalidConfig",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/node_red_client_test.go",
+      "line": 29,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 157,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC39",
+    "story": "S9",
+    "title": "Publish failure persisted",
+    "mm": "၃ ကြိမ်လုံး publish fail ရင် မူရင်း request ကို သိမ်းပြီး failure ကို log လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+      "line": 172,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+      "line": 14,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-05": [],
+  "OPS-06": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-07": [],
+  "OPS-08": [
+   {
+    "ac": "AC40",
+    "story": "S9",
+    "title": "Interim handling of failed publish",
+    "mm": "Retry worker မရှိသေးခင် publish ၃ ကြိမ် fail တဲ့ ticket ကို Manual Check လို့ မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRetryDisabled_PublishFailureKeepsPayloadAndClosesRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 84,
+      "state": "pass"
+     },
+     {
+      "name": "TestPublishTimeoutSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 105,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_RunItems",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 122,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-09": [],
+  "OPS-10": [],
+  "OPS-11": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-12": [
+   {
+    "ac": "AC42",
+    "story": "S10",
+    "title": "BCS outcome recorded",
+    "mm": "BCS ရလဒ်ကို Success (new channel)၊ Success (same channel)၊ Failed၊ Skipped အဖြစ် မှတ်တယ်။ TIMEOUT_BEFORE_SEND ကို Failed လို့ မှတ်တယ်၊ Timeout ဆိုတဲ့ ရလဒ် သီးသန့် မရှိဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestParseBCSWebhook_SuccessMessage",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 57,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_Failed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 88,
+      "state": "pass"
+     },
+     {
+      "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSJobResult_TimeoutBeforeSendIsFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+      "line": 236,
+      "state": "pass"
+     },
+     {
+      "name": "TestBCSResultSweeper_SweepOnce",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+      "line": 314,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "OPS-13": [],
+  "OPS-14": [],
+  "OPS-15": [],
+  "V2-01": [
+   {
+    "ac": "AC01",
+    "story": "S1",
+    "title": "Eligible service types",
+    "mm": "NOC queue ထဲက MNet၊ MNet Plus၊ G2 Net၊ G2 Plus customer ticket ကို အလိုလို process လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleServiceTypes",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 240,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/service_type not eligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC02",
+    "story": "S1",
+    "title": "OPI exclusion",
+    "mm": "OPI customer ticket ကို automation က မလုပ်ဘူး။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/opi_site_code has a value",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_DisabledRuleIsSkipped",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 237,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC03",
+    "story": "S1",
+    "title": "Required identifiers",
+    "mm": "CPE ID ဒါမှမဟုတ် Local Service ID မပါရင် မလုပ်ဘူး၊ အကြောင်းရင်းကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC04",
+    "story": "S1",
+    "title": "Eligible ticket status",
+    "mm": "Status က new / in progress / reopen (config) ဖြစ်မှ လုပ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestEligibility_EligibleTicketStatuses",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 226,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible/status resolved",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 138,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-02": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC07",
+    "story": "S3",
+    "title": "Skip is recorded",
+    "mm": "Duplicate လို့ ကျော်ရင် အကြောင်းရင်းနဲ့ cache အချက်အလက်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestCheckTicket_AlreadyProcessedInsertFailureStillSkips",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 312,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_AlreadyProcessed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 212,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-03": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   },
+   {
+    "ac": "AC46",
+    "story": "S4",
+    "title": "API failure logged",
+    "mm": "API fail၊ timeout ဒါမှမဟုတ် response မမှန်ရင် API name၊ အကြောင်းရင်း၊ detail၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_FailureSaysWhatFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 22,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 174,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-04": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-05": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-06": [
+   {
+    "ac": "AC44",
+    "story": "S1",
+    "title": "Every ticket has a record",
+    "mm": "NOC ကို ဝင်လာတဲ့ ticket တိုင်းမှာ မှတ်တမ်း ရှိရမယ် — စစ်ခဲ့တဲ့ rule၊ ကိုက်တဲ့ criteria၊ ဆုံးဖြတ်ချက်၊ action၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+      "line": 67,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 124,
+      "state": "pass"
+     },
+     {
+      "name": "TestWorkflowEngine_DecisionName",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+      "line": 96,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_EligibleRunContinuesToFetch",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 158,
+      "state": "pass"
+     },
+     {
+      "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 177,
+      "state": "pass"
+     },
+     {
+      "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+      "line": 93,
+      "state": "pass"
+     },
+     {
+      "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 210,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailPipelineRunAfterRTUpdate",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 223,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_CreateWithEvent",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 406,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-07": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-08": [
+   {
+    "ac": "AC49",
+    "story": "S11",
+    "title": "Daily report",
+    "mm": "Daily report က automation ရလဒ်တွေကို ပြတယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestNewWindow",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 10,
+      "state": "pass"
+     },
+     {
+      "name": "TestNewSummaryResponseSuccessSplit",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 117,
+      "state": "pass"
+     },
+     {
+      "name": "TestCaseTotal",
+      "repo": "pipeline_report",
+      "file": "pipeline_report/report_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestNocAutomationReport_SummaryTotals",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+      "line": 69,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineReportRepository_QuerySummary",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+      "line": 41,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-09": [
+   {
+    "ac": "AC46",
+    "story": "S4",
+    "title": "API failure logged",
+    "mm": "API fail၊ timeout ဒါမှမဟုတ် response မမှန်ရင် API name၊ အကြောင်းရင်း၊ detail၊ ရလဒ်ကို မှတ်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestFetchCPEStatus_FailureSaysWhatFailed",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/api_failure_test.go",
+      "line": 22,
+      "state": "pass"
+     },
+     {
+      "name": "TestRetryDisabled_FailedRunRecordHasRequiredFields",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/retry_disabled_test.go",
+      "line": 142,
+      "state": "pass"
+     },
+     {
+      "name": "TestFailedAPIRequestSync_Records",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+      "line": 155,
+      "state": "pass"
+     },
+     {
+      "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+      "repo": "rtutil",
+      "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+      "line": 174,
+      "state": "pass"
+     }
+    ]
+   }
+  ],
+  "V2-10": [],
+  "V2-11": [
+   {
+    "ac": "AC05",
+    "story": "S3",
+    "title": "Duplicate within 24 hours",
+    "mm": "Process လုပ်ပြီး ၂၄ နာရီအတွင်း NOC ကို ပြန်ရောက်ရင် ကျော်တယ်။",
+    "status": "covered",
+    "tests": [
+     {
+      "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+      "line": 271,
+      "state": "pass"
+     },
+     {
+      "name": "TestPipelineRunRepository_FindProcessedRunSince",
+      "repo": "rtdatacore",
+      "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+      "line": 434,
+      "state": "pass"
+     },
+     {
+      "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+      "repo": "noc_automation",
+      "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+      "line": 74,
+      "state": "pass"
+     }
+    ]
+   }
+  ]
+ }
+}

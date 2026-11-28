@@ -72,6 +72,13 @@ header a { color: var(--accent); font-size: 13px; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .jobline { font-size: 12.5px; color: var(--muted); }
+/* Review status filter (✅ / 🟡 / ❌ / ⚪ / ➖) */
+.kfilter { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.kfilter button { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 99px; padding: 3px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+.kfilter button .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 4px; }
+.kfilter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.kfilter button[aria-pressed="true"] .n { color: inherit; opacity: 0.8; }
+.kfilter button:disabled { opacity: 0.4; cursor: default; }
 
 .cases { width: 100%; border-collapse: collapse; }
 .cases th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -98,6 +105,20 @@ header a { color: var(--accent); font-size: 13px; }
 .spec h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 4px; font-weight: 600; }
 .spec p { margin: 0; font-size: 13px; }
 .spec .full { grid-column: 1 / -1; }
+/* Story ACs a case checks (accept_acs.json) */
+.ac-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.ac-chip { font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.ac-chip.c-covered { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.ac-chip.c-partial { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.ac-chip.c-none, .ac-chip.c-not_built { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.acs { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.acs > li { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; }
+.acs summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.acs .st { font-size: 11.5px; color: var(--muted); }
+.acs .tests { margin: 6px 0 2px; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 12px; }
+.acs .tests .f { font-family: var(--font-mono); font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.acs .t-pass { color: var(--ok); } .acs .t-fail { color: var(--bad); } .acs .t-unknown { color: var(--muted); }
+.acs-none { color: var(--muted); font-size: 13px; margin: 0; }
 @media (max-width: 760px) { .spec { grid-template-columns: minmax(0, 1fr); } .cases tr.detail td { padding-left: 16px; } }
 .timeline { background: var(--term-bg); color: var(--term-fg); font-family: var(--font-mono); font-size: 12px; border-radius: 6px; padding: 10px 12px; overflow-x: auto; max-height: 420px; overflow-y: auto; }
 .timeline div { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -167,6 +188,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
       <button class="btn" id="cancel" hidden>Cancel</button>
       <span class="jobline" id="jobline"></span>
       <span class="grow"></span>
+      <span class="kfilter" id="kfilter" role="group" aria-label="Review status"></span>
       <label><input type="checkbox" id="only-run"> Runnable only</label>
     </div>
     <div style="overflow-x:auto">
@@ -196,21 +218,29 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
   const I18N = {
     my: {
       note: 'Run လုပ်တိုင်း RT ticket အသစ် ဖန်တီးပြီး real stack (API · Kafka · rtutil · mock) ကို သုံးပါတယ်။ Fault case တွေက rtutil ကို kill/restart လုပ်ပြီး sweeper case တွေက synthetic row ထည့်ပါတယ် (ပြီးရင် ပြန်ဖျက်)။ Local / test environment မှာပဲ run ပါ။',
-      thTitle: 'အကြောင်း', known: { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်', na: '➖ မသက်ဆိုင်' },
+      all: 'အားလုံး', thTitle: 'အကြောင်း', known: { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်', na: '➖ မသက်ဆိုင်' },
       whySkip: 'ဘာကြောင့် ဒီကနေ မ run လဲ', covered: 'တခြားနေရာက test', gap: 'ဘာ ကျန်သေးလဲ (✅ မဖြစ်ရတဲ့ အကြောင်း)',
       reqBtn: 'လိုအပ်ချက်', recheck: 'ပြန်စစ်', reqTitle: t => `${t} အတွက် လိုအပ်ချက်များ`, checking: 'စစ်နေပါတယ်…',
       ready: '✔ လိုအပ်တာ အကုန် ready ဖြစ်နေပါပြီ', notReady: '✘ Ready မဖြစ်သေးတာ ရှိပါတယ် — အောက်က → အတိုင်း ပြင်ပြီး ပြန်စစ်ပါ',
       cols: ['#', 'လိုအပ်ချက်', 'ဘာအတွက်လဲ', 'အခြေအနေ'], cantCheck: 'စစ်လို့ မရပါ',
       flow: 'ဘယ်လို အလုပ်လုပ်လဲ — system တစ်ခုချင်းစီ ဘာလုပ်လဲ', comp: 'event ရေးသူ',
+      acs: 'စစ်တဲ့ Story AC နဲ့ unit test', acsLink: 'AC coverage page',
+      acsNone: 'ဒီ case ကို Story AC တစ်ခုမှ မဖော်ပြပါ — run ရဲ့ စနစ်ပိုင်း (crash၊ restart၊ race၊ capacity၊ V2 Redis) ကိစ္စ ဖြစ်လို့ ဒီ case ကိုယ်တိုင်ကပဲ စစ်ပါတယ်။',
+      cov: { covered: '✅ Unit test ရှိ', partial: '🟡 တစ်စိတ်', none: '❌ Test မရှိ', not_built: '⛔ Code မရှိ' },
+      tests: n => `unit test ${n} ခု`, run: { pass: '✔ pass', fail: '✘ fail', unknown: '· run မတွေ့' },
     },
     en: {
       note: 'Every run creates a new RT ticket and uses the real stack (API · Kafka · rtutil · mock). Fault cases kill and restart rtutil; sweeper cases insert synthetic rows (deleted afterwards). Run only in a local / test environment.',
-      thTitle: 'Case', known: { ok: '✅ Covered', partial: '🟡 Partial', missing: '❌ Missing', later: '⚪ Not this release', na: '➖ Not applicable' },
+      all: 'All', thTitle: 'Case', known: { ok: '✅ Covered', partial: '🟡 Partial', missing: '❌ Missing', later: '⚪ Not this release', na: '➖ Not applicable' },
       whySkip: 'Why it does not run from here', covered: 'Tests elsewhere', gap: 'What is still missing (why it is not ✅)',
       reqBtn: 'Requirements', recheck: 'Recheck', reqTitle: t => `Requirements for ${t}`, checking: 'Checking…',
       ready: '✔ Everything the case needs is ready', notReady: '✘ Something is not ready — fix it as shown by → and recheck',
       cols: ['#', 'Requirement', 'What it is for', 'Status'], cantCheck: 'Could not check',
       flow: 'How it runs — what each system does', comp: 'events written by',
+      acs: 'Story ACs checked and their unit tests', acsLink: 'AC coverage page',
+      acsNone: 'No Story AC describes this case: it is about the run machinery (crash, restart, races, capacity, v2 Redis), so only this case checks it.',
+      cov: { covered: '✅ Unit-tested', partial: '🟡 Partial', none: '❌ No test', not_built: '⛔ Not built' },
+      tests: n => `${n} unit test${n === 1 ? '' : 's'}`, run: { pass: '✔ pass', fail: '✘ fail', unknown: '· not in run' },
     },
   };
   let lang = (() => { try { return localStorage.getItem('accept.lang') === 'en' ? 'en' : 'my'; } catch { return 'my'; } })();
@@ -221,7 +251,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
     set(k, v) { try { localStorage.setItem('accept.' + k, JSON.stringify(v)); } catch {} },
   };
 
-  const state = { groups: [], cases: [], tab: store.get('tab', 'ADM'), onlyRun: store.get('onlyRun', false),
+  const state = { groups: [], cases: [], tab: store.get('tab', 'ADM'), onlyRun: store.get('onlyRun', false), known: store.get('known', ''),
     selected: new Set(), open: new Set(), job: null, timer: null };
 
   const results = () => {
@@ -261,9 +291,36 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
         : '');
   }
 
+  // Story ACs a case checks, coloured by their unit-test coverage.
+  const acChips = c => c.acs?.length
+    ? `<div class="ac-chips">${c.acs.map(a => `<span class="ac-chip c-${esc(a.status)}" title="${esc(lang === 'my' && a.mm ? a.mm : a.title)} · ${esc(T().cov[a.status] || a.status)}">${esc(a.ac)}</span>`).join('')}</div>`
+    : '';
+  function acList(c) {
+    if (!c.acs?.length) return `<p class="acs-none">${esc(T().acsNone)}</p>`;
+    return `<ul class="acs">${c.acs.map(a => {
+      const pass = a.tests.filter(t => t.state === 'pass').length;
+      const tests = a.tests.map(t => `<li><span class="t-${esc(t.state)}">${esc(T().run[t.state] || t.state)}</span> <b>${esc(t.name)}</b>
+          <div class="f">${esc(t.repo)} · ${esc(t.file)}${t.line ? ':' + t.line : ''}</div></li>`).join('');
+      return `<li><details><summary><span class="ac-chip c-${esc(a.status)}">${esc(a.ac)}</span>
+          <span>${esc(lang === 'my' && a.mm ? a.mm : a.title)}</span>
+          <span class="st">${esc(a.story)} · ${esc(T().cov[a.status] || a.status)} · ${esc(T().tests(a.tests.length))}${a.tests.length ? ` (${pass} pass)` : ''}</span></summary>
+          ${a.tests.length ? `<ul class="tests">${tests}</ul>` : ''}</details></li>`;
+    }).join('')}</ul>`;
+  }
+
+  // Review status filter: counts are for the current tab (and Runnable only).
+  const KNOWN = ['ok', 'partial', 'missing', 'later', 'na'];
+  function renderKnownFilter(inTab) {
+    const n = k => inTab.filter(c => c.known === k).length;
+    $('kfilter').innerHTML = `<button data-k="" aria-pressed="${!state.known}">${esc(T().all)}<span class="n">${inTab.length}</span></button>` +
+      KNOWN.map(k => `<button data-k="${k}" aria-pressed="${state.known === k}" ${n(k) || state.known === k ? '' : 'disabled'}>${esc(T().known[k])}<span class="n">${n(k)}</span></button>`).join('');
+  }
+
   function renderRows() {
     const res = results();
-    const list = state.cases.filter(c => c.group === state.tab && (!state.onlyRun || !c.skip));
+    const inTab = state.cases.filter(c => c.group === state.tab && (!state.onlyRun || !c.skip));
+    renderKnownFilter(inTab);
+    const list = inTab.filter(c => !state.known || c.known === state.known);
     if (!list.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty">No cases.</td></tr>'; return; }
     $('rows').innerHTML = list.map(c => {
       const r = res[c.id];
@@ -274,7 +331,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
         <td class="sel">${sel}</td>
         <td class="id">${c.parent ? '<span class="sub">↳ </span>' : ''}${esc(c.id)}</td>
         <td><span class="pill p-${esc(c.profile)}">${esc(c.gate)}</span></td>
-        <td class="title">${esc(L(c, 'title'))}${c.skip ? '<div class="manual">skip · ' + esc(L(c, 'skip')) + '</div>' : `<div><button class="req-btn" data-req="${esc(c.id)}">${esc(T().reqBtn)}</button></div>`}</td>
+        <td class="title">${esc(L(c, 'title'))}${acChips(c)}${c.skip ? '<div class="manual">skip · ' + esc(L(c, 'skip')) + '</div>' : `<div><button class="req-btn" data-req="${esc(c.id)}">${esc(T().reqBtn)}</button></div>`}</td>
         <td><span class="pill k-${esc(c.known)}"${c.gap ? ` title="${esc(L(c, 'gap'))}"` : ''}>${esc(T().known[c.known] || c.known)}</span></td>
         <td>${result}</td>
         <td class="min">${c.skip ? '' : '~' + c.minutes}</td></tr>`;
@@ -286,6 +343,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
             ${c.gap ? `<div class="full"><h3>${esc(T().gap)}</h3><p>${esc(L(c, 'gap'))}</p></div>` : ''}
             ${c.skip ? `<div class="full"><h3>${esc(T().whySkip)}</h3><p>${esc(L(c, 'skip'))}</p></div>` : ''}
             ${c.covered ? `<div class="full"><h3>${esc(T().covered)}</h3><p>${esc(c.covered)}</p></div>` : ''}
+            <div class="full"><h3>${esc(T().acs)} · <a href="coverage" target="_blank" rel="noopener">${esc(T().acsLink)}</a></h3>${acList(c)}</div>
           </div>${timeline(r)}</td></tr>`;
       }
       return html;
@@ -429,6 +487,13 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
     const tr = e.target.closest('tr.row');
     if (!tr) return;
     state.open.has(tr.dataset.id) ? state.open.delete(tr.dataset.id) : state.open.add(tr.dataset.id);
+    renderRows();
+  });
+  $('kfilter').addEventListener('click', e => {
+    const b = e.target.closest('button[data-k]');
+    if (!b || b.disabled) return;
+    state.known = state.known === b.dataset.k ? '' : b.dataset.k;
+    store.set('known', state.known);
     renderRows();
   });
   $('only-run').checked = state.onlyRun;

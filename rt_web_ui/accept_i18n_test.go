@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // Every case title, skip reason and group title shown on the acceptance page
 // has an English version for the language toggle.
@@ -79,4 +82,27 @@ func hasMyanmar(s string) bool {
 		}
 	}
 	return false
+}
+
+// Every case has its Story AC links, and the links follow accept_map.py:
+// ADM-11 (CPE fetch: OK, not found, timeout) checks AC09's 3 attempts.
+func TestAcceptACs_EveryCaseLinked(t *testing.T) {
+	cases, err := loadAcceptCases()
+	if err != nil {
+		t.Fatal(err)
+	}
+	links, err := loadAcceptACs(cases)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var adm11 []string
+	for _, a := range links.Cases["ADM-11"] {
+		adm11 = append(adm11, a.AC)
+		if a.Title == "" || a.Status == "" {
+			t.Errorf("ADM-11 %s has no title or status: %+v", a.AC, a)
+		}
+	}
+	if strings.Join(adm11, ",") != "AC08,AC09,AC10,AC46" {
+		t.Errorf("ADM-11 ACs = %v, want AC08, AC09, AC10, AC46", adm11)
+	}
 }
