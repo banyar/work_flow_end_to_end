@@ -42,6 +42,8 @@ type acceptCase struct {
 	Known    string `json:"known"`    // status in the review table: ok, partial, missing, later, na
 	Skip     string `json:"skip"`     // why it cannot run from rt_web_ui ("" = runnable)
 	SkipEn   string `json:"skip_en,omitempty"`
+	Gap      string `json:"gap,omitempty"` // why the review status is not ✅: what the release still lacks
+	GapEn    string `json:"gap_en,omitempty"`
 	Covered  string `json:"covered"`          // tests elsewhere that cover it
 	Minutes  int    `json:"minutes"`          // rough run time
 	Parent   string `json:"parent,omitempty"` // spec case a sub-case runs one part of
@@ -54,6 +56,7 @@ type caseDef struct {
 	minutes      int
 	skip         string
 	covered      string
+	gap          string // why known is partial / missing: what is still lacking
 }
 
 const (
@@ -75,8 +78,9 @@ const (
 
 var caseDefs = map[string]caseDef{
 	// 1. Admission
-	"ADM-01": {title: "BCS လိုတဲ့ ticket အစအဆုံး (CRIT11)", known: kPartial, run: caseADM01, minutes: 4},
-	"ADM-02": {title: "BCS မလိုတဲ့ ticket (CRIT30 transferred)", known: kPartial, run: caseADM02, minutes: 4},
+	"ADM-01": {title: "BCS လိုတဲ့ ticket အစအဆုံး (CRIT11)", known: kPartial, run: caseADM01, minutes: 4,
+		gap: "Service verification (BCS က channel ပြောင်းပြီးနောက် customer ရဲ့ internet တကယ် ကောင်းသွားလား ပြန်စစ်တာ) ကို system က မလုပ်ပါ၊ မှတ်တမ်းလည်း မရှိပါ။ ဒီ release မှာ NOC က လက်နဲ့ စစ်ပါတယ် (OUT-03)။ BCS confirmation (is_bcs_success၊ FULLY_COMPLETED) ကတော့ ရှိပြီး case က စစ်ပါတယ်။"},
+	"ADM-02": {title: "BCS မလိုတဲ့ ticket (CRIT30 transferred)", known: kOK, run: caseADM02, minutes: 4},
 	"ADM-03": {title: "Gate ငြင်းတာ ၅ မျိုး + positive control", known: kOK, run: caseADM03, minutes: 5},
 	"ADM-04": {title: "Rule ၂ ခု fail · field ပုံစံမှား", known: kPartial, run: caseADM04, minutes: 2},
 	"ADM-05": {title: "Commit ပြီး crash → retry", known: kPartial, skip: skipFault + " (202 မပြန်ခင် API ကို kill)", covered: "noc_automation: active-ticket lock tests"},
@@ -84,7 +88,7 @@ var caseDefs = map[string]caseDef{
 	"ADM-07": {title: "တစ်ပြိုင်နက် request ၂ ခု", known: kOK, run: caseADM07, minutes: 1},
 	"ADM-08": {title: "Stable request ID (တူ ID၊ content ကွဲ)", known: kNA, skip: skipNoRequestID},
 	"ADM-09": {title: "၂၄ နာရီ boundary + ALREADY_PROCESSED", known: kOK, run: caseADM09, minutes: 2},
-	"ADM-10": {title: "Authorized reprocess", known: kMissing, skip: "Reprocess feature မရှိသေး"},
+	"ADM-10": {title: "Authorized reprocess", known: kLater, skip: "ဒီ release မှာ မလုပ်ပါ — reprocess feature မရှိ။ ပုံမှန် ပြန်ပို့ရင် cooldown အတိုင်း သွားတာကို ADM-09 က စစ်ပါတယ်"},
 	"ADM-11": {title: "CPE fetch: OK · not found · timeout (CRIT30/40/42)", known: kOK, run: caseADM11, minutes: 3},
 	"ADM-12": {title: "Kafka payload မမှန်", known: kPartial, skip: "Kafka topic ထဲ message တိုက်ရိုက် ထည့်ဖို့ producer လို (rt_web_ui မှာ Kafka client မရှိ)"},
 
@@ -193,12 +197,12 @@ func loadAcceptCases() ([]acceptCase, error) {
 		c := acceptCase{
 			ID: id, Group: group, Gate: gate, Profile: strings.TrimSpace(strings.Split(gate, "/")[0]),
 			Given: unmd(m[3]), Expected: unmd(m[4]),
-			Title: def.title, Known: def.known, Covered: def.covered, Minutes: def.minutes, run: def.run, Skip: def.skip,
+			Title: def.title, Known: def.known, Covered: def.covered, Minutes: def.minutes, run: def.run, Skip: def.skip, Gap: def.gap,
 		}
 		if c.run == nil && c.Skip == "" {
 			return nil, fmt.Errorf("case %s has neither a runner nor a skip reason", id)
 		}
-		c.TitleEn, c.SkipEn = en(c.Title), en(c.Skip)
+		c.TitleEn, c.SkipEn, c.GapEn = en(c.Title), en(c.Skip), en(c.Gap)
 		out = append(out, c)
 		out = append(out, subCases(c)...)
 	}

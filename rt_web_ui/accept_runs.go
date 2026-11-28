@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -104,6 +106,56 @@ func caseADM02(t *T) {
 	t.Check(r.BCSJob == "" && !r.BCSSuccess.Valid, "no BCS job and no BCS result (BCS not required)")
 	n := t.BCSStarts(r.CPEID, t0)
 	t.Check(n == 0, "Peppermint mock received %d BCS request(s) (0 expected)", n)
+
+	t.Log("— RT got the evaluated status and message")
+	d := t.Decision(run)
+	rt := t.Ticket(tk)
+	t.Check(d.Status != "" && sameStatus(rt.Status, d.Status), "RT status %q = the workflow's status %q", rt.Status, d.Status)
+	got, want := plainText(t.CommentText(tk, runMarker(run))), plainText(d.Comment)
+	t.Check(want != "" && got == want, "RT comment = the workflow's message\n   RT:       %q\n   workflow: %q", got, want)
+
+	t.Log("— the report shows the RT result and BCS as not required")
+	base := "http://" + reportAddr(defaultReportDir)
+	it, err := reportFind(t.ctx, base, "no_bcs_needed", run)
+	if err != nil {
+		t.Skip("pipeline_report at %s: %v", base, err)
+	}
+	t.Check(it != nil, "the run is in the report's \"No channel change needed\" list")
+	if it != nil {
+		t.Check(it.CurrentState == r.State && it.TargetQueue == r.TargetQueue,
+			"report shows the RT result: %s · queue %q (run: %s · %q)", it.CurrentState, it.TargetQueue, r.State, r.TargetQueue)
+		t.Check(it.IsRemoteResolved != nil && !*it.IsRemoteResolved && it.IsBCSSuccess == nil && it.BCSJobID == "",
+			"report shows BCS as not required: is_remote_resolved %s, is_bcs_success %s, bcs_job_id %q",
+			boolPtr(it.IsRemoteResolved), boolPtr(it.IsBCSSuccess), it.BCSJobID)
+	}
+	in, _ := reportHas(t.ctx, base, "transferred", run)
+	t.Check(in, "the run is in the report's \"Transferred\" list (left the NOC queue)")
+}
+
+// sameStatus compares RT statuses the way people write them: "In Progress",
+// "In_Progress" and "in_progress" are one status.
+func sameStatus(a, b string) bool {
+	norm := strings.NewReplacer(" ", "_", "-", "_")
+	return strings.EqualFold(norm.Replace(strings.TrimSpace(a)), norm.Replace(strings.TrimSpace(b)))
+}
+
+var htmlTag = regexp.MustCompile(`<[^>]*>`)
+
+// plainText is a comment's text without the run marker or HTML tags, with
+// entities decoded and spaces collapsed.
+func plainText(s string) string {
+	s = html.UnescapeString(htmlTag.ReplaceAllString(s, " "))
+	return strings.Join(strings.Fields(s), " ")
+}
+
+func boolPtr(b *bool) string {
+	if b == nil {
+		return "NULL"
+	}
+	if *b {
+		return "1"
+	}
+	return "0"
 }
 
 // gateCase is one invalid eligibility gate: the criteria sample (plus field
@@ -621,33 +673,49 @@ func caseOUT01(t *T) {
 	t.Warn("submission unknown / result unknown have no report bucket yet (🟡)")
 }
 
-// reportHas reports whether pipeline_report lists runID under case c.
-func reportHas(ctx context.Context, base, c, runID string) (bool, error) {
+// reportItem is one run as a pipeline_report case list shows it.
+type reportItem struct {
+	RunID            string `json:"run_id"`
+	CurrentState     string `json:"current_state"`
+	Bucket           string `json:"bucket"`
+	TargetQueue      string `json:"target_queue"`
+	IsRemoteResolved *bool  `json:"is_remote_resolved"`
+	IsBCSSuccess     *bool  `json:"is_bcs_success"`
+	BCSJobID         string `json:"bcs_job_id"`
+}
+
+// reportFind returns runID's row in pipeline_report's case c list (today),
+// or nil when the list does not have it.
+func reportFind(ctx context.Context, base, c, runID string) (*reportItem, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, base+"/api/v1/pipeline-runs/today?summary=0&limit=200&case="+c, nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("HTTP %d for case %s", resp.StatusCode, c)
+		return nil, fmt.Errorf("HTTP %d for case %s", resp.StatusCode, c)
 	}
 	var out struct {
 		Runs struct {
-			Items []struct {
-				RunID string `json:"run_id"`
-			} `json:"items"`
+			Items []reportItem `json:"items"`
 		} `json:"runs"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return false, err
+		return nil, err
 	}
-	for _, it := range out.Runs.Items {
-		if it.RunID == runID {
-			return true, nil
+	for i := range out.Runs.Items {
+		if out.Runs.Items[i].RunID == runID {
+			return &out.Runs.Items[i], nil
 		}
 	}
-	return false, nil
+	return nil, nil
+}
+
+// reportHas reports whether pipeline_report lists runID under case c.
+func reportHas(ctx context.Context, base, c, runID string) (bool, error) {
+	it, err := reportFind(ctx, base, c, runID)
+	return it != nil, err
 }
 
 func caseOUT04(t *T) {

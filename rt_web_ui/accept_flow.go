@@ -169,13 +169,18 @@ var caseFlows = map[string][]flowGroup{
 			st("ထပ်ပို့တဲ့ webhook ကို 200 ပြန်ပေမယ့် တစ်ခါပဲ မှတ်ပါတယ်။", "Answers the repeated webhook with 200 but records it only once.", "", "")),
 	},
 	"ADM-02": {
-		testGroup(stSubmit("30_transferred_ca1_broken (CRIT30)")),
+		testGroup(stSubmit("30_transferred_ca1_broken (CRIT30)"),
+			st("Run ပြီးရင် API ရဲ့ workflow_evaluated event ထဲက ဆုံးဖြတ်ချက် (status၊ comment) ကို RT ticket ရဲ့ status နဲ့ comment စာသားနဲ့ တိုက်စစ်ပါတယ်။ ပြီးရင် pipeline_report API ကို မေးပါတယ်။",
+				"When the run ends, compares the decision in the API's workflow_evaluated event (status, comment) with the RT ticket's status and comment text, then asks the pipeline_report API.", "", "")),
 		apiGroup(transferred()...),
 		rtutilGroup(stConsume, stRTUpdate("Passive-Infra"),
 			st("BCS ကို မခေါ်ပါဘူး: else if isKafkaTicket && kafkaTicket.IsRemoteResolved {။ IsRemoteResolved က false မို့ BCS block ထဲ မဝင်ပါဘူး။",
 				"Does not call BCS: else if isKafkaTicket && kafkaTicket.IsRemoteResolved {. IsRemoteResolved is false, so the BCS block is skipped.", "", refBCSBlock),
 			stDone),
 		bcsGroup(stMockNone),
+		{System: "(စ) pipeline_report", SystemEn: "(f) pipeline_report", Steps: []flowStep{
+			st("Run ကို \"No channel change needed\" (no_bcs_needed) နဲ့ \"Transferred\" list တွေမှာ ပြရပါမယ်: state TICKET_COMPLETED၊ queue Passive-Infra၊ is_remote_resolved 0၊ BCS ရလဒ် မရှိ၊ bcs_job_id မရှိ။",
+				"Must show the run in the \"No channel change needed\" (no_bcs_needed) and \"Transferred\" lists: state TICKET_COMPLETED, queue Passive-Infra, is_remote_resolved 0, no BCS result, no bcs_job_id.", "", "pipeline_report/store.go · condNotRemote")}},
 	},
 	"ADM-03": {
 		testGroup(st("Gate ၅ မျိုး (ADM-03a–e) ကို တစ်ခုချင်း ticket အသစ်နဲ့ ပို့ပါတယ်။ ပြီးရင် positive control: CRIT30 ကို service type G2 Net · status In_Progress နဲ့ ပို့ပါတယ်။",

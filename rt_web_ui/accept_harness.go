@@ -283,6 +283,42 @@ func escapeLikeText(s string) string {
 	return strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(s)
 }
 
+// CommentText returns the content of the ticket's first RT comment
+// containing text ("" when there is none).
+func (t *T) CommentText(id uint64, text string) string {
+	var content string
+	err := t.env.db.QueryRowContext(t.ctx, `
+		SELECT COALESCE(a.Content, '') FROM Transactions tr JOIN Attachments a ON a.TransactionId = tr.id
+		WHERE tr.ObjectType = 'RT::Ticket' AND tr.ObjectId = ? AND tr.Type = 'Comment' AND a.Content LIKE ?
+		ORDER BY tr.id LIMIT 1`, id, "%"+escapeLikeText(text)+"%").Scan(&content)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		t.Fatal("read RT comment on #%d: %v", id, err)
+	}
+	return content
+}
+
+// decision is the workflow's decision for a run, as the API stored it in the
+// workflow_evaluated event detail.
+type decision struct {
+	Status, Comment, TargetQueue string
+}
+
+// Decision reads the run's workflow decision from the API's own
+// workflow_evaluated event.
+func (t *T) Decision(runID string) decision {
+	var d decision
+	err := t.env.db.QueryRowContext(t.ctx, `
+		SELECT COALESCE(JSON_UNQUOTE(JSON_EXTRACT(detail, '$.workflow_decision.status')), ''),
+		       COALESCE(JSON_UNQUOTE(JSON_EXTRACT(detail, '$.workflow_decision.comment')), ''),
+		       COALESCE(JSON_UNQUOTE(JSON_EXTRACT(detail, '$.workflow_decision.target_queue')), '')
+		FROM pipeline_run_events WHERE run_id = ? AND event = 'workflow_evaluated' AND component = ?
+		ORDER BY id LIMIT 1`, runID, compAPI).Scan(&d.Status, &d.Comment, &d.TargetQueue)
+	if err != nil {
+		t.Fatal("read the workflow decision of %s: %v", runID, err)
+	}
+	return d
+}
+
 // runMarker is rtutil's hidden comment marker for a run.
 func runMarker(runID string) string { return "<!-- rr:" + runID + " -->" }
 

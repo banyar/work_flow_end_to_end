@@ -414,6 +414,7 @@ func caseRequirements(id, mockPort string) caseReqs {
 				reqMockCPE("CRIT30", "ca1.status", "Broken", 0, "Queue ကို Passive-Infra ပြောင်းဖို့ (network_good_workflow · ca1_status=Broken)"),
 				reqRtutilBCS(rtutilToMockZero),
 				reqMockAdmin(bcsNotCalled),
+				reqReport(),
 			)}
 	case "ADM-03", "ADM-03a", "ADM-03b", "ADM-03c", "ADM-03d", "ADM-03e", "ADM-04", "V2-01":
 		return caseReqs{note: noteGate, reqs: admit()}

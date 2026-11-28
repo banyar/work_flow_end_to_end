@@ -150,6 +150,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
       <div class="lang" role="group" aria-label="Language">
         <button data-lang="my" aria-pressed="true">မြန်မာ</button><button data-lang="en" aria-pressed="false">English</button>
       </div>
+      <a href="/coverage">AC unit coverage →</a>
       <a href="/">← Criteria runner</a>
     </div>
   </header>
@@ -196,7 +197,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
     my: {
       note: 'Run လုပ်တိုင်း RT ticket အသစ် ဖန်တီးပြီး real stack (API · Kafka · rtutil · mock) ကို သုံးပါတယ်။ Fault case တွေက rtutil ကို kill/restart လုပ်ပြီး sweeper case တွေက synthetic row ထည့်ပါတယ် (ပြီးရင် ပြန်ဖျက်)။ Local / test environment မှာပဲ run ပါ။',
       thTitle: 'အကြောင်း', known: { ok: '✅ ကာကွယ်ပြီး', partial: '🟡 တစ်စိတ်', missing: '❌ မရှိ', later: '⚪ ဒီ release မဟုတ်', na: '➖ မသက်ဆိုင်' },
-      whySkip: 'ဘာကြောင့် ဒီကနေ မ run လဲ', covered: 'တခြားနေရာက test',
+      whySkip: 'ဘာကြောင့် ဒီကနေ မ run လဲ', covered: 'တခြားနေရာက test', gap: 'ဘာ ကျန်သေးလဲ (✅ မဖြစ်ရတဲ့ အကြောင်း)',
       reqBtn: 'လိုအပ်ချက်', recheck: 'ပြန်စစ်', reqTitle: t => `${t} အတွက် လိုအပ်ချက်များ`, checking: 'စစ်နေပါတယ်…',
       ready: '✔ လိုအပ်တာ အကုန် ready ဖြစ်နေပါပြီ', notReady: '✘ Ready မဖြစ်သေးတာ ရှိပါတယ် — အောက်က → အတိုင်း ပြင်ပြီး ပြန်စစ်ပါ',
       cols: ['#', 'လိုအပ်ချက်', 'ဘာအတွက်လဲ', 'အခြေအနေ'], cantCheck: 'စစ်လို့ မရပါ',
@@ -205,7 +206,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
     en: {
       note: 'Every run creates a new RT ticket and uses the real stack (API · Kafka · rtutil · mock). Fault cases kill and restart rtutil; sweeper cases insert synthetic rows (deleted afterwards). Run only in a local / test environment.',
       thTitle: 'Case', known: { ok: '✅ Covered', partial: '🟡 Partial', missing: '❌ Missing', later: '⚪ Not this release', na: '➖ Not applicable' },
-      whySkip: 'Why it does not run from here', covered: 'Tests elsewhere',
+      whySkip: 'Why it does not run from here', covered: 'Tests elsewhere', gap: 'What is still missing (why it is not ✅)',
       reqBtn: 'Requirements', recheck: 'Recheck', reqTitle: t => `Requirements for ${t}`, checking: 'Checking…',
       ready: '✔ Everything the case needs is ready', notReady: '✘ Something is not ready — fix it as shown by → and recheck',
       cols: ['#', 'Requirement', 'What it is for', 'Status'], cantCheck: 'Could not check',
@@ -274,7 +275,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
         <td class="id">${c.parent ? '<span class="sub">↳ </span>' : ''}${esc(c.id)}</td>
         <td><span class="pill p-${esc(c.profile)}">${esc(c.gate)}</span></td>
         <td class="title">${esc(L(c, 'title'))}${c.skip ? '<div class="manual">skip · ' + esc(L(c, 'skip')) + '</div>' : `<div><button class="req-btn" data-req="${esc(c.id)}">${esc(T().reqBtn)}</button></div>`}</td>
-        <td><span class="pill k-${esc(c.known)}">${esc(T().known[c.known] || c.known)}</span></td>
+        <td><span class="pill k-${esc(c.known)}"${c.gap ? ` title="${esc(L(c, 'gap'))}"` : ''}>${esc(T().known[c.known] || c.known)}</span></td>
         <td>${result}</td>
         <td class="min">${c.skip ? '' : '~' + c.minutes}</td></tr>`;
       if (state.open.has(c.id)) {
@@ -282,6 +283,7 @@ dialog.req::backdrop { background: rgba(8, 14, 13, 0.45); }
           <div class="spec">
             <div><h3>Given and when</h3><p>${esc(c.given)}</p></div>
             <div><h3>Expected result</h3><p>${esc(c.expected)}</p></div>
+            ${c.gap ? `<div class="full"><h3>${esc(T().gap)}</h3><p>${esc(L(c, 'gap'))}</p></div>` : ''}
             ${c.skip ? `<div class="full"><h3>${esc(T().whySkip)}</h3><p>${esc(L(c, 'skip'))}</p></div>` : ''}
             ${c.covered ? `<div class="full"><h3>${esc(T().covered)}</h3><p>${esc(c.covered)}</p></div>` : ''}
           </div>${timeline(r)}</td></tr>`;

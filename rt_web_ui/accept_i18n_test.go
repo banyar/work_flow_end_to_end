@@ -17,6 +17,7 @@ func TestAcceptEnglishText(t *testing.T) {
 	for _, c := range cases {
 		missing(c.ID+" title", c.Title)
 		missing(c.ID+" skip", c.Skip)
+		missing(c.ID+" gap", c.Gap)
 	}
 	for _, g := range acceptGroups {
 		missing("group "+g.Key, g.Title)
