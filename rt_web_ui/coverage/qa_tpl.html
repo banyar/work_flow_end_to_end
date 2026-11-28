@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Case Coverage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Myanmar:wght@400;500;600&display=swap">
+<style>
+/* Same tokens and layout as the AC coverage page. One row per QA test case of
+   the R2026-07 sheet; a row opens to show the case, the Story ACs it checks and
+   the unit tests that assert it. */
+:root {
+  --bg: #f3f5f4; --panel: #ffffff; --fg: #17201d; --muted: #5d6b66; --line: #d9e0dd;
+  --accent: #0b6e5f; --accent-ink: #ffffff; --accent-soft: #e2f1ee;
+  --ok: #1d7a3a; --ok-soft: #e3f3e8; --warn: #9a5b00; --warn-soft: #fbf0dc;
+  --bad: #b3261e; --bad-soft: #fbe6e4; --info: #2a5db0; --info-soft: #e5edfa;
+  --code: #eef2f0;
+  --font-ui: "IBM Plex Sans", "Noto Sans Myanmar", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+    --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+    --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+    --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+    --code: #1d2826; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --panel: #161e1c; --fg: #e3ebe8; --muted: #93a39e; --line: #2a3532;
+  --accent: #3fb8a3; --accent-ink: #062520; --accent-soft: #173a34;
+  --ok: #63c27d; --ok-soft: #173322; --warn: #e0a447; --warn-soft: #3a2a10;
+  --bad: #f08b83; --bad-soft: #3d1a17; --info: #86aef0; --info-soft: #182540;
+  --code: #1d2826; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.55; padding: 24px 16px 48px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h1 small { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+header a { color: var(--accent); font-size: 13px; }
+.head-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; padding: 2px; background: var(--panel); }
+.lang button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; padding: 3px 12px; border-radius: 99px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.env { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.env b { color: var(--fg); font-weight: 500; }
+.note { background: var(--info-soft); color: var(--fg); border-radius: var(--r); padding: 10px 14px; font-size: 13px; }
+.note ul { margin: 4px 0 0; padding-left: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+
+.summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.summary > button { text-align: left; font: inherit; color: inherit; cursor: pointer; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; }
+.summary > button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.summary .k { font-size: 12px; color: var(--muted); }
+.summary .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.meter { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--line); }
+.meter span { display: block; height: 100%; }
+@media (max-width: 760px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { flex: none; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 99px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.tabs button .n { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-left: 6px; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tabs button[aria-selected="true"] .n { color: var(--accent-ink); opacity: 0.8; }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.bar .grow { flex: 1; min-width: 160px; }
+.bar input { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; font-size: 13px; }
+.story-head { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.story-head b { color: var(--fg); }
+
+.scroll { overflow-x: auto; }
+.cases { width: 100%; border-collapse: collapse; }
+.cases th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.cases td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.cases tr.row { cursor: pointer; }
+.cases tr.row:hover td { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+.cases tr.row.open td { background: var(--accent-soft); }
+.id { font-family: var(--font-mono); font-size: 12.5px; white-space: nowrap; }
+.sub { display: block; color: var(--muted); font-size: 12.5px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 9px; border-radius: 99px; white-space: nowrap; }
+.p-covered { background: var(--ok-soft); color: var(--ok); }
+.p-partial { background: var(--warn-soft); color: var(--warn); }
+.p-none { background: var(--bad-soft); color: var(--bad); }
+.p-not_built { background: var(--line); color: var(--muted); }
+.num { font-family: var(--font-mono); font-size: 12.5px; text-align: right; white-space: nowrap; }
+
+.detail td { background: var(--bg); padding: 14px 16px 18px; }
+.det { display: grid; gap: 14px; }
+.det h4 { margin: 0 0 4px; font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.det p { margin: 0; }
+.gap { background: var(--warn-soft); border-radius: 6px; padding: 8px 12px; }
+.gap.none { background: var(--bad-soft); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.list li { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.code { font-family: var(--font-mono); font-size: 12px; background: var(--code); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+.repo { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-right: 6px; }
+.ok { color: var(--ok); } .bad { color: var(--bad); } .dim { color: var(--muted); }
+.empty { color: var(--muted); font-style: italic; }
+.foot { font-size: 12px; color: var(--muted); }
+
+.p-outside { background: var(--info-soft); color: var(--info); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-family: var(--font-mono); font-size: 11.5px; padding: 0 7px; border-radius: 99px; border: 1px solid var(--line); background: var(--panel); white-space: nowrap; }
+.chip.covered { border-color: var(--ok); color: var(--ok); } .chip.partial { border-color: var(--warn); color: var(--warn); } .chip.none { border-color: var(--bad); color: var(--bad); }
+.qa { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.qa > div { min-width: 0; }
+.qa .wide { grid-column: 1 / -1; }
+.qa p { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; }
+@media (max-width: 760px) { .qa { grid-template-columns: minmax(0, 1fr); } }
+.flag { font-size: 11px; color: var(--bad); margin-left: 6px; white-space: nowrap; }
+.meta { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 18px; }
+.meta b { color: var(--fg); font-weight: 500; }
+.find { background: var(--info-soft); border-radius: 6px; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="h1"></h1>
+    <div class="head-right">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="my" aria-pressed="true">မြန်မာ</button><button data-lang="en" aria-pressed="false">English</button>
+      </div>
+    </div>
+  </header>
+  <div class="meta" id="meta"></div>
+  <div class="note" id="note"></div>
+  <div class="summary" id="summary"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="panel">
+    <div class="bar"><div class="grow"><input id="q" type="search"></div><span class="foot" id="count"></span></div>
+    <div class="story-head" id="groupHead" hidden></div>
+    <div class="scroll"><table class="cases"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+const DATA = /*DATA*/null;
+const ST = ['covered', 'partial', 'none', 'outside'];
+const L = {
+  my: {
+    h1: 'QA Test Case Coverage', q: 'Scenario၊ AC၊ test အမည် ဒါမှမဟုတ် စာသားနဲ့ ရှာပါ…', all: 'အားလုံး', total: 'QA case စုစုပေါင်း',
+    st: { covered: '✅ Unit test ရှိ', partial: '🟡 တစ်စိတ်', none: '❌ Test မရှိ', outside: '🔷 Unit test နယ်ပယ်ပြင်ပ' },
+    note: `QA ရဲ့ <b>R2026-07</b> test case sheet ထဲက case တစ်ခုချင်းကို Redmine Epic #22947 ရဲ့ Story AC တွေနဲ့ တွဲပြီး project ရဲ့ unit test တွေက ဘယ်လောက် စစ်ပြီးပြီလဲ ပြထားပါတယ်။
+      <ul><li><b>✅ Unit test ရှိ</b> — case ရဲ့ expected result ကို <code>go test</code> က တိုက်ရိုက် စစ်တယ်။</li>
+      <li><b>🟡 တစ်စိတ်</b> — case ရဲ့ တစ်စိတ်တစ်ပိုင်းကိုပဲ စစ်တယ် (ဘာကျန်လဲ row ကို ဖွင့်ကြည့်ပါ)။</li>
+      <li><b>❌ Test မရှိ</b> — code ရှိပေမယ့် unit test မရှိ။</li>
+      <li><b>🔷 နယ်ပယ်ပြင်ပ</b> — RT extension (Perl)၊ Redis TTL၊ CPEMS black box စတဲ့ Go code မဟုတ်တဲ့ အပိုင်း — QA/manual နဲ့ပဲ စစ်လို့ရ။</li></ul>
+      Unit test ရှိတာက QA execution ကို အစားမထိုးပါ — Actual Result / Execution Status ကော်လံတွေကို QA က ဖြည့်ရပါမယ်။`,
+    th: ['#', 'Coverage', 'Test scenario', 'AC', 'Tests'],
+    fields: { desc: 'Description', pre: 'Preconditions', steps: 'Test Step', data: 'Test Data', expected: 'Expected Result', notes: 'Notes', actual: 'Actual Result', exec: 'Execution Status', env: 'Test Env' },
+    finding: 'Unit test ဘက်က မှတ်ချက်', acs: 'စစ်တဲ့ Story AC', fn: 'လုပ်တဲ့ function / config', tests: 'Assert လုပ်တဲ့ unit test',
+    notests: 'ဒီ case ကို assert လုပ်တဲ့ unit test မရှိပါ', flag: '● sheet မှာ အနီရောင်', qa: 'QA sheet',
+    run: { pass: '✔ pass', fail: '✘ fail', unknown: '· run မတွေ့' }, gen: 'ထုတ်ချိန်',
+    foot: 'Test ရလဒ်တွေကို ဒီ page ထုတ်ချိန်မှာ go test -json နဲ့ run ထားတာပါ။ Sheet ဒါမှမဟုတ် code ပြောင်းရင် page ကို ပြန်ထုတ်ရပါမယ်။',
+  },
+  en: {
+    h1: 'QA Test Case Coverage', q: 'Search scenario, AC, test name or text…', all: 'All', total: 'QA cases',
+    st: { covered: '✅ Unit-tested', partial: '🟡 Partial', none: '❌ No test', outside: '🔷 Outside unit tests' },
+    note: `Each case of QA's <b>R2026-07</b> test case sheet, linked to the Story ACs of Redmine Epic #22947 and to the project's unit tests that assert it.
+      <ul><li><b>✅ Unit-tested</b> — <code>go test</code> asserts the case's expected result.</li>
+      <li><b>🟡 Partial</b> — tests cover part of the case (open the row to see what is missing).</li>
+      <li><b>❌ No test</b> — the code exists but no unit test asserts it.</li>
+      <li><b>🔷 Outside unit tests</b> — the RT extension (Perl), Redis TTL or CPEMS black box: only QA/manual testing can check it.</li></ul>
+      Unit tests do not replace QA execution: the Actual Result and Execution Status columns are QA's to fill.`,
+    th: ['#', 'Coverage', 'Test scenario', 'AC', 'Tests'],
+    fields: { desc: 'Description', pre: 'Preconditions', steps: 'Test Step', data: 'Test Data', expected: 'Expected Result', notes: 'Notes', actual: 'Actual Result', exec: 'Execution Status', env: 'Test Env' },
+    finding: 'Unit test notes', acs: 'Story ACs checked', fn: 'Implemented by', tests: 'Unit tests that assert it',
+    notests: 'No unit test asserts this case', flag: '● red in the sheet', qa: 'QA sheet',
+    run: { pass: '✔ pass', fail: '✘ fail', unknown: '· not in run' }, gen: 'Generated',
+    foot: 'Test results come from a go test -json run when this page was generated. Regenerate the page after the sheet or the code changes.',
+  },
+};
+const COLORS = { covered: 'var(--ok)', partial: 'var(--warn)', none: 'var(--bad)', outside: 'var(--info)' };
+let lang = 'my', tab = 'all', filt = '', q = '';
+const open = new Set();
+try { lang = localStorage.getItem('qa-cov-lang') || 'my'; } catch (e) {}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+const tc = i => 'TC-' + String(i.n).padStart(2, '0');
+const oneLine = s => String(s || '').split('\n').map(x => x.trim()).filter(Boolean).join(' ');
+
+function visible() {
+  const s = q.trim().toLowerCase();
+  return DATA.items.filter(i => (tab === 'all' || i.group === +tab) && (!filt || i.status === filt) &&
+    (!s || [tc(i), DATA.groups[i.group], i.scenario, i.scenario_mm, i.desc, i.pre, i.steps, i.data, i.expected, i.notes, i.mm, i.en,
+      ...i.acs.map(a => a.id + ' ' + a.title), ...i.tests.map(t => t.name + ' ' + t.file)].join(' ').toLowerCase().includes(s)));
+}
+
+function render() {
+  const T = L[lang];
+  document.documentElement.lang = lang === 'my' ? 'my' : 'en';
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+  $('h1').innerHTML = `${T.h1} <small>${esc(DATA.sheet)} · ${DATA.items.length} case</small>`;
+  $('q').placeholder = T.q;
+  $('note').innerHTML = T.note;
+  $('meta').innerHTML = DATA.meta.map(m => { const [k, ...v] = m.split(' - '); return v.length ? `<span>${esc(k)} <b>${esc(v.join(' - '))}</b></span>` : `<span>${esc(m)}</span>`; }).join('') +
+    `<span>${T.gen} <b>${esc(DATA.generated)}</b></span>`;
+
+  const inTab = DATA.items.filter(i => tab === 'all' || i.group === +tab);
+  const cnt = st => inTab.filter(i => i.status === st).length;
+  $('summary').innerHTML = `<button data-f="" aria-pressed="${!filt}"><div class="k">${T.total}</div><div class="v">${inTab.length}</div>
+      <div class="meter">${ST.map(s => `<span style="width:${100 * cnt(s) / (inTab.length || 1)}%;background:${COLORS[s]}"></span>`).join('')}</div></button>` +
+    ST.map(s => `<button data-f="${s}" aria-pressed="${filt === s}"><div class="k">${T.st[s]}</div><div class="v">${cnt(s)}</div></button>`).join('');
+  $('summary').querySelectorAll('button').forEach(b => b.onclick = () => { filt = filt === b.dataset.f ? '' : b.dataset.f; render(); });
+
+  $('tabs').innerHTML = `<button role="tab" data-t="all" aria-selected="${tab === 'all'}">${T.all}<span class="n">${DATA.items.length}</span></button>` +
+    DATA.groups.map((g, n) => { const its = DATA.items.filter(i => i.group === n);
+      return `<button role="tab" data-t="${n}" aria-selected="${tab === String(n)}" title="${esc(g)}">${esc(g.length > 34 ? g.slice(0, 32) + '…' : g)}<span class="n">${its.filter(i => i.status === 'covered').length}/${its.length}</span></button>`; }).join('');
+  $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+
+  $('groupHead').hidden = tab === 'all';
+  if (tab !== 'all') $('groupHead').innerHTML = `<b>${esc(DATA.groups[+tab])}</b>`;
+
+  $('thead').innerHTML = `<tr>${T.th.map((h, n) => `<th${n === 4 ? ' class="num"' : ''}>${h}</th>`).join('')}</tr>`;
+  const rows = visible();
+  $('count').textContent = `${rows.length} / ${DATA.items.length}`;
+  $('tbody').innerHTML = rows.map(i => {
+    const pass = i.tests.filter(t => t.state === 'pass').length;
+    const row = `<tr class="row${open.has(i.n) ? ' open' : ''}" data-n="${i.n}">
+      <td class="id">${tc(i)}</td>
+      <td><span class="pill p-${i.status}">${T.st[i.status]}</span></td>
+      <td title="${esc(oneLine(i.scenario))}">${esc((lang === 'my' && i.scenario_mm) || oneLine(i.scenario) || oneLine(i.desc))}${i.flagged ? `<span class="flag">${T.flag}</span>` : ''}<span class="sub">${esc(oneLine(i.desc))}</span></td>
+      <td><div class="chips">${i.acs.map(a => `<span class="chip ${a.status}" title="${esc(a.title)}">${a.id}</span>`).join('') || '<span class="dim">—</span>'}</div></td>
+      <td class="num">${i.tests.length ? `${pass}/${i.tests.length}` : '—'}</td></tr>`;
+    return row + (open.has(i.n) ? detail(i, T) : '');
+  }).join('') || `<tr><td colspan="5" class="empty">—</td></tr>`;
+  $('tbody').querySelectorAll('tr.row').forEach(r => r.onclick = () => { const n = +r.dataset.n; open.has(n) ? open.delete(n) : open.add(n); render(); });
+  $('foot').textContent = T.foot;
+}
+
+function detail(i, T) {
+  const F = T.fields;
+  const field = (k, wide) => i[k] ? `<div${wide ? ' class="wide"' : ''}><h4>${F[k]}</h4><p>${esc(i[k])}</p></div>` : '';
+  const scen = `<div class="wide"><h4>Test Scenario</h4><p>${esc(i.scenario)}${lang === 'my' && i.scenario_mm ? `<br><span class="dim">${esc(i.scenario_mm)}</span>` : ''}</p></div>`;
+  const qa = `<div class="qa">${scen}${field('desc', true)}${field('pre')}${field('data')}${field('steps')}${field('expected')}${field('notes', true)}${field('actual')}${field('exec')}${field('env')}</div>`;
+  const note = lang === 'my' ? i.mm : i.en;
+  const acs = i.acs.length ? `<ul class="list">${i.acs.map(a => `<li><span class="pill p-${a.status}">${T.st[a.status] || a.status}</span> <b>${a.id}</b> ${esc(a.title)}</li>`).join('')}</ul>` : `<p class="empty">—</p>`;
+  const fns = i.functions.length ? `<ul class="list">${i.functions.map(f => `<li><span class="repo">${esc(f.repo)}</span><b>${esc(f.name)}</b><br><span class="code">${esc(f.file)}${f.line ? ':' + f.line : ''}</span></li>`).join('')}</ul>` : '';
+  const tests = i.tests.length ? `<ul class="list">${i.tests.map(t => `<li><span class="${t.state === 'pass' ? 'ok' : t.state === 'fail' ? 'bad' : 'dim'}">${T.run[t.state]}</span> <span class="repo">${esc(t.repo)}</span><b>${esc(t.name)}</b>${t.ac ? ` <span class="chip">${t.ac}</span>` : ''}
+      <br><span class="code">${esc(t.file)}${t.line ? ':' + t.line : ''}</span><span class="sub">${esc(t.asserts)}</span></li>`).join('')}</ul>` : `<p class="empty">${T.notests}</p>`;
+  return `<tr class="detail"><td colspan="5"><div class="det">
+    ${note ? `<div><h4>${T.finding}</h4><p class="${i.status === 'covered' ? 'find' : 'gap' + (i.status === 'none' ? ' none' : '')}">${esc(note)}</p></div>` : ''}
+    <div><h4>${T.qa}</h4>${qa}</div>
+    <div><h4>${T.acs}</h4>${acs}</div>
+    <div><h4>${T.tests}</h4>${tests}</div>
+    ${fns ? `<div><h4>${T.fn}</h4>${fns}</div>` : ''}
+  </div></td></tr>`;
+}
+
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { lang = b.dataset.lang; try { localStorage.setItem('qa-cov-lang', lang); } catch (e) {} render(); });
+$('q').oninput = e => { q = e.target.value; render(); };
+render();
+</script>
+</body>
+</html>

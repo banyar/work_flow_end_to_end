@@ -1,0 +1,1070 @@
+[
+ {
+  "ac": "AC01",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 96,
+    "name": "checkEligibility"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 75,
+    "name": "ticket_eligible_criterias.rules[Service Type eligible]"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 310,
+    "name": "evaluateIn"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 240,
+    "name": "TestEligibility_EligibleServiceTypes",
+    "asserts": "MNet, MNet Plus, G2 Net, G2 Plus (and with spaces) reach Node-RED; mnet, MNET, G2Net, MNet Plus Pro, Fiber Business and empty end NOT_ELIGIBLE / service_type_not_eligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 158,
+    "name": "TestEligibility_EligibleRunContinuesToFetch",
+    "asserts": "an MNet ticket in NOC with status new passes eligibility and Node-RED is called once"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible/service_type not eligible",
+    "asserts": "'Fiber Business' and a missing service_type end NOT_ELIGIBLE with service_type_not_eligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 138,
+    "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+    "asserts": "main.json has the 4 rules in order and enabled (does not check the IN list values)"
+   }
+  ],
+  "how_mm": "main.json ရဲ့ \"Service Type eligible\" rule (IN: MNet, MNet Plus, G2 Net, G2 Plus) ကို checkEligibility က စစ်တယ်။ မကိုက်ရင် run ကို NOT_ELIGIBLE လုပ်ပြီး ရပ်တယ်။",
+  "gap_mm": "Service type ၄ ခုလုံးနဲ့ စာလုံးအတိအကျ ကိုက်ရမယ်ဆိုတာကို test လုပ်ပြီးပါပြီ။ NOC queue ticket ကိုပဲ ပို့တာက RT extension ဘက်က လုပ်တာမို့ ဒီ API ရဲ့ unit test အပိုင်း မဟုတ်ပါ။",
+  "note_en": "All four service types and the exact-match rule are unit-tested. Sending only NOC-queue tickets is done by the RT extension, outside this API."
+ },
+ {
+  "ac": "AC02",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 96,
+    "name": "checkEligibility"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 65,
+    "name": "ticket_eligible_criterias.rules[OPI Site Code empty]"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible/opi_site_code has a value",
+    "asserts": "opi_site_code 'OPI-01' -> NOT_ELIGIBLE, event opi_site_code_present, reason 'OPI Site Code has Value', Node-RED not called"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 237,
+    "name": "TestEligibility_DisabledRuleIsSkipped",
+    "asserts": "with the OPI rule disabled the same ticket proceeds (rule is what blocks it)"
+   }
+  ],
+  "how_mm": "opi_site_code မှာ တန်ဖိုးရှိရင် OPI customer လို့ ယူပြီး \"OPI Site Code empty\" rule က run ကို NOT_ELIGIBLE လုပ်တယ်။",
+  "gap_mm": "",
+  "note_en": "OPI is detected by a non-empty opi_site_code (not by service type); unit test asserts NOT_ELIGIBLE and no Node-RED call."
+ },
+ {
+  "ac": "AC03",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 96,
+    "name": "checkEligibility"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 207,
+    "name": "transitionNotEligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 47,
+    "name": "ticket_eligible_criterias.rules[CPE & Local Service ID included]"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/api/validation/remote_resolve_validation.go",
+    "line": 18,
+    "name": "ValidateRemoteResolveRequest"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible/cpe_id missing",
+    "asserts": "empty cpe_id -> NOT_ELIGIBLE, event cpe_or_local_service_id_missing, reason 'CPE or Local Service ID missing', detail names the rule"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible/local_service_id missing",
+    "asserts": "missing local_service_id -> same NOT_ELIGIBLE event and reason, Node-RED not called"
+   }
+  ],
+  "how_mm": "cpe_id သို့ local_service_id မရှိရင် validation က မပယ်ဘဲ run ဖန်တီးပြီး eligibility rule က NOT_ELIGIBLE လုပ်တယ်။ fail_reason ကို last_state_reason မှာ၊ rule နဲ့ value တွေကို event detail မှာ သိမ်းတယ်။",
+  "gap_mm": "",
+  "note_en": "Covered: both missing-ID cases end NOT_ELIGIBLE with the recorded reason and rule detail."
+ },
+ {
+  "ac": "AC04",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 96,
+    "name": "checkEligibility"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 91,
+    "name": "ticket_eligible_criterias.rules[Ticket Status eligible]"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 103,
+    "name": "CompileConditionPatterns"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 226,
+    "name": "TestEligibility_EligibleTicketStatuses",
+    "asserts": "new, NEW, in_progress, reopen, re-open, Re-Open-2 are all eligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible/status resolved",
+    "asserts": "status 'resolved' -> NOT_ELIGIBLE with ticket_status_not_eligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 138,
+    "name": "TestEligibility_ConfigLoadsRulesFromMainJSON",
+    "asserts": "the status rule's MATCHES regex is compiled at load"
+   }
+  ],
+  "how_mm": "main.json ထဲက regex (?i)^(new|in_progress|re-?open(-\\d+)?)$ နဲ့ ticket status ကို စစ်တယ်။ မကိုက်ရင် NOT_ELIGIBLE ဖြစ်တယ်။",
+  "gap_mm": "",
+  "note_en": "Covered; regex also accepts Re-Open-N variants. RT's status is 'In_Progress' (underscore), which the regex matches."
+ },
+ {
+  "ac": "AC44",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/remote_resolve_helper.go",
+    "line": 24,
+    "name": "CreatePipelineRun"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 207,
+    "name": "transitionNotEligible"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 426,
+    "name": "buildTargetPayload (DecisionName)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 245,
+    "name": "transitionWorkflowEvaluated"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 181,
+    "name": "recordFinishedRun"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service.go",
+    "line": 280,
+    "name": "CompletePipelineRun"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 268,
+    "name": "TransitionStateIf"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_evaluated_record_test.go",
+    "line": 67,
+    "name": "TestRecord_WorkflowEvaluatedKeepsResponseAndDecision",
+    "asserts": "WORKFLOW_EVALUATED detail holds the whole Node-RED response and the workflow decision; the run gets the decision name (final_message), target queue, remote-resolved flag, ONU serial, OLT, CA1 and uplink"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+    "line": 124,
+    "name": "TestWorkflowEngine_DecisionNamePlaceholders",
+    "asserts": "{Tag} and {RootCause} in the rule name are filled with the matched value"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+    "line": 96,
+    "name": "TestWorkflowEngine_DecisionName",
+    "asserts": "a matched rule's name and the Node-RED error decision name are returned, and are not in the Kafka message"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 158,
+    "name": "TestEligibility_EligibleRunContinuesToFetch",
+    "asserts": "run is created '' -> RECEIVED before the pipeline runs"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 177,
+    "name": "TestEligibility_RuleFailureMakesRunNotEligible",
+    "asserts": "NOT_ELIGIBLE transition carries event, reason and a detail naming the rule"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+    "line": 93,
+    "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+    "asserts": "states recorded FETCHING_CPE_STATUS -> WORKFLOW_EVALUATED -> PUBLISHED"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+    "line": 210,
+    "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+    "asserts": "rtutil records TICKET_COMPLETED as the final state"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+    "line": 223,
+    "name": "TestFailPipelineRunAfterRTUpdate",
+    "asserts": "Node-RED job error ends FAILED_PERMANENT with reason and ticket status"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 406,
+    "name": "TestPipelineRunRepository_CreateWithEvent",
+    "asserts": "run row and its first event are inserted in one transaction (sqlmock)"
+   }
+  ],
+  "how_mm": "Ticket တစ်ခုစီအတွက် pipeline_runs row တစ်ခုနဲ့ pipeline_run_events တွေ ရေးတယ်။ WORKFLOW_EVALUATED မှာ ကိုက်တဲ့ rule နာမည် (DecisionName) ကို final_message column မှာ သိမ်းတယ်။ Event detail ထဲမှာ Node-RED response အပြည့်နဲ့ workflow decision ကို သိမ်းတယ်။",
+  "gap_mm": "Rule နာမည်ကို final_message မှာ သိမ်းပြီး test လည်း ရှိပါပြီ (commit 264f594)။ ကျန်တာ — (၁) ဘယ် workflow၊ ဘယ် condition နဲ့ ကိုက်လဲ၊ ရှေ့က ဘယ် rule တွေ စစ်ခဲ့လဲ (rules evaluated) မသိမ်းဘူး။ (၂) Node-RED error ကြောင့် ဆုံးဖြတ်ရင် ဘယ် rule စစ်နေတုန်း ဖြစ်လဲ မသိမ်းဘူး။ (၃) Active run ရှိလို့ skip ဖြစ်တဲ့ request နဲ့ queue/ticket_id မပါတဲ့ validation error request ကို record မရေးဘူး။",
+  "note_en": "The matched rule's name is now saved as final_message (264f594) and tested. Still missing: the workflow, matched condition and rules evaluated; the step being checked when a Node-RED error decided; and records for active-run skips and some validation errors."
+ },
+ {
+  "ac": "AC08",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 102,
+    "name": "fetchCPEStatus"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service.go",
+    "line": 123,
+    "name": "FetchCPEStatus"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service.go",
+    "line": 160,
+    "name": "fetchCPEStatusSingle"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+    "line": 79,
+    "name": "TestFetchCPEStatus_DecodesEverySection",
+    "asserts": "GET /api/v1/cpe/{cpe_id} with x-api-key; CPE, CA1, OLT, Uplink, ONU (serial, phase state, RX power, 8 flags) and Node-RED errors decoded from a real-shaped response"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+    "line": 147,
+    "name": "TestFetchCPEStatus_UnknownCPEIsNotRetried",
+    "asserts": "404 returns ERR_CPE_NOT_FOUND after one call"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+    "line": 159,
+    "name": "TestFetchCPEStatus_RetriesUntilAnAnswer",
+    "asserts": "500 and cut-off JSON are retried; the third answer is returned"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_fetch_test.go",
+    "line": 175,
+    "name": "TestFetchCPEStatus_GivesUpAfterMaxRetries",
+    "asserts": "500, 502 and broken JSON give a retryable error after NODE_RED_MAX_RETRIES calls"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+    "line": 13,
+    "name": "TestNormalizeNodeRedResponse",
+    "asserts": "statuses lower-cased, ONU flags, RX power, errors and the ticket's custom fields (trimmed CPE ID, tags list) mapped for the engine"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+    "line": 84,
+    "name": "TestNormalizeNodeRedResponse_EmptyInput",
+    "asserts": "empty Node-RED sections and no custom fields give empty values"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response_test.go",
+    "line": 94,
+    "name": "TestNormalizeNodeRedResponse_SingleTag",
+    "asserts": "a single tag string becomes a one-item list"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 158,
+    "name": "TestEligibility_EligibleRunContinuesToFetch",
+    "asserts": "eligible run moves to FETCHING_CPE_STATUS and calls Node-RED once (fake client)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+    "line": 82,
+    "name": "TestNodeRedLimit",
+    "asserts": "httptest Node-RED: 50 fetches succeed with at most 8 in flight (response body is empty data)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+    "line": 115,
+    "name": "TestNodeRedSleepFreesSlot",
+    "asserts": "a failed fetch is retried and succeeds"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+    "line": 157,
+    "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+    "asserts": "a fetch error schedules a CPE fetch retry"
+   }
+  ],
+  "how_mm": "Eligible ဖြစ်ရင် fetchCPEStatus က Node-RED GET /api/v1/cpe/{cpe_id} ကို retry နဲ့ ခေါ်ပြီး NormalizeNodeRedResponse က OLT/CA1/Uplink/ONU data ကို workflow engine အတွက် ပြောင်းတယ်။",
+  "gap_mm": "Fetch (URL, x-api-key)၊ JSON decode၊ 404 → CPE_NOT_FOUND၊ retry နဲ့ normalize အကုန် unit test ရှိပါပြီ။ Node-RED အစစ်နဲ့ ချိတ်တာကိုတော့ Acceptance Cases page မှာ စစ်ပါတယ်။",
+  "note_en": "Fetch, decode, 404, retries and normalization are unit-tested; the real Node-RED is exercised on the Acceptance Cases page."
+ },
+ {
+  "ac": "AC32",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 27,
+    "name": "final_action"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/ticketHelper.go",
+    "line": 15,
+    "name": "DetermineTicketStatus"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 327,
+    "name": "TestRules_RemoteResolveDefault",
+    "asserts": "healthy ticket: Customer Support, Resolved, is_remote_resolved, Remote Resolve fields, comment, resolution description fallback and override"
+   }
+  ],
+  "how_mm": "Network နဲ့ category rule တစ်ခုမှ မကိုက်ရင် category_type_workflow ရဲ့ final_action (Customer Support, Resolved, Remote Resolve fields, comment) ကို ယူတယ်။ rtutil က is_remote_resolved ကြည့်ပြီး status ကို Resolved (Re-Open ဆို Resolved-2 ...) ပြောင်းတယ်။",
+  "gap_mm": "",
+  "note_en": "No unit test exercises the final_action default or rtutil's Resolved status mapping."
+ },
+ {
+  "ac": "AC33",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 4,
+    "name": "workflows (network_good_workflow before category_type_workflow)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 58,
+    "name": "decision_rules (no final_action)"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 366,
+    "name": "TestRules_CategoryRulesGatedByNetwork",
+    "asserts": "network rule wins over 4 matching category rules and history is never looked up"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules",
+    "asserts": "every network decision makes no history lookup"
+   }
+  ],
+  "how_mm": "Process က network_good_workflow ကို အရင်စစ်တယ်။ network rule ကိုက်ရင် ချက်ချင်း return လုပ်လို့ category rule တွေ မစစ်တော့ဘူး။ network workflow မှာ final_action မရှိလို့ ဘာမှမကိုက်မှ category workflow ကို ဆက်သွားတယ်။",
+  "gap_mm": "",
+  "note_en": "Gating relies on workflow order plus network workflow having no final_action; no test asserts it."
+ },
+ {
+  "ac": "AC34",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 57,
+    "name": "LoadWorkflowEngineConfig"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 109,
+    "name": "jsonObjectKeys"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 394,
+    "name": "TestRules_FirstMatchDecides",
+    "asserts": "16 pairs of neighbouring rules: the earlier rule in the config decides"
+   }
+  ],
+  "how_mm": "main.json ရဲ့ workflows key အစဉ်အတိုင်း workflow တွေကို load လုပ်ပြီး decision_rules ကို array အစဉ်အတိုင်း စစ်တယ်။ ပထမဆုံး ကိုက်တဲ့ rule ရဲ့ event ကို return လုပ်တယ်။",
+  "gap_mm": "Test က config ထဲက အစဉ်အတိုင်း ပထမ ကိုက်တဲ့ rule အနိုင်ရကြောင်း စစ်ပါတယ်။ \"သဘောတူထားတဲ့ အစဉ်\" ကို PRD မှာ စာရင်းအဖြစ် မတွေ့လို့ config အစဉ်က PRD နဲ့ ကိုက်လား တိုက်စစ်ရပါမယ်။",
+  "note_en": "Workflow rule order/first-match has no unit test (only eligibility rule order is checked)."
+ },
+ {
+  "ac": "AC36",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 401,
+    "name": "buildTargetPayload (isRemoteResolved only for final_action)"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 73,
+    "name": "ProcessTicket"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 318,
+    "name": "TicketNewStatusUpdate"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "updateTicketStatus"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/ticketHelper.go",
+    "line": 15,
+    "name": "DetermineTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 172,
+    "name": "checkRoute (TestRules_NetworkRules / CategoryRules)",
+    "asserts": "every routing rule sends is_remote_resolved = false"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 326,
+    "name": "TestRules_RemoteResolveDefault",
+    "asserts": "only final_action sends is_remote_resolved = true"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+    "line": 28,
+    "name": "TestWorkflowEngine_NodeRedJobFailedSetsNodeRedError",
+    "asserts": "onu_error_event sends is_remote_resolved = false"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+    "line": 118,
+    "name": "TestProcessTicket_StatusPerDecision",
+    "asserts": "fake RT: routing rule / onu_error_event: New→In_Progress, In_Progress / Re-Open(-N) unchanged (PUT without Status); Remote Resolve: New→In_Progress→Resolved, In_Progress→Resolved, Re-Open(-N)→Resolved-(N+1)"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+    "line": 170,
+    "name": "TestProcessTicket_RemoteResolveSkipsClosedStatuses",
+    "asserts": "Remote Resolve on Pending/Resolved/Cancelled/Closed: skipped, no PUT; a routed ticket in those states is updated and keeps its status"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+    "line": 201,
+    "name": "TestProcessTicket_QueueMovedBySomeone",
+    "asserts": "queue moved by someone: no queue/field update; a New ticket is still put In_Progress (agreed), other statuses untouched"
+   }
+  ],
+  "how_mm": "68d6953 နောက်ပိုင်း noc_automation က status မပို့တော့ဘူး၊ is_remote_resolved (final_action မှသာ true) ပဲ ပို့တယ်။ Status ကို rtutil က ဆုံးဖြတ်တယ်: RT မှာ New ဖြစ်ရင် rule မရွေး In_Progress ပြောင်း (TicketNewStatusUpdate)၊ is_remote_resolved ဆိုရင် DetermineTicketStatus နဲ့ Resolved / Resolved-N ပြောင်း၊ ကျန်တာ RT status မပြောင်းဘူး။",
+  "gap_mm": "ကွာဟချက် မရှိတော့ပါ။ PO/team အတည်ပြုပြီး (2026-11-28): Re-Open ticket က routing rule ကိုက်ရင် Re-Open အတိုင်း ကျန်တယ်၊ New ticket ကို rule မရွေး In_Progress ပြောင်းတယ်၊ queue ကို တခြားသူ ရွှေ့ထားရင်လည်း New→In_Progress ဖြစ်တယ် — သုံးခုလုံး မှန်တယ်။",
+  "note_en": "Covered. Since 68d6953 rtutil alone sets status: New->In_Progress for every ticket (even if the queue was moved by someone), Resolved(-N) only for is_remote_resolved, otherwise unchanged. Confirmed as intended on 2026-11-28; tested in noc_automation and rtutil."
+ },
+ {
+  "ac": "AC37",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/cmd/ticket/ticket_consume.go",
+    "line": 31,
+    "name": "handleKafkaRemoteResolveMessage"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/jsonHelper.go",
+    "line": 62,
+    "name": "PrepareFromConsumer"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 73,
+    "name": "ProcessTicket"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "updateTicketStatus"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 111,
+    "name": "checkQueue"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+    "line": 5,
+    "name": "TestCheckQueue",
+    "asserts": "decides update / already moved / moved by someone from current, before and target queue"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service_test.go",
+    "line": 36,
+    "name": "TestCommentMarker",
+    "asserts": "run comment gets the '<!-- rr:run_id -->' marker"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/kafka_message_node_red_error_test.go",
+    "line": 11,
+    "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
+    "asserts": "Kafka message node_red_error is decoded"
+   }
+  ],
+  "how_mm": "rtutil က Kafka message ကို ဖတ်ပြီး PrepareFromConsumer က target_queue, custom fields, comment ကို RT ticket payload လုပ်တယ်။ updateTicketStatus က RT REST2 PUT နဲ့ queue/fields/status ပြင်ပြီး comment ထည့်တယ်။",
+  "gap_mm": "PrepareFromConsumer ရဲ့ field mapping နဲ့ RT ကို ပို့တဲ့ PUT payload (queue, custom fields, status) နဲ့ comment ထည့်တာကို test မရှိဘူး။ ဒီ test မရှိလို့ resolution_fiber_onu_signal_dbm key က rtutil config (rx_power) နဲ့ မကိုက်ဘဲ Signal dBm က RT ထဲ မရောက်ခဲ့ဘူး — 2026-11-27 မှာ config ပြင်ပြီး live (#2851419) မှာ -27.00 ရောက်ကြောင်း အတည်ပြုပြီး။ Status က AC36 bug ကြောင့် မရောက်သေးဘူး။",
+  "note_en": "No test of the field mapping, PUT payload or comment. The missing mapping test let resolution_fiber_onu_signal_dbm go unmapped (config had rx_power), so Signal dBm never reached RT; config fixed 2026-11-27 and confirmed live on #2851419. Status still blocked by AC36."
+ },
+ {
+  "ac": "AC05",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 34,
+    "name": "CheckTicket"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 120,
+    "name": "findAlreadyProcessedRun"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/main.json",
+    "line": 40,
+    "name": "ticket_eligible_criterias.already_processed.time_window_within (24 hours)"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 59,
+    "name": "FindProcessedRunSince"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/api/controllers/remote_resolve_controller.go",
+    "line": 42,
+    "name": "RemoteResolve"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 271,
+    "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+    "asserts": "a processed run found -> ERR_ALREADY_PROCESSED, look-back is 24h (23-25h), no pipeline started"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 434,
+    "name": "TestPipelineRunRepository_FindProcessedRunSince",
+    "asserts": "SQL filters ticket_id, excludes NOT_ELIGIBLE/ALREADY_PROCESSED, completed_at >= since (sqlmock)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_controller_test.go",
+    "line": 74,
+    "name": "TestRemoteResolveController_SkippedTicketGetsNoRunID",
+    "asserts": "ERR_ALREADY_PROCESSED -> 202 without run_id and the pipeline is not started"
+   }
+  ],
+  "how_mm": "Request ရောက်တာနဲ့ CheckTicket က ပြီးခဲ့တဲ့ 24 နာရီအတွင်း ပြီးဆုံးခဲ့တဲ့ run (NOT_ELIGIBLE, ALREADY_PROCESSED မဟုတ်) ရှိမရှိ DB မှာ ရှာတယ်။ ရှိရင် skip လုပ်ပြီး run_id မပေးဘူး။",
+  "gap_mm": "",
+  "note_en": "Covered; the window counts from completed_at of any finished run except NOT_ELIGIBLE/ALREADY_PROCESSED (so FAILED/CPE_NOT_FOUND runs also block for 24 h)."
+ },
+ {
+  "ac": "AC06",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 34,
+    "name": "CheckTicket"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 120,
+    "name": "findAlreadyProcessedRun"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 59,
+    "name": "FindProcessedRunSince"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 258,
+    "name": "TestCheckTicket_EligibleTicketPasses",
+    "asserts": "no processed run returned -> CheckTicket passes and nothing is written"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 434,
+    "name": "TestPipelineRunRepository_FindProcessedRunSince",
+    "asserts": "query text has completed_at >= ? (sqlmock checks the SQL, not the time comparison)"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 452,
+    "name": "TestPipelineRunRepository_FindProcessedRunSince_NotFound",
+    "asserts": "no row -> ErrRecordNotFound"
+   }
+  ],
+  "how_mm": "24 နာရီ ကျော်သွားတဲ့ run က completed_at >= now-24h မကိုက်လို့ မတွေ့ဘူး၊ ဒါကြောင့် ticket ကို ပြန် process လုပ်တယ်။",
+  "gap_mm": "24 နာရီ ကျော်ပြီးတဲ့ run ရှိနေတဲ့ ticket ပြန်ဝင်ရင် process လုပ်ကြောင်း တိုက်ရိုက် test မရှိဘူး။ အချိန်နှိုင်းယှဉ်မှုက SQL ထဲမှာပဲ ဖြစ်ပြီး sqlmock က SQL စာသားကိုပဲ စစ်တယ်။",
+  "note_en": "Only inferred: 'not found -> pass' plus the SQL text; no test with a run older than 24 h, and the boundary is not exercised."
+ },
+ {
+  "ac": "AC07",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 135,
+    "name": "recordAlreadyProcessed"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/eligibility.go",
+    "line": 181,
+    "name": "recordFinishedRun"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/failed_api_request_sync_service.go",
+    "line": 130,
+    "name": "syncKey"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 271,
+    "name": "TestCheckTicket_AlreadyProcessedRecordsFinishedRun",
+    "asserts": "new finished run '' -> ALREADY_PROCESSED, event already_processed, reason 'Ticket already processed within 24 hours by run earlier-run;', snapshot kept"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 312,
+    "name": "TestCheckTicket_AlreadyProcessedInsertFailureStillSkips",
+    "asserts": "skip still happens if the record insert fails"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+    "line": 212,
+    "name": "TestFailedAPIRequestSync_AlreadyProcessed",
+    "asserts": "quarantined request recorded ALREADY_PROCESSED with reason and detail earlier_run_id"
+   }
+  ],
+  "how_mm": "Duplicate ဖြစ်ရင် ALREADY_PROCESSED run အသစ်တစ်ခု ရေးပြီး reason မှာ window (24 hours) နဲ့ ပထမ run_id ကို သိမ်းတယ်။",
+  "gap_mm": "AC ပြောတဲ့ \"cache information\" ကို cache မသုံးဘဲ DB lookup ရလဒ် (earlier run_id, window) အဖြစ် reason ထဲမှာ သိမ်းတယ်။ Active run ကြောင့် skip ဖြစ်ရင် ဘာ record မှ မရေးဘူး။",
+  "note_en": "Covered; 'cache info' is implemented as the earlier run_id + window in last_state_reason (no cache). Active-run skips are not recorded."
+ },
+ {
+  "ac": "AC48",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/server.go",
+    "line": 27,
+    "name": "Server.Routes"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/server.go",
+    "line": 56,
+    "name": "handleToday"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report.go",
+    "line": 266,
+    "name": "newRunItem"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report.go",
+    "line": 202,
+    "name": "newLiveItem"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/web/index.html",
+    "line": 1,
+    "name": "web UI"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/noc_automation_report_service.go",
+    "line": 191,
+    "name": "GetRunsByStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 169,
+    "name": "TestNewRunItem",
+    "asserts": "run row -> item with bucket, http_status, reason, duration, BCS fields"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 55,
+    "name": "TestNewLiveItem",
+    "asserts": "in-progress run -> owner, stage, retry info, stuck flag"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+    "line": 122,
+    "name": "TestNocAutomationReport_RunItems",
+    "asserts": "run list items get report_state, bucket, owner, stage, retry and times"
+   }
+  ],
+  "how_mm": "pipeline_report web UI က ယနေ့ pipeline_runs ကို DB ကနေ ဖတ်ပြီး card အလိုက် run list (state, reason, BCS, retry) ပြတယ်။ noc_automation မှာလည်း report API ရှိတယ်။",
+  "gap_mm": "Ticket တစ်ခုချင်းရဲ့ processing journey (pipeline_run_events timeline) ကို UI မှာ မပြဘူး၊ current state နဲ့ reason ပဲ ပြတယ်။ HTTP handler (server.go) နဲ့ HTML UI ကို test မရှိဘူး၊ Go helper တွေပဲ test ရှိတယ်။",
+  "note_en": "UI lists runs but shows no per-ticket event journey; only row-formatting helpers are unit tested."
+ },
+ {
+  "ac": "AC49",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/store.go",
+    "line": 66,
+    "name": "NewWindow"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/store.go",
+    "line": 178,
+    "name": "querySummary"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report.go",
+    "line": 136,
+    "name": "newSummaryResponse"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/noc_automation_report_service.go",
+    "line": 149,
+    "name": "GetSummary"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository.go",
+    "line": 81,
+    "name": "QuerySummary"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 10,
+    "name": "TestNewWindow",
+    "asserts": "report window is today 00:00 to next 00:00 in local time"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 117,
+    "name": "TestNewSummaryResponseSuccessSplit",
+    "asserts": "success split into remote resolved / transferred / kept in NOC"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 155,
+    "name": "TestCaseTotal",
+    "asserts": "each card total is taken from the summary"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+    "line": 69,
+    "name": "TestNocAutomationReport_SummaryTotals",
+    "asserts": "today's counts per card, window 00:00..now"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+    "line": 41,
+    "name": "TestPipelineReportRepository_QuerySummary",
+    "asserts": "summary SQL for ticket_completed, fully_completed, BCS cards, manual_check (sqlmock)"
+   }
+  ],
+  "how_mm": "ယနေ့ 00:00 ကစပြီး pipeline_runs ကို card အလိုက် (received, success/ticket completed, fully completed, not eligible, manual check, BCS) ရေတွက်ပြီး daily report အဖြစ် ပြတယ်။",
+  "gap_mm": "Report content က AC မှာ open ဖြစ်နေသေးတယ်။ SQL ကို sqlmock နဲ့ စာသားပဲ စစ်တယ်၊ UI rendering ကို test မရှိ။",
+  "note_en": "Summary/card logic and today window are unit tested; SQL only as text, UI not tested; AC content still open."
+ },
+ {
+  "ac": "AC50",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report.go",
+    "line": 43,
+    "name": "bucket"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report.go",
+    "line": 71,
+    "name": "card"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/store.go",
+    "line": 388,
+    "name": "caseWhere"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/noc_automation_report_service.go",
+    "line": 342,
+    "name": "getReportState"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository.go",
+    "line": 117,
+    "name": "QueryRunsByStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 98,
+    "name": "TestNewSummaryResponseManualCheck",
+    "asserts": "manual check = validation + API error + failed buckets (38)"
+   },
+   {
+    "repo": "pipeline_report",
+    "file": "pipeline_report/report_test.go",
+    "line": 140,
+    "name": "TestCaseConditions",
+    "asserts": "manual check SQL and bucket agree on the 7 manual-check states"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+    "line": 122,
+    "name": "TestNocAutomationReport_RunItems",
+    "asserts": "API_UNREACHABLE and ALREADY_PROCESSED runs get report_state 'Manual Check'"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+    "line": 141,
+    "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed",
+    "asserts": "manual_check card lists CONSUME_VALIDATION_FAILED, FAILED_PERMANENT, CPE_NOT_FOUND, RT_UPDATE_FAILED, NOT_ELIGIBLE, API_UNREACHABLE, ALREADY_PROCESSED (sqlmock)"
+   }
+  ],
+  "how_mm": "FAILED_PERMANENT, CPE_NOT_FOUND, RT_UPDATE_FAILED, API error စတဲ့ state တွေကို Manual Check card အဖြစ် စုပြီး run list ကို ဖွင့်ကြည့်လို့ ရတယ်။",
+  "gap_mm": "Report နှစ်ခုမှာ Manual Check အဓိပ္ပာယ် မတူဘူး: noc_automation/rtdatacore က NOT_ELIGIBLE နဲ့ ALREADY_PROCESSED ကို Manual Check ထဲ ထည့်တယ်၊ pipeline_report က not_eligible ထဲ ထည့်တယ်။",
+  "note_en": "Covered in both report implementations, but they disagree: noc_automation/rtdatacore count NOT_ELIGIBLE and ALREADY_PROCESSED as Manual Check, pipeline_report does not."
+ }
+]

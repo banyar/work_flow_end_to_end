@@ -1,0 +1,1075 @@
+[
+ {
+  "ac": "AC12",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 60,
+    "name": "OLT Status Offline"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC12 OLT offline",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "network_good_workflow ရဲ့ ပထမ rule က OLTStatus == \"offline\" ဆိုရင် NOC queue၊ Access Network-Active / Infra-Access OLT၊ status In Progress၊ Site Down comment ပေးပါတယ်။ olt.status ကို lowercase ပြောင်းပြီးမှ စစ်ပါတယ်။",
+  "gap_mm": "",
+  "note_en": "Rule exists; only test runs it via real config but asserts nothing about queue/fields; config status In Progress is dropped by rtutil."
+ },
+ {
+  "ac": "AC15",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 146,
+    "name": "ONU On/Off Status"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC15 ONU on/off",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "IsOnuOnOff (Node-RED onu.is_onu_on_off) true ဖြစ်ရင် NOC queue၊ Customer Site / Customer-ONU နဲ့ \"over 20 times\" comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag-based rule (IS_TRUE on is_onu_on_off); >20 threshold lives in Node-RED; no unit test."
+ },
+ {
+  "ac": "AC16",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 160,
+    "name": "Port Loss Status"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC16 port loss",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "IsPortLoss true ဖြစ်ရင် NOC queue၊ Customer Site / Customer-ONU နဲ့ PortLoss over 20 comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag-based rule (is_port_loss); >20 threshold in Node-RED; no unit test."
+ },
+ {
+  "ac": "AC17",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 174,
+    "name": "BIP8 Error"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC17 BIP8 errors",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "IsBIP8Error true ဖြစ်ရင် NOC queue၊ Customer Site / Customer-ONU နဲ့ BIP8 over 20 comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag-based rule (is_bip8_error); >20 threshold in Node-RED; no unit test."
+ },
+ {
+  "ac": "AC18",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 188,
+    "name": "Line Profile Mismatch"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC18 line profile mismatch",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "Node-RED ရဲ့ onu.profile.is_line_profile_mismatch true ဖြစ်ရင် NOC queue၊ Customer Site / Customer-CPE နဲ့ plan wrong comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag-based rule; value list and match type not in this code; no unit test."
+ },
+ {
+  "ac": "AC19",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 202,
+    "name": "ONU Phase State Not Working: EPC Outage"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/response/normalize_response.go",
+    "line": 14,
+    "name": "NormalizeNodeRedResponse"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC19 EPC outage",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "ONUState != \"working\" နဲ့ IsEpcOutage true ဖြစ်ရင် NOC queue၊ Customer Site / Customer-ONU နဲ့ \"under 12 hours\" comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "AND rule (not working + is_epc_outage); 12h computed in Node-RED; no unit test."
+ },
+ {
+  "ac": "AC13",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 78,
+    "name": "CA1 Status Broken"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 112,
+    "name": "Uplink Status Broken"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "RTRest2Service.updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC13 CA1 broken",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC13 uplink broken",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "CA1Status သို့မဟုတ် UplinkStatus == \"broken\" ဆိုရင် Passive-Infra queue၊ Access Network-Passive / Infra-Access Splitter၊ status In Progress နဲ့ down-area comment ပေးပါတယ်။ Rule နှစ်ခု သီးခြားရှိပါတယ်။",
+  "gap_mm": "",
+  "note_en": "Two EQUALS rules to Passive-Infra; no unit test; status not applied by rtutil."
+ },
+ {
+  "ac": "AC14",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 95,
+    "name": "CA1 Status Low Signal"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 129,
+    "name": "Uplink Status Low Signal"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "RTRest2Service.updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC14 CA1 low signal",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC14 uplink low signal",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "CA1Status သို့မဟုတ် UplinkStatus == \"low signal\" ဆိုရင် Passive-Infra queue၊ status In Progress နဲ့ high-dBm comment ပေးပါတယ်။",
+  "gap_mm": "",
+  "note_en": "Two EQUALS 'low signal' rules to Passive-Infra; no unit test; status not applied by rtutil."
+ },
+ {
+  "ac": "AC20",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 225,
+    "name": "ONU Phase State Not Working: ONU Down"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "RTRest2Service.updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC20 ONU down",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "ONUState != \"working\" နဲ့ IsEpcOutage false ဆိုရင် LANOps queue၊ status In Progress၊ ticket_problem No Internet Connection နဲ့ \"over 12 hours\" comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "AND rule (not working + !is_epc_outage) to LANOps; no unit test; empty phase_state also routes here; status not applied by rtutil."
+ },
+ {
+  "ac": "AC21",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 250,
+    "name": "ONU Phase State Working: ONU Low Dbm"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "RTRest2Service.updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC21 low dBm",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "ONUState == \"working\" နဲ့ IsLowDbm true ဆိုရင် LANOps queue၊ status In Progress၊ Unstable Connection နဲ့ -27 to -8 dBm comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag rule (is_low_dbm); dBm range not checked in Go; no unit test; status not applied by rtutil."
+ },
+ {
+  "ac": "AC22",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 275,
+    "name": "ONU Phase State Working: Swap ONU"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "RTRest2Service.updateTicketStatus"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC22 swap ONU",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "ONUState == \"working\" နဲ့ IsSwapOnu true ဆိုရင် LANOps queue၊ status In Progress၊ root_cause Swap ONU နဲ့ TX/Bias/Voltage/Temperature comment ပေးပါတယ်။",
+  "gap_mm": "Threshold (>20, 12 နာရီ, -27~-8 dBm, 1 GB) ကို Node-RED က ဆုံးဖြတ်ပြီး flag ပို့လို့ ဒီ repo မှာ flag → route ကိုပဲ စစ်ထားပါတယ်။",
+  "note_en": "Flag rule (is_swap_onu) to LANOps; ranges in Node-RED; no unit test; status not applied by rtutil."
+ },
+ {
+  "ac": "AC23",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/network_good_workflow.json",
+    "line": 301,
+    "name": "ONU Phase State Working: CPE Down"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 187,
+    "name": "TestRules_NetworkRules/AC23 ONU up, CPE down",
+    "asserts": "real config: queue, status, SAI, RCC, ticket_problem, root_cause, comment; not remote resolved; no history lookup"
+   }
+  ],
+  "how_mm": "ONUState == \"working\" နဲ့ CPEStatus == \"down\" ဆိုရင် NOC queue၊ Customer Site / Customer-ONU နဲ့ ONU online CPE offline comment ပေးပါတယ်။",
+  "gap_mm": "",
+  "note_en": "AND EQUALS rule to NOC; no unit test."
+ },
+ {
+  "ac": "AC24",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 41,
+    "name": "Remote Resolve within days with Local Service ID"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 270,
+    "name": "Engine.hasMatchingHistoricalTicket"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 336,
+    "name": "findMatchingTransactionIndex"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/custom_field_helper.go",
+    "line": 67,
+    "name": "GetTxnGroupByTicketIDs"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/transaction_repository.go",
+    "line": 135,
+    "name": "TransactionRepository.GetTxnGroupByTicketIDs"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC24 remote resolved within 14 days",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 285,
+    "name": "TestRules_RemoteResolveHistory",
+    "asserts": "fake RT DB: looks up the Local Service ID with a 14-day window; marker must come before the Customer-ONU category change"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/tests/transaction_test.go",
+    "line": 11,
+    "name": "TestGetTxnGroupByTicketIDs",
+    "asserts": "Live MySQL integration test; only prints the result, asserts nothing"
+   }
+  ],
+  "how_mm": "historical_ticket_match rule: Local Service ID တူတဲ့ ticket တွေရဲ့ 14 ရက်အတွင်း transaction တွေထဲမှာ Root Cause/Service Root Cause = Remote Resolve ပြီးမှ Root Cause Category = Customer-ONU ဖြစ်ခဲ့ရင် NOC (Customer-CPE) ကို ပို့ပါတယ်။ Query က rtdatacore ထဲက SQL (DATE_SUB NOW INTERVAL 14 DAY) ပါ။",
+  "gap_mm": "",
+  "note_en": "Rule + RT history lookup exist; no unit test of the matching logic or 14-day window; only a no-assert live-DB test in rtdatacore."
+ },
+ {
+  "ac": "AC25",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 85,
+    "name": "Program CustomField includes + Reseller"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 294,
+    "name": "evaluateContains"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC25 reseller",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   }
+  ],
+  "how_mm": "Program field က \"+ Reseller\" ပါရင် (CONTAINS) NOC queue၊ Customer Site / Customer-CPE နဲ့ Reseller comment ပေးပါတယ်။",
+  "gap_mm": "Test က \"MNet + Reseller\" ကို စစ်ထားပါတယ်။ Config က \"+ Reseller\" (case-sensitive) ကိုပဲ ရှာလို့ \"+ \" မပါတဲ့ \"Reseller\" ဆိုရင် မကိုက်ပါ — AC ရဲ့ \"includes Reseller\" ထက် ကျဉ်းပါတယ်။ RT ရဲ့ Program တန်ဖိုး အမှန်ကို အတည်ပြုရပါမယ်။",
+  "note_en": "CONTAINS '+ Reseller' (stricter than AC wording); no unit test."
+ },
+ {
+  "ac": "AC26",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 115,
+    "name": "Ticket Problem CustomField Customer Feedback"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC26 customer feedback",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   }
+  ],
+  "how_mm": "TicketProblem == \"Customer Feedback\" ဆိုရင် Level2-SbS-Commander queue၊ Customer Site / Customer-CPE နဲ့ Level2 comment ပေးပါတယ်။",
+  "gap_mm": "",
+  "note_en": "EQUALS rule to Level2-SbS-Commander; no unit test."
+ },
+ {
+  "ac": "AC27",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 100,
+    "name": "Ticket Problem CustomField Churn AI"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 281,
+    "name": "evaluateEquals"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC27 churn AI",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   }
+  ],
+  "how_mm": "TicketProblem == \"Churn AI\" ဆိုရင် NOC queue၊ Customer Site / Customer-CPE နဲ့ ChurnAI comment ပေးပါတယ်။",
+  "gap_mm": "Code က \"Churn AI\" (space ပါ) ကို သုံးပါတယ်။ AC35 စာသားမှာ \"ChurnAI\" လို့ ရေးထားလို့ RT တန်ဖိုး အမှန်ကို အတည်ပြုရပါမယ်။",
+  "note_en": "EQUALS 'Churn AI' rule to NOC; no unit test; spelling vs AC35 'ChurnAI' to confirm."
+ },
+ {
+  "ac": "AC35",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 392,
+    "name": "ShouldUpdateTicketProblem"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 379,
+    "name": "GetProtectedTicketProblems"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/jsonHelper.go",
+    "line": 62,
+    "name": "PrepareFromConsumer"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 510,
+    "name": "TestRules_ProtectedTicketProblem",
+    "asserts": "Churn AI, Customer Feedback, Installation Error are sent as empty ticket_problem; other values are overwritten"
+   }
+  ],
+  "how_mm": "buildTargetPayload က လက်ရှိ Ticket Problem က protected list (default: Churn AI, Customer Feedback, Installation Error; env PROTECTED_TICKET_PROBLEM_VALUES) ထဲပါရင် ticket_problem ကို ဗလာ ပို့ပါတယ်။ rtutil PrepareFromConsumer က ဗလာ custom field ကို ကျော်လို့ RT ထဲ မရေးပါ။",
+  "gap_mm": "Engine ဘက် (protected value ဆိုရင် ticket_problem ဗလာ ပို့) ကို စစ်ပြီးပါပြီ။ rtutil ရဲ့ PrepareFromConsumer က ဗလာ field ကို ကျော်လို့ RT တန်ဖိုး မပျက်တာကိုတော့ မစစ်ရသေးပါ (နေရာ ၂)။ AC စာသားက \"ChurnAI\"၊ code က \"Churn AI\"။",
+  "note_en": "Implemented in noc_automation + rtutil empty-skip; no unit test; 'ChurnAI' vs 'Churn AI' spelling."
+ },
+ {
+  "ac": "AC28",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 130,
+    "name": "Tag CustomField Night Check or Android Box"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 310,
+    "name": "evaluateIn"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC28 night check",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC28 android box",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   }
+  ],
+  "how_mm": "Tags list ထဲက item တစ်ခုခုက \"Night Check\" သို့မဟုတ် \"Android Box\" ဖြစ်ရင် (IN, list support) NOC queue နဲ့ {Tag} ကို match ဖြစ်တဲ့ tag နဲ့ အစားထိုးတဲ့ comment ပေးပါတယ်။",
+  "gap_mm": "",
+  "note_en": "IN on tag list with {Tag} placeholder; no unit test."
+ },
+ {
+  "ac": "AC29",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 148,
+    "name": "Root Cause Custom Field"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 310,
+    "name": "evaluateIn"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC29 termination saved",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC29 password and SSID changed",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   }
+  ],
+  "how_mm": "RootCause က \"Termination Saved\" သို့မဟုတ် \"Password & SSID Changed\" ဖြစ်ရင် NOC queue နဲ့ {RootCause} comment ပေးပါတယ်။",
+  "gap_mm": "",
+  "note_en": "IN rule on RootCause to NOC; no unit test."
+ },
+ {
+  "ac": "AC30",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 166,
+    "name": "Plan Start Date (Within Days)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 332,
+    "name": "evaluateWithin"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC30 plan started 29 days ago",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC30 regardless of usage",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 470,
+    "name": "TestRules_NewCustomerAndUsageEdges/plan started 30 days ago is remotely resolved",
+    "asserts": "plan start 30 and 45 days ago is not a new customer"
+   }
+  ],
+  "how_mm": "PlanStartDate က 30 ရက်အတွင်း (WITHIN, age 0..30 days) ဆိုရင် NOC queue၊ Customer Site / Customer-CPE နဲ့ 30-day comment ပေးပါတယ်။ Usage rule ထက် အရင် စစ်ပါတယ်။",
+  "gap_mm": "",
+  "note_en": "WITHIN 30 days (inclusive of exactly 30d, AC says under 30); no unit test."
+ },
+ {
+  "ac": "AC31",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 182,
+    "name": "Abnormal Usage (Under 1GB in last 24 hr)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/workflow_engine_configs/category_type_workflow.json",
+    "line": 5,
+    "name": "IsUsageOverGB mapping (api_error_enabled)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 232,
+    "name": "Engine.evaluateStep"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 286,
+    "name": "evaluateIsBool"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 392,
+    "name": "Engine.buildTargetPayload"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 242,
+    "name": "evaluateStep (Node-RED error checked before the condition)"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 238,
+    "name": "TestRules_CategoryRules/AC31 low usage in 24 hours",
+    "asserts": "real config with a good network: queue, SAI, RCC, comment (placeholders filled), no status, not remote resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 470,
+    "name": "TestRules_NewCustomerAndUsageEdges/usage over 1 GB is remotely resolved",
+    "asserts": "usage over 1 GB is remotely resolved"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 469,
+    "name": "TestRules_NewCustomerAndUsageEdges/missing usage (2008) takes the error route",
+    "asserts": "missing usage (false + error 2008) takes onu_error_event (NOC, Customer Site, Customer-ONU), not low usage"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 469,
+    "name": "TestRules_NewCustomerAndUsageEdges/usage answered despite an error is used",
+    "asserts": "a usage Node-RED answered (true) is used even with an error reported: Remote Resolve"
+   }
+  ],
+  "how_mm": "IsUsageOverGB (Node-RED onu.is_usage_over_gb) false ဆိုရင် NOC queue၊ Customer Site / Customer-CPE နဲ့ \"under 1 GB\" comment ပေးပါတယ်။ false ဖြစ်ပြီး onu.is_usage_over_gb error (2008) ရှိရင် onu_error_event (S4) ကို သွားပါတယ်။",
+  "gap_mm": "Low usage → NOC နဲ့ usage မရတဲ့အခါ (error 2008) error route (AC11) ကို သွားတာ နှစ်ခုလုံး test ရှိပြီ (#22962 (a) ပြင်ပြီး: engine က step ရဲ့ Node-RED error ကို condition မတိုင်ခင် စစ်တယ်)။ 1 GB အတိအကျကို Node-RED က ဆုံးဖြတ်ပါတယ်။",
+  "note_en": "IS_FALSE on is_usage_over_gb; missing usage (error 2008) now takes the error route (#22962 a fixed, error checked before the condition). 1 GB boundary is decided by Node-RED."
+ }
+]

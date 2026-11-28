@@ -1,0 +1,590 @@
+[
+ {
+  "ac": "AC09",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service.go",
+    "line": 123,
+    "name": "FetchCPEStatus"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service.go",
+    "line": 36,
+    "name": "NewNodeRedClient"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/node_red_service_test.go",
+    "line": 115,
+    "name": "TestNodeRedSleepFreesSlot",
+    "asserts": "a failed first call is retried after a fixed sleep and then succeeds (2 attempts, 300ms delay)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/node_red_client_test.go",
+    "line": 29,
+    "name": "TestNewNodeRedClient_InvalidConfig",
+    "asserts": "client refuses missing/zero NODE_RED_MAX_RETRIES and NODE_RED_TIMEOUT"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+    "line": 157,
+    "name": "TestGuard_FetchFailureSchedulesRetryFromFetching",
+    "asserts": "with retry worker ON (test default) a fetch failure SAVES a retry job - the opposite of the AC's deployed config"
+   }
+  ],
+  "how_mm": "FetchCPEStatus က NODE_RED_MAX_RETRIES (=3) ကြိမ်အထိ loop ပတ်ပြီး ကြိမ်တိုင်းကြား NODE_RED_RETRY_DELAY_MS (=1000ms) တည်ငြိမ်စွာ စောင့်သည် (backoff မရှိ)။ http.Client Timeout = NODE_RED_TIMEOUT (=30s)။ RETRY_WORKER_ENABLED=false ဆိုရင် scheduleRetry က retry job မသိမ်းဘဲ run ကို FAILED_PERMANENT ပိတ်သည်။",
+  "gap_mm": "3 ကြိမ်တိတိ ခေါ်သလား၊ 30s timeout၊ backoff မရှိခြင်း ကို test မစစ်ပါ။ 'မသိမ်း' (RETRY_WORKER_ENABLED=false) လမ်းကြောင်းကို unit test မရှိ - unit test တွေက retry ON default နဲ့ run ပြီး retry job သိမ်းတာကိုပဲ စစ်သည်။ 404 (CPE not found) ဆိုရင် retry မလုပ်ဘဲ ၁ ကြိမ်တည်းနဲ့ CPE_NOT_FOUND ပိတ်သည် (AC နဲ့ ကွဲ)။",
+  "note_en": "Retry loop exists and one test shows a retry; nothing asserts 3 total attempts, 30 s timeout, fixed delay, or the no-save (retry disabled) path."
+ },
+ {
+  "ac": "AC10",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 102,
+    "name": "fetchCPEStatus"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/noc_automation_report_service.go",
+    "line": 342,
+    "name": "getReportState"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+    "line": 122,
+    "name": "TestNocAutomationReport_RunItems",
+    "asserts": "a finished non-completed run (API_UNREACHABLE, ALREADY_PROCESSED) is reported as 'Manual Check'"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_report_repository_test.go",
+    "line": 141,
+    "name": "TestPipelineReportRepository_QueryRunsByStatus_RTSideFailed/manual_check",
+    "asserts": "manual_check card SQL includes FAILED_PERMANENT"
+   }
+  ],
+  "how_mm": "Node-RED retry ကုန်ရင် error log ရေးပြီး RETRY_WORKER_ENABLED=false ဖြစ်လို့ run ကို FAILED_PERMANENT (event cpe_fetch_failed_retry_disabled) ပိတ်သည်။ Report က FAILED_PERMANENT ကို 'Manual Check' အဖြစ် ပြသည်။ RT ကို မထိပါ။",
+  "gap_mm": "fetch fail -> FAILED_PERMANENT + cpe_fetch_failed_retry_disabled event ရေးခြင်း၊ RT မထိခြင်း ကို unit test မစစ်ပါ (retry-disabled လမ်းကို test မလုပ်)။ Report mapping ကိုသာ စစ်ထားသည်။",
+  "note_en": "Report maps FAILED_PERMANENT to Manual Check (tested); the fetch-failure -> FAILED_PERMANENT transition and 'no RT change' are untested."
+ },
+ {
+  "ac": "AC11",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 158,
+    "name": "Engine.Process"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 232,
+    "name": "Engine.evaluateStep"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/workflow_engine_helper.go",
+    "line": 178,
+    "name": "FindNodeRedError"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "updateTicketStatus"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service.go",
+    "line": 302,
+    "name": "FailPipelineRunAfterRTUpdate"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/workflow_engine_service.go",
+    "line": 242,
+    "name": "evaluateStep (Node-RED error checked before the condition)"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+    "line": 28,
+    "name": "TestWorkflowEngine_NodeRedJobFailedSetsNodeRedError",
+    "asserts": "olt.status error 2002 -> onu_error_event: queue = config's onu_error_event queue, comment = mapped error message, node_red_error set in Kafka JSON"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_node_red_error_test.go",
+    "line": 57,
+    "name": "TestWorkflowEngine_NodeRedJobFailedUnknownCode",
+    "asserts": "unmapped error code uses fallback message"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+    "line": 223,
+    "name": "TestFailPipelineRunAfterRTUpdate",
+    "asserts": "after RT update the run goes FAILED_PERMANENT with event node_red_job_failed, reason and ticket status 'in progress'"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 469,
+    "name": "TestRules_NewCustomerAndUsageEdges/missing usage (2008) takes the error route",
+    "asserts": "missing usage (false + error 2008) takes onu_error_event (NOC, Customer Site, Customer-ONU), not low usage"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 549,
+    "name": "TestRules_FailedJobBeforeFalseCondition",
+    "asserts": "ONU offline + failed EPC outage job (false + error) takes onu_error_event, not ONU Down"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/workflow_engine_rules_test.go",
+    "line": 519,
+    "name": "TestRules_UnneededFieldErrorsAreIgnored",
+    "asserts": "usage error 2008 is ignored when OLT Status Offline matches first; an error on a field no rule reads (onu.temperature) still gives Remote Resolve; no node_red_error in either"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+    "line": 257,
+    "name": "TestProcessTicket_NodeRedErrorRunIsManualCheck",
+    "asserts": "after the RT update: node_red_error → FAILED_PERMANENT / node_red_job_failed with the job error as reason (Manual Check); a routing rule → TICKET_COMPLETED / rt_updated; ticket_status In_Progress"
+   }
+  ],
+  "how_mm": "Engine က step မကိုက်ပြီး api_error_enabled field ရဲ့ value ဗလာ + Node-RED errors ထဲမှာ အဲဒီ datasource_path ရှိရင် onu_error_event (NOC, In Progress, SAI Customer Site, RCC Customer-ONU, error message comment) ထုတ်ပြီး node_red_error ထည့်သည်။ rtutil က ticket update ပြီး run ကို FAILED_PERMANENT (Manual Check) မှတ်သည်။",
+  "gap_mm": "ကွာဟချက် မရှိတော့ပါ။ Error route (NOC/SAI/RCC/comment/node_red_error)၊ error 2008၊ rule မလိုတဲ့ field error ကို လျစ်လျူရှုတာ၊ rtutil က node_red_error ရှိရင် FAILED_PERMANENT (Manual Check) ရွေးတာ အကုန် test ရှိပြီ။ Status In Progress ကို rtutil က New ticket မှာ ထားတယ် (AC36)။",
+  "note_en": "Covered: engine error route (checked before each step's condition), error 2008, unneeded-field errors ignored, and rtutil choosing FAILED_PERMANENT for node_red_error are all tested."
+ },
+ {
+  "ac": "AC46",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 102,
+    "name": "fetchCPEStatus"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/failed_api_request_sync_service.go",
+    "line": 219,
+    "name": "buildFailedAPIRequestRun"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service.go",
+    "line": 260,
+    "name": "RecordBCSFailure"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+    "line": 155,
+    "name": "TestFailedAPIRequestSync_Records",
+    "asserts": "RT External API failure (rt_web_ui quarantine) recorded as API_UNREACHABLE with reason, failed_at, event api_unreachable and detail (source, key, cpe_id, root_cause)"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+    "line": 174,
+    "name": "TestRecordBCSFailure_LeavesIsBCSSuccessNull",
+    "asserts": "CPEMS request error recorded as bcs_update_failed with the error as bcs_status_message"
+   }
+  ],
+  "how_mm": "Node-RED fail ကို zap log (cpe_id, max_retries, error) နဲ့ pipeline event (cpe_fetch_failed_retry_disabled, reason = error စာ, state FAILED_PERMANENT) အဖြစ် မှတ်သည်။ RT External API fail ကို API_UNREACHABLE run အဖြစ် sync လုပ်သည်။",
+  "gap_mm": "Node-RED API fail/timeout/invalid response ကို event အဖြစ် မှတ်တာ unit test မရှိ။ 'API name' သီးသန့် field မရှိ (event name ကနေသာ သိ)၊ Node-RED fail event မှာ detail JSON မထည့်။",
+  "note_en": "RT External API and CPEMS failure records are tested; the Node-RED failure record (S4's case) is untested and has no explicit API-name/detail field."
+ },
+ {
+  "ac": "AC38",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 172,
+    "name": "publish"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service.go",
+    "line": 114,
+    "name": "KafkaService.Produce"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service.go",
+    "line": 26,
+    "name": "NewKafkaService"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_guard_test.go",
+    "line": 93,
+    "name": "TestGuard_PublishPathIsGuardedAtEveryStep",
+    "asserts": "decision is produced once and the run moves to PUBLISHED"
+   }
+  ],
+  "how_mm": "Workflow ဆုံးဖြတ်ချက်ကို Produce နဲ့ Kafka ပို့သည်။ App-level retry loop မရှိ၊ librdkafka producer config Retries=\"3\", idempotent, message timeout ~4s ပေါ်မှာ မှီသည်။",
+  "gap_mm": "'အများဆုံး ၃ ကြိမ်' ကို test မရှိ။ librdkafka retries=3 ဆိုတာ retry ၃ ကြိမ် (စုစုပေါင်း ၄ ကြိမ်ထိ) ဖြစ်နိုင်ပြီး 4s timeout ကလည်း ကန့်သတ်သည် - AC နဲ့ အတိအကျ မကိုက်နိုင်။",
+  "note_en": "Publish is tested; the 3-attempt limit is a librdkafka setting (Retries=3, likely 4 total) with no test."
+ },
+ {
+  "ac": "AC39",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 245,
+    "name": "transitionWorkflowEvaluated"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 172,
+    "name": "publish"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository.go",
+    "line": 29,
+    "name": "PipelineRetryRepository.ScheduleRetry"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/remote_resolve_crash_test.go",
+    "line": 172,
+    "name": "TestCrash_BeforeProduce_SweeperClosesRun",
+    "asserts": "INTEGRATION (real DB): workflow_evaluated event holds the full payload before Produce; sweeper then closes run FAILED_PERMANENT"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_retry_repository_test.go",
+    "line": 14,
+    "name": "TestPipelineRetryRepository_ScheduleRetryFromState",
+    "asserts": "sqlmock: retry job not written when run moved on / missing (only refusal cases)"
+   }
+  ],
+  "how_mm": "Publish မတိုင်ခင် WORKFLOW_EVALUATED event detail ထဲ payload အပြည့် သိမ်းထားသည်။ Publish fail ရင် error log ရေးပြီး retry ON ဆို kafka publish retry job သိမ်း၊ OFF (deploy config) ဆို FAILED_PERMANENT (kafka_publish_failed_retry_disabled) ပိတ်သည်။",
+  "gap_mm": "Produce fail ဖြစ်တဲ့ case ကို unit test လုံးဝ မရှိ (fake Kafka က အမြဲ အောင်မြင်)။ Payload သိမ်းခြင်းကို live DB integration test ကသာ စစ်သည်။",
+  "note_en": "Payload is saved at WORKFLOW_EVALUATED (integration test only); no unit test drives a failed publish."
+ },
+ {
+  "ac": "AC40",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/noc_sweeper/publish_timeout_sweeper.go",
+    "line": 192,
+    "name": "PublishTimeoutSweeper.SweepOnce"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/noc_automation_report_service.go",
+    "line": 342,
+    "name": "getReportState"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+    "line": 105,
+    "name": "TestPublishTimeoutSweeper_SweepOnce",
+    "asserts": "a run stuck in WORKFLOW_EVALUATED is closed FAILED_PERMANENT with workflow_publish_timeout"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_automation_report_test.go",
+    "line": 122,
+    "name": "TestNocAutomationReport_RunItems",
+    "asserts": "failed terminal runs show as 'Manual Check'"
+   }
+  ],
+  "how_mm": "RETRY_WORKER_ENABLED=false ဖြစ်လို့ publish fail ရင် run ကို FAILED_PERMANENT ပိတ်ပြီး report မှာ Manual Check ပြသည်။ ပိတ်မသွားရင် sweeper က WORKFLOW_EVALUATED ကြာနေတာကို FAILED_PERMANENT ပိတ်သည်။",
+  "gap_mm": "Produce fail -> kafka_publish_failed_retry_disabled -> FAILED_PERMANENT ကို တိုက်ရိုက် test မရှိ။ Sweeper safety net နဲ့ report mapping ကိုသာ စစ်ထားသည်။",
+  "note_en": "Sweeper safety net and Manual Check mapping are tested; the direct failed-publish -> FAILED_PERMANENT path is not."
+ },
+ {
+  "ac": "AC45",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/remote_resolve_helper.go",
+    "line": 35,
+    "name": "NewPipelineRun"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 245,
+    "name": "transitionWorkflowEvaluated"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 268,
+    "name": "PipelineRunRepository.TransitionStateIf"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/remote_resolve_create_run_test.go",
+    "line": 50,
+    "name": "TestCreateRun_CutsReportColumnsToFit",
+    "asserts": "run row gets ticket_no, cpe_id, status, township etc. at creation"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/failed_api_request_sync_test.go",
+    "line": 155,
+    "name": "TestFailedAPIRequestSync_Records",
+    "asserts": "failed API request row has ticket, cpe_id, before_queue, status, reason, created_at/completed_at"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 34,
+    "name": "TestPipelineRunRepository_TransitionStateIf",
+    "asserts": "FAILED_PERMANENT transition updates completed_at/current_state/last_state_reason and inserts an event row"
+   }
+  ],
+  "how_mm": "pipeline_runs row တစ်ခုမှာ ticket_id, cpe_id, before_queue/target_queue, final_message/last_state_reason, created/updated/completed_at ရှိပြီး pipeline_run_events မှာ occurred_at နဲ့ step တိုင်း မှတ်သည်။",
+  "gap_mm": "Node-RED fail / Kafka publish fail run တစ်ခုမှာ field အားလုံး ပါ/မပါ ကို တစ်ခုတည်းသော test က မစစ်ပါ။ Field တွေကို အပိုင်းအစ test တွေကသာ စစ်သည်။",
+  "note_en": "Fields exist on pipeline_runs/events and are asserted piecemeal; no test checks a failed step's record carries all required fields."
+ },
+ {
+  "ac": "AC47",
+  "status": "none",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/kafka_service.go",
+    "line": 114,
+    "name": "KafkaService.Produce"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 172,
+    "name": "publish"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/services/remote_resolve_service.go",
+    "line": 337,
+    "name": "scheduleRetry"
+   }
+  ],
+  "tests": [],
+  "how_mm": "Produce fail ရင် zap log (run_id, event_id, error) ရေးပြီး scheduleRetry က event kafka_publish_failed_retry_disabled + reason (error စာ) + FAILED_PERMANENT ရေးသည်။",
+  "gap_mm": "Unit test မရှိ။ Failure log/event မှာ topic မပါ (topic က success log မှာသာ)၊ retry count မပါ (retry-disabled event မှာ detail မထည့်)။",
+  "note_en": "No test; the failure record lacks topic and retry count (only error text and FAILED_PERMANENT)."
+ },
+ {
+  "ac": "AC41",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_service.go",
+    "line": 128,
+    "name": "updateTicketStatus"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service.go",
+    "line": 52,
+    "name": "StartBestChannelSelection"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+    "line": 47,
+    "name": "TestStartBestChannelSelection_Accepted",
+    "asserts": "POST /api/v2/cpes/{cpe}/channel-selections with band 2.4g, X-Request-ID=run_id, callback_url; job_id returned"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/cpems/cpems_service_test.go",
+    "line": 120,
+    "name": "TestStartBestChannelSelection_RetriesExhausted",
+    "asserts": "5xx retried up to configured 3 calls then error"
+   }
+  ],
+  "how_mm": "rtutil က Kafka message ရဲ့ is_remote_resolved=true ဖြစ်ပြီး ticket skip မဖြစ်ရင် BCS_UPDATING ပြောင်းကာ CPEMS/Peppermint ကို 2.4g channel selection POST ပို့သည်။",
+  "gap_mm": "Remote Resolve ဆိုမှ trigger လုပ်/မဟုတ်ရင် မလုပ် ဆိုတဲ့ updateTicketStatus branch ကို unit test မရှိ။ Peppermint request ကိုသာ စစ်ထားသည်။",
+  "note_en": "The Peppermint call (2.4g, CPE, run_id) is well tested; the 'only when Remote Resolve' gate is not."
+ },
+ {
+  "ac": "AC42",
+  "status": "partial",
+  "functions": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper.go",
+    "line": 51,
+    "name": "BCSJobResultInput"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper.go",
+    "line": 28,
+    "name": "ParseBCSWebhook"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/noc_sweeper/noc_result_sweeper.go",
+    "line": 103,
+    "name": "BCSResultSweeper.SweepOnce"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+    "line": 57,
+    "name": "TestParseBCSWebhook_SuccessMessage",
+    "asserts": "succeeded_new_channel -> 'Success (new channel)', succeeded_same_channel -> 'Success (same channel)'"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+    "line": 88,
+    "name": "TestParseBCSWebhook_Failed",
+    "asserts": "failed -> bcs_update_failed with 'Failed (CODE:message)'"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/helpers/bcs_webhook_helper_test.go",
+    "line": 172,
+    "name": "TestParseBCSWebhook_SkippedAndUnconfirmed",
+    "asserts": "skipped/unconfirmed are recorded as FAILED ('Failed (skipped)' or error text)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/noc_sweeper_test.go",
+    "line": 314,
+    "name": "TestBCSResultSweeper_SweepOnce",
+    "asserts": "poller records the same outcomes; stuck jobs give up as failed (bcs_result_gave_up)"
+   }
+  ],
+  "how_mm": "Webhook နဲ့ result sweeper နှစ်ခုလုံး BCSJobResultInput သုံးပြီး succeeded_new_channel/same_channel ကို Success၊ failed/skipped/unconfirmed ကို Failed (is_bcs_success=false) အဖြစ် message နဲ့ မှတ်သည်။",
+  "gap_mm": "Skipped ကို သီးသန့် 'Skipped' မမှတ်ဘဲ Failed အဖြစ်မှတ်သည် (AC နဲ့ ကွဲ)။ TIMEOUT_BEFORE_SEND case test မရှိ (code မှာ generic 'Failed (TIMEOUT_BEFORE_SEND:...)' ဖြစ်မည်)။ unconfirmed ကိုလည်း Failed မှတ်သည်။",
+  "note_en": "Success new/same and Failed are tested; Skipped is stored as Failed (differs from AC) and TIMEOUT_BEFORE_SEND has no test."
+ },
+ {
+  "ac": "AC43",
+  "status": "covered",
+  "functions": [
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 191,
+    "name": "completedState"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository.go",
+    "line": 355,
+    "name": "PipelineRunRepository.RecordBCSResult"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service.go",
+    "line": 280,
+    "name": "CompletePipelineRun"
+   }
+  ],
+  "tests": [
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 120,
+    "name": "TestPipelineRunRepository_TransitionState_TicketCompleted",
+    "asserts": "RT update -> TICKET_COMPLETED when BCS null/failed, FULLY_COMPLETED when BCS succeeded earlier or in same transition"
+   },
+   {
+    "repo": "rtdatacore",
+    "file": "rtdatacore/pkg/driven/rtdb/pipeline_run_repository_test.go",
+    "line": 208,
+    "name": "TestPipelineRunRepository_RecordBCSResult",
+    "asserts": "BCS success on TICKET_COMPLETED run -> FULLY_COMPLETED; failure stays TICKET_COMPLETED; success before ticket done leaves state"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtdb/pipeline_run_service_test.go",
+    "line": 210,
+    "name": "TestCompletePipelineRun_OpenRunHasNoLateEvent",
+    "asserts": "rtutil completes an open run as TICKET_COMPLETED"
+   }
+  ],
+  "how_mm": "RT update ပြီးရင် rtutil က TICKET_COMPLETED ရေးပြီး BCS အောင်ပြီးသားဆို repo က FULLY_COMPLETED ပြောင်းသည်။ BCS result နောက်မှရောက်ပြီး အောင်ရင် TICKET_COMPLETED -> FULLY_COMPLETED၊ fail/skip ဆို TICKET_COMPLETED မှာ ကျန်ပြီး RT ကို ထပ်မထိ။",
+  "gap_mm": "",
+  "note_en": "TICKET_COMPLETED vs FULLY_COMPLETED in both orders (BCS before/after RT update) is asserted with sqlmock."
+ }
+]

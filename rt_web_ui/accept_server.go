@@ -21,6 +21,13 @@ import (
 //go:embed accept_ui.html
 var acceptUI []byte
 
+// coverage_ui.html (/coverage) maps each Story AC (Redmine Epic #22947) to
+// the code that implements it and the unit tests that assert it. It is a
+// generated snapshot with its data inline; regenerate it after code changes.
+//
+//go:embed coverage_ui.html
+var coverageUI []byte
+
 const defaultMockAdminToken = "rt-web-ui-accept"
 
 type caseResult struct {
@@ -66,6 +73,10 @@ func (s *acceptServer) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /accept", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write(acceptUI)
+	})
+	mux.HandleFunc("GET /coverage", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(coverageUI)
 	})
 	mux.HandleFunc("GET /api/accept/cases", s.handleCases)
 	mux.HandleFunc("GET /api/accept/cases/{id}/requirements", s.handleRequirements)
