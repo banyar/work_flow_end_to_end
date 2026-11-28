@@ -194,7 +194,7 @@
  },
  {
   "ac": "AC44",
-  "status": "partial",
+  "status": "covered",
   "functions": [
    {
     "repo": "noc_automation",
@@ -304,9 +304,9 @@
     "asserts": "run row and its first event are inserted in one transaction (sqlmock)"
    }
   ],
-  "how_mm": "Ticket တစ်ခုစီအတွက် pipeline_runs row တစ်ခုနဲ့ pipeline_run_events တွေ ရေးတယ်။ WORKFLOW_EVALUATED မှာ ကိုက်တဲ့ rule နာမည် (DecisionName) ကို final_message column မှာ သိမ်းတယ်။ Event detail ထဲမှာ Node-RED response အပြည့်နဲ့ workflow decision ကို သိမ်းတယ်။",
-  "gap_mm": "Rule နာမည်ကို final_message မှာ သိမ်းပြီး test လည်း ရှိပါပြီ (commit 264f594)။ ကျန်တာ — (၁) ဘယ် workflow၊ ဘယ် condition နဲ့ ကိုက်လဲ၊ ရှေ့က ဘယ် rule တွေ စစ်ခဲ့လဲ (rules evaluated) မသိမ်းဘူး။ (၂) Node-RED error ကြောင့် ဆုံးဖြတ်ရင် ဘယ် rule စစ်နေတုန်း ဖြစ်လဲ မသိမ်းဘူး။ (၃) Active run ရှိလို့ skip ဖြစ်တဲ့ request နဲ့ queue/ticket_id မပါတဲ့ validation error request ကို record မရေးဘူး။",
-  "note_en": "The matched rule's name is now saved as final_message (264f594) and tested. Still missing: the workflow, matched condition and rules evaluated; the step being checked when a Node-RED error decided; and records for active-run skips and some validation errors."
+  "how_mm": "Ticket တစ်ခုစီအတွက် pipeline_runs row တစ်ခုနဲ့ pipeline_run_events တွေ ရေးတယ်။ WORKFLOW_EVALUATED မှာ ကိုက်တဲ့ rule နာမည် (DecisionName) ကို final_message column မှာ သိမ်းတယ်။ Event detail ထဲမှာ Node-RED response အပြည့်နဲ့ workflow decision ကို သိမ်းတယ်။ PO က အခုရှိတဲ့ မှတ်တမ်း (ဆုံးဖြတ်ချက်၊ ကိုက်တဲ့ rule နာမည်၊ integration ရလဒ်၊ fail အကြောင်းရင်း၊ final status) လုံလောက်တယ်လို့ အတည်ပြုပြီး (2026-11-28)။ နောက် release အတွက် မှတ်ထားတာ — စစ်ခဲ့တဲ့ rule စာရင်း/condition၊ Node-RED error ဖြစ်တဲ့ step/field၊ active-run skip နဲ့ queue/ticket_id မပါတဲ့ validation error request အတွက် record။",
+  "gap_mm": "",
+  "note_en": "Accepted by the PO on 2026-11-28 as is: decision, matched rule name, integration results, failure reason and final status are recorded and tested. Deferred to a later release: the rules evaluated / matched condition, the step or field of a Node-RED error, and records for active-run skips and validation errors without queue / ticket_id."
  },
  {
   "ac": "AC08",
@@ -607,21 +607,21 @@
    {
     "repo": "rtutil",
     "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
-    "line": 118,
+    "line": 135,
     "name": "TestProcessTicket_StatusPerDecision",
     "asserts": "fake RT: routing rule / onu_error_event: New→In_Progress, In_Progress / Re-Open(-N) unchanged (PUT without Status); Remote Resolve: New→In_Progress→Resolved, In_Progress→Resolved, Re-Open(-N)→Resolved-(N+1)"
    },
    {
     "repo": "rtutil",
     "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
-    "line": 170,
+    "line": 187,
     "name": "TestProcessTicket_RemoteResolveSkipsClosedStatuses",
     "asserts": "Remote Resolve on Pending/Resolved/Cancelled/Closed: skipped, no PUT; a routed ticket in those states is updated and keeps its status"
    },
    {
     "repo": "rtutil",
     "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
-    "line": 201,
+    "line": 218,
     "name": "TestProcessTicket_QueueMovedBySomeone",
     "asserts": "queue moved by someone: no queue/field update; a New ticket is still put In_Progress (agreed), other statuses untouched"
    }
@@ -632,7 +632,7 @@
  },
  {
   "ac": "AC37",
-  "status": "partial",
+  "status": "covered",
   "functions": [
    {
     "repo": "rtutil",
@@ -686,11 +686,32 @@
     "line": 11,
     "name": "TestUnmarshalKafkaTicketMessage_NodeRedError",
     "asserts": "Kafka message node_red_error is decoded"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+    "line": 76,
+    "name": "TestConfig_MapsEveryNocCustomField",
+    "asserts": "every custom_fields key noc_automation sends (incl. resolution_fiber_onu_signal_dbm) has an RT field in rtutil_k8.json, .rtutil.json and rtutil.json.example"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+    "line": 97,
+    "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+    "asserts": "Kafka message -> target queue (before queue kept), each custom field under its RT name (Signal dBm -> Resolved Fiber ONU Signal dBm), empty values left out"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/services/rtrest2/ticket_status_test.go",
+    "line": 321,
+    "name": "TestProcessTicket_AddsDecisionComment",
+    "asserts": "RT gets one PUT with the target queue and custom fields, then one HTML comment: the decision message + <!-- rr:run_id --> marker"
    }
   ],
-  "how_mm": "rtutil က Kafka message ကို ဖတ်ပြီး PrepareFromConsumer က target_queue, custom fields, comment ကို RT ticket payload လုပ်တယ်။ updateTicketStatus က RT REST2 PUT နဲ့ queue/fields/status ပြင်ပြီး comment ထည့်တယ်။",
-  "gap_mm": "PrepareFromConsumer ရဲ့ field mapping နဲ့ RT ကို ပို့တဲ့ PUT payload (queue, custom fields, status) နဲ့ comment ထည့်တာကို test မရှိဘူး။ ဒီ test မရှိလို့ resolution_fiber_onu_signal_dbm key က rtutil config (rx_power) နဲ့ မကိုက်ဘဲ Signal dBm က RT ထဲ မရောက်ခဲ့ဘူး — 2026-11-27 မှာ config ပြင်ပြီး live (#2851419) မှာ -27.00 ရောက်ကြောင်း အတည်ပြုပြီး။ Status က AC36 bug ကြောင့် မရောက်သေးဘူး။",
-  "note_en": "No test of the field mapping, PUT payload or comment. The missing mapping test let resolution_fiber_onu_signal_dbm go unmapped (config had rx_power), so Signal dBm never reached RT; config fixed 2026-11-27 and confirmed live on #2851419. Status still blocked by AC36."
+  "how_mm": "rtutil က Kafka message ကို ဖတ်ပြီး PrepareFromConsumer က target queue နဲ့ custom field တွေကို config ရဲ့ mapping အတိုင်း RT field နာမည် ပြောင်းတယ် (ဗလာ value ချန်)။ ProcessTicket က RT REST2 PUT နဲ့ queue/fields ပြင်ပြီး decision message ကို run marker နဲ့ comment ထည့်တယ်။ Mapping၊ config key နဲ့ PUT + comment ကို test စစ်တယ်။",
+  "gap_mm": "",
+  "note_en": "Mapping, config keys, and the PUT + comment sent to RT are unit tested."
  },
  {
   "ac": "AC05",
@@ -756,7 +777,7 @@
  },
  {
   "ac": "AC06",
-  "status": "partial",
+  "status": "covered",
   "functions": [
    {
     "repo": "noc_automation",
@@ -781,6 +802,13 @@
    {
     "repo": "noc_automation",
     "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
+    "line": 376,
+    "name": "TestCheckTicket_ProcessedAgainAfter24Hours",
+    "asserts": "with a repo that compares completed_at >= since like the SQL: a run completed 24h01m or 3 days ago -> processed again (nothing written); 23h59m ago -> ALREADY_PROCESSED; the check looks back exactly now - 24h (main.json window)"
+   },
+   {
+    "repo": "noc_automation",
+    "file": "NocAutomationCodeMerge/noc_automation/frontiir/tests/unit/eligibility_test.go",
     "line": 258,
     "name": "TestCheckTicket_EligibleTicketPasses",
     "asserts": "no processed run returned -> CheckTicket passes and nothing is written"
@@ -800,9 +828,9 @@
     "asserts": "no row -> ErrRecordNotFound"
    }
   ],
-  "how_mm": "24 နာရီ ကျော်သွားတဲ့ run က completed_at >= now-24h မကိုက်လို့ မတွေ့ဘူး၊ ဒါကြောင့် ticket ကို ပြန် process လုပ်တယ်။",
-  "gap_mm": "24 နာရီ ကျော်ပြီးတဲ့ run ရှိနေတဲ့ ticket ပြန်ဝင်ရင် process လုပ်ကြောင်း တိုက်ရိုက် test မရှိဘူး။ အချိန်နှိုင်းယှဉ်မှုက SQL ထဲမှာပဲ ဖြစ်ပြီး sqlmock က SQL စာသားကိုပဲ စစ်တယ်။",
-  "note_en": "Only inferred: 'not found -> pass' plus the SQL text; no test with a run older than 24 h, and the boundary is not exercised."
+  "how_mm": "CheckTicket က main.json ရဲ့ already_processed window (24 hours) နဲ့ now − 24h ကို တွက်ပြီး completed_at >= since ဖြစ်တဲ့ run ကို ရှာတယ်။ ၂၄ နာရီ ကျော်ပြီးတဲ့ run က မကိုက်တော့လို့ ticket ကို ပြန် process လုပ်တယ်။ SQL လို နှိုင်းယှဉ်တဲ့ fake repo နဲ့ 24h01m / 23h59m နှစ်ဖက်လုံးကို test စစ်တယ်။",
+  "gap_mm": "",
+  "note_en": "Unit tested with a repo that compares completed_at like the SQL (24h01m -> processed, 23h59m -> ALREADY_PROCESSED) and the exact now - 24h look-back. The MySQL comparison itself is only covered by the query text."
  },
  {
   "ac": "AC07",
@@ -856,7 +884,7 @@
  },
  {
   "ac": "AC48",
-  "status": "partial",
+  "status": "covered",
   "functions": [
    {
     "repo": "pipeline_report",
@@ -918,9 +946,9 @@
     "asserts": "run list items get report_state, bucket, owner, stage, retry and times"
    }
   ],
-  "how_mm": "pipeline_report web UI က ယနေ့ pipeline_runs ကို DB ကနေ ဖတ်ပြီး card အလိုက် run list (state, reason, BCS, retry) ပြတယ်။ noc_automation မှာလည်း report API ရှိတယ်။",
-  "gap_mm": "Ticket တစ်ခုချင်းရဲ့ processing journey (pipeline_run_events timeline) ကို UI မှာ မပြဘူး၊ current state နဲ့ reason ပဲ ပြတယ်။ HTTP handler (server.go) နဲ့ HTML UI ကို test မရှိဘူး၊ Go helper တွေပဲ test ရှိတယ်။",
-  "note_en": "UI lists runs but shows no per-ticket event journey; only row-formatting helpers are unit tested."
+  "how_mm": "pipeline_report web UI က ယနေ့ pipeline_runs ကို DB ကနေ ဖတ်ပြီး card အလိုက် run list (ticket၊ state၊ queue၊ BCS၊ reason၊ အချိန်) ပြတယ်၊ ticket နံပါတ်က RT ကို link လုပ်တယ်၊ CSV export ရတယ်။ PO ဆုံးဖြတ်ချက် (2026-11-28): \"ဒီနေ့ပဲ\" လုံလောက်ပြီး ticket တစ်ခုချင်းရဲ့ journey view (pipeline_run_events timeline) က ဒီ release မှာ မလို — နောက် release အတွက် ချန်ထား။ Event data ကတော့ DB မှာ ရှိပြီးသား။",
+  "gap_mm": "",
+  "note_en": "Accepted by the PO on 2026-11-28: today's processed tickets are listed per card (state, queue, BCS, reason, times, RT link, CSV). The per-ticket journey view (pipeline_run_events timeline) is not needed in this release; the event data is already stored."
  },
  {
   "ac": "AC49",

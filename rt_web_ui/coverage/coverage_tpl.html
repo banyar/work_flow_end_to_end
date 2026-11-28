@@ -101,6 +101,13 @@ header a { color: var(--accent); font-size: 13px; }
 .repo { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-right: 6px; }
 .ok { color: var(--ok); } .bad { color: var(--bad); } .dim { color: var(--muted); }
 .empty { color: var(--muted); font-style: italic; }
+.needs li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; }
+.needs li .where { grid-column: 2; }
+.kind { font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.k-test { background: var(--accent-soft); color: var(--accent); }
+.k-code { background: var(--warn-soft); color: var(--warn); }
+.k-decide { background: var(--bad-soft); color: var(--bad); }
+.ncount { display: inline-block; margin-left: 6px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .foot { font-size: 12px; color: var(--muted); }
 </style>
 </head>
@@ -141,6 +148,7 @@ const L = {
       <li><b>⛔ Code မရှိ</b> — ဒီ AC ကို လုပ်တဲ့ code မတွေ့ဘူး။</li></ul>
       Live system ပေါ်က end-to-end စစ်ချက်တွေကတော့ Acceptance Cases page မှာ ရှိပါတယ်။`,
     th: ['AC', 'Story', 'Coverage', 'ဘာစစ်ရမလဲ', 'Tests'],
+    needs: 'ပြည့်ဖို့ လိုတာ', kind: { test: '🧪 Test ရေး', code: '🛠 Code ပြင်', decide: '❓ ဆုံးဖြတ်' }, ncount: n => `လိုတာ ${n} ချက်`,
     how: 'Code က ဘယ်လို လုပ်လဲ', gap: 'ဘာ ကျန်သေးလဲ (✅ မဖြစ်ရတဲ့ အကြောင်း)', fn: 'လုပ်တဲ့ function / config',
     tests: 'Assert လုပ်တဲ့ unit test', notests: 'ဒီ AC ကို assert လုပ်တဲ့ unit test မရှိပါ', acen: 'AC မူရင်း (Redmine)',
     run: { pass: '✔ pass', fail: '✘ fail', unknown: '· run မတွေ့' },
@@ -157,6 +165,7 @@ const L = {
       <li><b>⛔ Not built</b> — no code implements the AC.</li></ul>
       End-to-end checks against the live system are on the Acceptance Cases page.`,
     th: ['AC', 'Story', 'Coverage', 'What must hold', 'Tests'],
+    needs: 'To make it ✅', kind: { test: '🧪 Write a test', code: '🛠 Change code', decide: '❓ Decide' }, ncount: n => `${n} to do`,
     how: 'How the code does it', gap: 'What is missing', fn: 'Implemented by',
     tests: 'Unit tests that assert it', notests: 'No unit test asserts this AC', acen: 'AC (Redmine)',
     run: { pass: '✔ pass', fail: '✘ fail', unknown: '· not in run' },
@@ -173,7 +182,7 @@ const $ = id => document.getElementById(id);
 function visible() {
   const s = q.trim().toLowerCase();
   return DATA.items.filter(i => (tab === 'all' || i.story === tab) && (!filt || i.status === filt) &&
-    (!s || [i.ac, i.title, i.text, i.mm, i.how, i.gap, ...i.functions.map(f => f.name + ' ' + f.file), ...i.tests.map(t => t.name + ' ' + t.file)].join(' ').toLowerCase().includes(s)));
+    (!s || [i.ac, i.title, i.text, i.mm, i.how, i.gap, ...i.needs.map(x => x.mm + ' ' + x.en + ' ' + x.where), ...i.functions.map(f => f.name + ' ' + f.file), ...i.tests.map(t => t.name + ' ' + t.file)].join(' ').toLowerCase().includes(s)));
 }
 
 function render() {
@@ -209,7 +218,7 @@ function render() {
     const pass = i.tests.filter(t => t.state === 'pass').length;
     const row = `<tr class="row${open.has(i.ac) ? ' open' : ''}" data-ac="${i.ac}">
       <td class="id">${i.ac}</td><td class="id">${i.story}</td>
-      <td><span class="pill p-${i.status}">${T.st[i.status]}</span></td>
+      <td><span class="pill p-${i.status}">${T.st[i.status]}</span>${i.needs.length ? `<span class="ncount">${T.ncount(i.needs.length)}</span>` : ''}</td>
       <td>${esc(lang === 'my' ? i.mm : i.title)}<span class="sub">${esc(lang === 'my' ? i.title : i.note)}</span></td>
       <td class="num">${i.tests.length ? `${pass}/${i.tests.length}` : '—'}</td></tr>`;
     return row + (open.has(i.ac) ? detail(i, T) : '');
@@ -224,10 +233,12 @@ function detail(i, T) {
       <br><span class="code">${esc(t.file)}${t.line ? ':' + t.line : ''}</span><span class="sub">${esc(t.asserts)}</span></li>`).join('')}</ul>` : `<p class="empty">${T.notests}</p>`;
   const gap = i.status !== 'covered' && (lang === 'my' ? i.gap : i.note)
     ? `<div><h4>${T.gap}</h4><p class="gap${i.status === 'none' || i.status === 'not_built' ? ' none' : ''}">${esc(lang === 'my' ? i.gap : i.note)}</p></div>` : '';
+  const needs = i.needs.length ? `<div><h4>${T.needs}</h4><ul class="list needs">${i.needs.map(x => `<li><span class="kind k-${x.kind}">${T.kind[x.kind]}</span><span>${esc(lang === 'my' ? x.mm : x.en)}</span>${x.where ? `<span class="where"><span class="code">${esc(x.where)}</span></span>` : ''}</li>`).join('')}</ul></div>` : '';
   return `<tr class="detail"><td colspan="5"><div class="det">
     <div><h4>${T.acen}</h4><p><b>${esc(i.title)}</b> — ${esc(i.text)}</p></div>
     ${lang === 'my' && i.how ? `<div><h4>${T.how}</h4><p>${esc(i.how)}</p></div>` : ''}
     ${gap}
+    ${needs}
     <div><h4>${T.fn}</h4>${fns}</div>
     <div><h4>${T.tests}</h4>${tests}</div>
   </div></td></tr>`;

@@ -14,6 +14,7 @@ After the code or the tests change, run `./run_tests.sh` first. It refreshes the
 - `gt_*.json`: `go test -json` output of noc_automation, rtutil, rtdatacore and pipeline_report (written by `run_tests.sh`).
 - `rm/*.json`, `parent.json`: the Redmine Story issues of Epic #22947 (AC text). `gen_stories.py rm ../stories.html` rebuilds the stories page from them.
 - `mm.py`: Burmese text of the stories and ACs.
+- `needs.py`: what each 🟡/❌ AC still needs to become ✅ (a test to write, a code change, or a PO decision). gen_coverage.py stops if a 🟡/❌ AC has no entry; remove an entry once the AC is ✅.
 - `coverage_tpl.html`, `qa_tpl.html`: the page templates.
 - QA page only:
   - `parse_r2026.py`: reads the Google Sheets HTML export.

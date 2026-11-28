@@ -1,6 +1,7 @@
 import json, re, os, sys, html, subprocess, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mm
+from needs import NEEDS
 HERE = os.path.dirname(os.path.abspath(__file__))
 RT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 out = sys.argv[1]
@@ -72,9 +73,11 @@ for st in stories:
         c, x = cov[a], acs[a]
         items.append(dict(ac=a, story=st['s'], issue=st['id'], title=x['title'], text=x['text'], mm=mm.AC.get(a, ''),
             status=c['status'], how=c.get('how_mm', ''), gap=c.get('gap_mm', ''), note=c.get('note_en', ''),
-            functions=c.get('functions', []),
+            functions=c.get('functions', []), needs=NEEDS.get(a, []),
             tests=[dict(t, state=tstate(t.get('name', ''))) for t in c.get('tests', [])]))
 
+missing_needs = [i['ac'] for i in items if i['status'] != 'covered' and not i['needs']]
+if missing_needs: sys.exit(f'needs.py has nothing for {missing_needs}')
 data = dict(generated=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), env=env,
             stories=[dict(s=s['s'], id=s['id'], subject=s['subject'], mm=s['mm']) for s in stories], items=items)
 tpl = open(os.path.join(HERE, 'coverage_tpl.html')).read()

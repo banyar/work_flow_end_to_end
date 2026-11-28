@@ -797,7 +797,7 @@
  },
  {
   "ac": "AC35",
-  "status": "partial",
+  "status": "covered",
   "functions": [
    {
     "repo": "noc_automation",
@@ -831,11 +831,18 @@
     "line": 510,
     "name": "TestRules_ProtectedTicketProblem",
     "asserts": "Churn AI, Customer Feedback, Installation Error are sent as empty ticket_problem; other values are overwritten"
+   },
+   {
+    "repo": "rtutil",
+    "file": "NocAutomationCodeMerge/remote-resolved-queue-transfer/internal/helper/json_helper_test.go",
+    "line": 97,
+    "name": "TestPrepareFromConsumer_MapsQueueAndFields",
+    "asserts": "an empty ticket_problem (protected value) is left out of the RT update, so RT keeps its value"
    }
   ],
-  "how_mm": "buildTargetPayload က လက်ရှိ Ticket Problem က protected list (default: Churn AI, Customer Feedback, Installation Error; env PROTECTED_TICKET_PROBLEM_VALUES) ထဲပါရင် ticket_problem ကို ဗလာ ပို့ပါတယ်။ rtutil PrepareFromConsumer က ဗလာ custom field ကို ကျော်လို့ RT ထဲ မရေးပါ။",
-  "gap_mm": "Engine ဘက် (protected value ဆိုရင် ticket_problem ဗလာ ပို့) ကို စစ်ပြီးပါပြီ။ rtutil ရဲ့ PrepareFromConsumer က ဗလာ field ကို ကျော်လို့ RT တန်ဖိုး မပျက်တာကိုတော့ မစစ်ရသေးပါ (နေရာ ၂)။ AC စာသားက \"ChurnAI\"၊ code က \"Churn AI\"။",
-  "note_en": "Implemented in noc_automation + rtutil empty-skip; no unit test; 'ChurnAI' vs 'Churn AI' spelling."
+  "how_mm": "buildTargetPayload က လက်ရှိ Ticket Problem က protected list (default: Churn AI, Customer Feedback, Installation Error; env PROTECTED_TICKET_PROBLEM_VALUES) ထဲပါရင် ticket_problem ကို ဗလာ ပို့ပါတယ်။ rtutil PrepareFromConsumer က ဗလာ custom field ကို ကျော်လို့ RT ထဲ မရေးပါ။ Engine က protected value (Churn AI စသည်) ဆိုရင် ticket_problem ကို ဗလာ ပို့ပြီး rtutil က ဗလာ field ကို RT update ထဲ မထည့်လို့ RT ရဲ့ value မပျက်ဘူး — နှစ်ဖက်လုံး test ရှိတယ်။ Value စာလုံးပေါင်းက \"Churn AI\" (space ပါ) မှန်ကြောင်း PO အတည်ပြုပြီး (2026-11-28)။",
+  "gap_mm": "",
+  "note_en": "Both sides are tested: the engine sends an empty ticket_problem for a protected value and rtutil leaves empty fields out of the RT update. The PO confirmed \"Churn AI\" (with a space) as the value on 2026-11-28."
  },
  {
   "ac": "AC28",

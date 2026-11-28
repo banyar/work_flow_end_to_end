@@ -1,60 +1,60 @@
-{"Time":"2026-11-28T14:14:07.896142592+06:30","Action":"start","Package":"git.frontiir.net/sa-dev/pipeline-report"}
-{"Time":"2026-11-28T14:14:07.904678937+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow"}
-{"Time":"2026-11-28T14:14:07.904892551+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Output":"=== RUN   TestNewWindow\n"}
-{"Time":"2026-11-28T14:14:07.905012154+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Output":"--- PASS: TestNewWindow (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.905071352+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.905123608+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket"}
-{"Time":"2026-11-28T14:14:07.905164201+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Output":"=== RUN   TestBucket\n"}
-{"Time":"2026-11-28T14:14:07.905208905+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Output":"--- PASS: TestBucket (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.905254087+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.905285898+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem"}
-{"Time":"2026-11-28T14:14:07.905318248+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Output":"=== RUN   TestNewLiveItem\n"}
-{"Time":"2026-11-28T14:14:07.905362491+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Output":"--- PASS: TestNewLiveItem (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.90539872+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.905436961+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter"}
-{"Time":"2026-11-28T14:14:07.905585182+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Output":"=== RUN   TestParseFilter\n"}
-{"Time":"2026-11-28T14:14:07.905668978+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Output":"--- PASS: TestParseFilter (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.905704546+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.905751645+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck"}
-{"Time":"2026-11-28T14:14:07.905787014+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Output":"=== RUN   TestNewSummaryResponseManualCheck\n"}
-{"Time":"2026-11-28T14:14:07.905835568+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Output":"--- PASS: TestNewSummaryResponseManualCheck (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.905881715+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.905924492+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit"}
-{"Time":"2026-11-28T14:14:07.905954231+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Output":"=== RUN   TestNewSummaryResponseSuccessSplit\n"}
-{"Time":"2026-11-28T14:14:07.905998302+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Output":"--- PASS: TestNewSummaryResponseSuccessSplit (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906039939+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.906131723+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase"}
-{"Time":"2026-11-28T14:14:07.90617687+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Output":"=== RUN   TestParseCase\n"}
-{"Time":"2026-11-28T14:14:07.906212202+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Output":"--- PASS: TestParseCase (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906245904+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.906284145+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions"}
-{"Time":"2026-11-28T14:14:07.906313761+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Output":"=== RUN   TestCaseConditions\n"}
-{"Time":"2026-11-28T14:14:07.90635573+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Output":"--- PASS: TestCaseConditions (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906390655+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.906432709+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal"}
-{"Time":"2026-11-28T14:14:07.906489151+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Output":"=== RUN   TestCaseTotal\n"}
-{"Time":"2026-11-28T14:14:07.906541091+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Output":"--- PASS: TestCaseTotal (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906587374+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.906645046+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem"}
-{"Time":"2026-11-28T14:14:07.906680601+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Output":"=== RUN   TestNewRunItem\n"}
-{"Time":"2026-11-28T14:14:07.906724143+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Output":"--- PASS: TestNewRunItem (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906754421+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.90679563+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition"}
-{"Time":"2026-11-28T14:14:07.906824643+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Output":"=== RUN   TestBCSPendingCondition\n"}
-{"Time":"2026-11-28T14:14:07.906860542+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Output":"--- PASS: TestBCSPendingCondition (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.906898847+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.906931591+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition"}
-{"Time":"2026-11-28T14:14:07.906967682+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Output":"=== RUN   TestBCSNotSentCondition\n"}
-{"Time":"2026-11-28T14:14:07.907000897+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Output":"--- PASS: TestBCSNotSentCondition (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.907051513+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.907108085+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere"}
-{"Time":"2026-11-28T14:14:07.907148544+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Output":"=== RUN   TestCaseWhere\n"}
-{"Time":"2026-11-28T14:14:07.907186778+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Output":"--- PASS: TestCaseWhere (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.907230651+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.907264278+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL"}
-{"Time":"2026-11-28T14:14:07.907307494+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Output":"=== RUN   TestInterpolateSQL\n"}
-{"Time":"2026-11-28T14:14:07.907344317+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Output":"--- PASS: TestInterpolateSQL (0.00s)\n"}
-{"Time":"2026-11-28T14:14:07.907381784+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Elapsed":0}
-{"Time":"2026-11-28T14:14:07.907420762+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Output":"PASS\n"}
-{"Time":"2026-11-28T14:14:07.907603905+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Output":"ok  \tgit.frontiir.net/sa-dev/pipeline-report\t0.011s\n"}
-{"Time":"2026-11-28T14:14:07.907669884+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Elapsed":0.012}
+{"Time":"2026-11-28T15:22:32.33653654+06:30","Action":"start","Package":"git.frontiir.net/sa-dev/pipeline-report"}
+{"Time":"2026-11-28T15:22:32.348246604+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow"}
+{"Time":"2026-11-28T15:22:32.348506875+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Output":"=== RUN   TestNewWindow\n"}
+{"Time":"2026-11-28T15:22:32.348636127+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Output":"--- PASS: TestNewWindow (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.348692986+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewWindow","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.348749666+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket"}
+{"Time":"2026-11-28T15:22:32.348784973+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Output":"=== RUN   TestBucket\n"}
+{"Time":"2026-11-28T15:22:32.348840133+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Output":"--- PASS: TestBucket (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.348889632+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBucket","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.348948363+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem"}
+{"Time":"2026-11-28T15:22:32.348991149+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Output":"=== RUN   TestNewLiveItem\n"}
+{"Time":"2026-11-28T15:22:32.349051878+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Output":"--- PASS: TestNewLiveItem (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.349087274+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewLiveItem","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.349138989+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter"}
+{"Time":"2026-11-28T15:22:32.349175633+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Output":"=== RUN   TestParseFilter\n"}
+{"Time":"2026-11-28T15:22:32.349232508+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Output":"--- PASS: TestParseFilter (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.349278423+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseFilter","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.34932023+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck"}
+{"Time":"2026-11-28T15:22:32.349364716+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Output":"=== RUN   TestNewSummaryResponseManualCheck\n"}
+{"Time":"2026-11-28T15:22:32.34941278+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Output":"--- PASS: TestNewSummaryResponseManualCheck (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.349506596+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseManualCheck","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.349568279+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit"}
+{"Time":"2026-11-28T15:22:32.34961184+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Output":"=== RUN   TestNewSummaryResponseSuccessSplit\n"}
+{"Time":"2026-11-28T15:22:32.349672373+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Output":"--- PASS: TestNewSummaryResponseSuccessSplit (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.349746096+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewSummaryResponseSuccessSplit","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.349845518+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase"}
+{"Time":"2026-11-28T15:22:32.34989879+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Output":"=== RUN   TestParseCase\n"}
+{"Time":"2026-11-28T15:22:32.349960037+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Output":"--- PASS: TestParseCase (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.35001324+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestParseCase","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.350069598+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions"}
+{"Time":"2026-11-28T15:22:32.350110925+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Output":"=== RUN   TestCaseConditions\n"}
+{"Time":"2026-11-28T15:22:32.35016509+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Output":"--- PASS: TestCaseConditions (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.350224488+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseConditions","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.350267732+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal"}
+{"Time":"2026-11-28T15:22:32.350302289+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Output":"=== RUN   TestCaseTotal\n"}
+{"Time":"2026-11-28T15:22:32.350351973+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Output":"--- PASS: TestCaseTotal (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.350392185+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseTotal","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.350430139+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem"}
+{"Time":"2026-11-28T15:22:32.350502973+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Output":"=== RUN   TestNewRunItem\n"}
+{"Time":"2026-11-28T15:22:32.350580597+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Output":"--- PASS: TestNewRunItem (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.350623172+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestNewRunItem","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.350668877+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition"}
+{"Time":"2026-11-28T15:22:32.350708734+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Output":"=== RUN   TestBCSPendingCondition\n"}
+{"Time":"2026-11-28T15:22:32.350748546+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Output":"--- PASS: TestBCSPendingCondition (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.35079913+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSPendingCondition","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.350834227+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition"}
+{"Time":"2026-11-28T15:22:32.350881725+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Output":"=== RUN   TestBCSNotSentCondition\n"}
+{"Time":"2026-11-28T15:22:32.3509176+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Output":"--- PASS: TestBCSNotSentCondition (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.350964158+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestBCSNotSentCondition","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.351026842+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere"}
+{"Time":"2026-11-28T15:22:32.351070074+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Output":"=== RUN   TestCaseWhere\n"}
+{"Time":"2026-11-28T15:22:32.351114623+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Output":"--- PASS: TestCaseWhere (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.351154088+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestCaseWhere","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.351201404+06:30","Action":"run","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL"}
+{"Time":"2026-11-28T15:22:32.351235032+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Output":"=== RUN   TestInterpolateSQL\n"}
+{"Time":"2026-11-28T15:22:32.351284798+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Output":"--- PASS: TestInterpolateSQL (0.00s)\n"}
+{"Time":"2026-11-28T15:22:32.351316409+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Test":"TestInterpolateSQL","Elapsed":0}
+{"Time":"2026-11-28T15:22:32.351362294+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Output":"PASS\n"}
+{"Time":"2026-11-28T15:22:32.351576673+06:30","Action":"output","Package":"git.frontiir.net/sa-dev/pipeline-report","Output":"ok  \tgit.frontiir.net/sa-dev/pipeline-report\t0.014s\n"}
+{"Time":"2026-11-28T15:22:32.351648187+06:30","Action":"pass","Package":"git.frontiir.net/sa-dev/pipeline-report","Elapsed":0.015}
